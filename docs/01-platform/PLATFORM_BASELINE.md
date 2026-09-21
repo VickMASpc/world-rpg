@@ -19,9 +19,9 @@ Minecraft 1.21.1 is frozen as the production engine target. Moving Minecraft ver
 - Fabric Loader 0.16.14.
 - Fabric API 0.116.17+1.21.1.
 - Fabric Loom 1.11.8.
-- CI Gradle 8.10.2.
+- Gradle 8.14.3.
 
-These pins provide reproducibility and may be patched after clean-build/regression checks while Minecraft remains fixed.
+These pins provide reproducibility and may be patched after clean-build/regression checks while Minecraft remains fixed. Loom 1.11.8 requires Gradle 8.14 or newer; 8.14.3 is the pinned bootstrap patch release.
 
 ## Source sets
 
