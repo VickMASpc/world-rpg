@@ -1,5 +1,6 @@
 package dev.worldrpg.combat.actor;
 
+import dev.worldrpg.combat.aura.AuraContainer;
 import dev.worldrpg.combat.resource.ResourceSet;
 import dev.worldrpg.combat.stat.StatSheet;
 
@@ -14,6 +15,7 @@ public final class CombatActor {
     private final CombatActorId id;
     private final StatSheet stats;
     private final ResourceSet resources;
+    private final AuraContainer auras;
 
     public CombatActor(CombatActorId id) {
         this(id, new StatSheet(), new ResourceSet());
@@ -27,6 +29,7 @@ public final class CombatActor {
         this.id = Objects.requireNonNull(id, "id");
         this.stats = Objects.requireNonNull(stats, "stats");
         this.resources = Objects.requireNonNull(resources, "resources");
+        this.auras = new AuraContainer(id, stats);
     }
 
     public CombatActorId id() {
@@ -39,5 +42,9 @@ public final class CombatActor {
 
     public ResourceSet resources() {
         return resources;
+    }
+
+    public AuraContainer auras() {
+        return auras;
     }
 }
