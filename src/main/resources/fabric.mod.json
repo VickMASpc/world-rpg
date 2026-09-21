@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "world_rpg",
+  "version": "${version}",
+  "name": "World RPG",
+  "description": "A slow-burn, data-driven RPG total conversion built on Minecraft 1.21.1 and Fabric.",
+  "authors": [
+    "VickMASpc"
+  ],
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.worldrpg.WorldRpg"
+    ],
+    "client": [
+      "dev.worldrpg.client.WorldRpgClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
