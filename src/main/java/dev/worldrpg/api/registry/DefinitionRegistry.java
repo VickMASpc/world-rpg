@@ -5,6 +5,7 @@ import dev.worldrpg.api.id.RpgId;
 import dev.worldrpg.api.validation.SourceRef;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -25,8 +26,8 @@ public final class DefinitionRegistry<T extends RpgDefinition> {
             Map<RpgId, SourceRef> sources
     ) {
         this.key = Objects.requireNonNull(key, "key");
-        this.definitions = Map.copyOf(new LinkedHashMap<>(definitions));
-        this.sources = Map.copyOf(new LinkedHashMap<>(sources));
+        this.definitions = Collections.unmodifiableMap(new LinkedHashMap<>(definitions));
+        this.sources = Collections.unmodifiableMap(new LinkedHashMap<>(sources));
     }
 
     public RegistryKey<T> key() {

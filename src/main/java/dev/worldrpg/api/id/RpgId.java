@@ -11,7 +11,8 @@ import java.util.regex.Pattern;
  */
 public record RpgId(String namespace, String path) implements Comparable<RpgId> {
     private static final Pattern NAMESPACE_PATTERN = Pattern.compile("[a-z0-9_.-]+");
-    private static final Pattern PATH_PATTERN = Pattern.compile("[a-z0-9/._-]+");
+    private static final Pattern PATH_PATTERN =
+            Pattern.compile("[a-z0-9._-]+(?:/[a-z0-9._-]+)*");
 
     public RpgId {
         Objects.requireNonNull(namespace, "namespace");

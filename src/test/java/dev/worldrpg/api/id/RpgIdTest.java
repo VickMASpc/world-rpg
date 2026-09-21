@@ -30,4 +30,11 @@ class RpgIdTest {
     void rejectsExtraSeparator() {
         assertThrows(IllegalArgumentException.class, () -> RpgId.parse("world_rpg:ability:frostbolt"));
     }
+
+    @Test
+    void rejectsEmptyPathSegments() {
+        assertThrows(IllegalArgumentException.class, () -> RpgId.parse("world_rpg:/ability"));
+        assertThrows(IllegalArgumentException.class, () -> RpgId.parse("world_rpg:ability/"));
+        assertThrows(IllegalArgumentException.class, () -> RpgId.parse("world_rpg:ability//frostbolt"));
+    }
 }
