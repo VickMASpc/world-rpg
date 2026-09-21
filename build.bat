@@ -14,7 +14,7 @@ if errorlevel 1 (
     echo.
     echo ERROR: No Gradle wrapper is committed yet and "gradle" is not available on PATH.
     echo Install Gradle once, run:
-    echo   gradle wrapper --gradle-version 8.10.2
+    echo   gradle wrapper --gradle-version 8.14.3
     echo then commit gradlew, gradlew.bat, gradle/wrapper/gradle-wrapper.jar and gradle-wrapper.properties.
     exit /b 1
 )
