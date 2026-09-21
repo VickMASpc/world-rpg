@@ -14,8 +14,19 @@ Authored RPG definitions use UTF-8 standard JSON.
 
 Every top-level definition document carries at least:
 
-- an explicit stable `id`,
-- an explicit integer `schema` version.
+- an explicit integer `schema` version,
+- an explicit stable registry-domain ID in `registry`,
+- an explicit stable definition `id`.
+
+Example:
+
+```json
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/abilities",
+  "id": "world_rpg:ability/mage/frostbolt"
+}
+```
 
 File paths are provenance/organization, not identity.
 
@@ -25,7 +36,8 @@ The generic source/identity/validation model remains Minecraft-independent. A Fa
 
 - Standard JSON tooling works everywhere.
 - Generated definitions can be deterministic and stable-order.
-- Moving a source file does not rename the persisted definition.
+- Moving a source file does not rename the persisted definition or change its domain.
+- The common header can route a source to the correct typed domain without using its folder name as semantic identity.
 - JSON comments are not supported. Long-form authoring notes belong in adjacent documentation or explicit schema fields where semantically relevant.
 - Duplicate object keys must eventually be rejected by structural validation rather than relying on permissive parser behavior.
 - Domain decoders may use Gson at the platform/tooling edge, but core definition identity and registry types do not depend on Gson or Minecraft.

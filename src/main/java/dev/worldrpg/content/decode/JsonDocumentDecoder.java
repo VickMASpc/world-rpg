@@ -50,14 +50,27 @@ public final class JsonDocumentDecoder {
         JsonObject root = parsed.getAsJsonObject();
 
         Optional<SchemaVersion> schema = decodeSchema(root, source, report);
-        Optional<RpgId> id = decodeId(root, source, report);
+        Optional<RpgId> registry = decodeRpgId(
+                root,
+                "registry",
+                "json.registry",
+                source,
+                report
+        );
+        Optional<RpgId> id = decodeRpgId(
+                root,
+                "id",
+                "json.id",
+                source,
+                report
+        );
 
-        if (schema.isEmpty() || id.isEmpty()) {
+        if (schema.isEmpty() || registry.isEmpty() || id.isEmpty()) {
             return Optional.empty();
         }
 
         return Optional.of(new DecodedJsonDocument(
-                new DefinitionHeader(schema.get(), id.get()),
+                new DefinitionHeader(schema.get(), registry.get(), id.get()),
                 root,
                 source
         ));
@@ -96,16 +109,18 @@ public final class JsonDocumentDecoder {
         }
     }
 
-    private static Optional<RpgId> decodeId(
+    private static Optional<RpgId> decodeRpgId(
             JsonObject root,
+            String field,
+            String codePrefix,
             ContentSource source,
             ValidationReport report
     ) {
-        JsonElement element = root.get("id");
+        JsonElement element = root.get(field);
         if (element == null || !element.isJsonPrimitive() || !element.getAsJsonPrimitive().isString()) {
             report.error(
-                    "json.id.required_string",
-                    "Definition field 'id' must be a stable namespaced string",
+                    codePrefix + ".required_string",
+                    "Definition field '" + field + "' must be a stable namespaced string",
                     source.sourceRef()
             );
             return Optional.empty();
@@ -115,7 +130,7 @@ public final class JsonDocumentDecoder {
             return Optional.of(RpgId.parse(element.getAsString()));
         } catch (IllegalArgumentException exception) {
             report.error(
-                    "json.id.invalid",
+                    codePrefix + ".invalid",
                     exception.getMessage(),
                     source.sourceRef()
             );

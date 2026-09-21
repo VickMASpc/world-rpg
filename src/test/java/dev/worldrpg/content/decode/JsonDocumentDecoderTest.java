@@ -20,6 +20,7 @@ class JsonDocumentDecoderTest {
                         """
                         {
                           "schema": 1,
+                          "registry": "world_rpg:registry/abilities",
                           "id": "world_rpg:ability/mage/frostbolt",
                           "cast_time": 2.0
                         }
@@ -31,6 +32,10 @@ class JsonDocumentDecoderTest {
         assertTrue(result.isPresent());
         assertFalse(report.hasErrors());
         assertEquals(1, result.get().header().schema().value());
+        assertEquals(
+                RpgId.parse("world_rpg:registry/abilities"),
+                result.get().header().registry()
+        );
         assertEquals(
                 RpgId.parse("world_rpg:ability/mage/frostbolt"),
                 result.get().header().id()
@@ -47,6 +52,7 @@ class JsonDocumentDecoderTest {
                         """
                         {
                           "schema": 1.5,
+                          "registry": "world_rpg:registry/test",
                           "id": "world_rpg:test/bad"
                         }
                         """
@@ -59,7 +65,22 @@ class JsonDocumentDecoderTest {
     }
 
     @Test
-    void rejectsInvalidJsonAndInvalidId() {
+    void rejectsMissingRegistryInvalidJsonAndInvalidId() {
+        ValidationReport registryReport = new ValidationReport();
+        assertTrue(JsonDocumentDecoder.decode(
+                ContentSource.of(
+                        "registry.json",
+                        """
+                        {
+                          "schema": 1,
+                          "id": "world_rpg:test/no_registry"
+                        }
+                        """
+                ),
+                registryReport
+        ).isEmpty());
+        assertTrue(registryReport.hasErrors());
+
         ValidationReport syntaxReport = new ValidationReport();
         assertTrue(JsonDocumentDecoder.decode(
                 ContentSource.of("syntax.json", "{ nope"),
@@ -74,6 +95,7 @@ class JsonDocumentDecoderTest {
                         """
                         {
                           "schema": 1,
+                          "registry": "world_rpg:registry/test",
                           "id": "NOT VALID"
                         }
                         """

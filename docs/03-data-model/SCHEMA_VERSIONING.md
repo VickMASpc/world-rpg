@@ -2,27 +2,30 @@
 
 Status: ACCEPTED for P2
 
-Authored definition documents carry an integer `schema` field with a minimum value of 1.
+Authored definition documents carry a common header:
 
-Schema version belongs to the definition format, not to the character's gameplay level or content revision.
+```json
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/abilities",
+  "id": "world_rpg:ability/mage/frostbolt"
+}
+```
+
+`schema` is an integer with a minimum value of 1.
+
+`registry` identifies the typed definition domain.
+
+`id` is the durable definition identity.
+
+File location is provenance, not identity.
 
 ## Rules
 
 - Each definition domain declares a current schema version.
 - A source with the current version is decoded normally.
-- An older supported version is migrated in-memory before semantic validation/publication.
-- An older unsupported version is a validation error.
-- A newer version than the runtime understands is a validation error; guessing is forbidden.
+- An older supported version will eventually be migrated in-memory before semantic validation/publication.
+- Until a migration exists, an older version is rejected rather than guessed.
+- A newer version than the runtime understands is a validation error.
 - Migration never changes stable definition identity unless an explicit ID migration table says so.
 - Definition schema versions and persisted save schema versions are separate systems.
-
-## Example
-
-```json
-{
-  "schema": 1,
-  "id": "world_rpg:ability/mage/frostbolt"
-}
-```
-
-This header is intentionally small. Domain-specific fields are decoded only after the common document header is valid.
