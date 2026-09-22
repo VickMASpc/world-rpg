@@ -81,14 +81,14 @@ No synthetic level-20 fixture may silently become class, enemy, dungeon or party
 - [x] identify what must feel different numerically versus experientially.
 
 ### G3 — session rhythm
-- [ ] define healthy 30-minute, 1-hour, 3-hour and full-weekend play rhythms;
-- [ ] define how preparation, travel, combat, quests, recovery, professions and return share time;
-- [ ] identify failure modes that turn slowness into padding.
+- [x] define healthy 30-minute, 1-hour, 3-hour and full-weekend play rhythms;
+- [x] define how preparation, travel, combat, quests, recovery, professions and return share time;
+- [x] identify failure modes that turn slowness into padding.
 
 ### G4 — world rhythm and travel
-- [ ] define safe -> wild -> dangerous -> remote -> civilization rhythm;
-- [ ] freeze first-pass road, shortcut, transport, hearth, mount and navigation doctrine;
-- [ ] define what makes 20-60 minute travel valid rather than empty.
+- [x] define safe -> wild -> dangerous -> remote -> civilization rhythm;
+- [x] freeze first-pass road, shortcut, transport, hearth, mount and navigation doctrine;
+- [x] define what makes 20-60 minute travel valid rather than empty.
 
 ### G5 — progression/reward
 - [ ] define what a level means beyond XP;

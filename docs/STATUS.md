@@ -41,7 +41,7 @@ They do not yet define final classes, enemies, dungeon roles or encounter design
 
 - reconcile stale repository status/issues/PRs;
 - finish the broader grounding package;
-- define player life/session/world/travel/progression/reward/quest/settlement doctrine;
+- continue grounding after completed player-life, session-rhythm, and world/travel doctrine: progression/reward/quest/settlement remain;
 - write the first 15-hour experiential storyboard;
 - execute/record the P3 in-world verification matrix;
 - prototype first-province topology and travel rhythm cheaply;
