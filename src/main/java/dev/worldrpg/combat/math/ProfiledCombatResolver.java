@@ -11,6 +11,8 @@ import dev.worldrpg.combat.event.CombatMagnitudeResolvedEvent;
 import dev.worldrpg.combat.event.ResourceChangedEvent;
 import dev.worldrpg.combat.resolution.CombatMagnitudeKind;
 import dev.worldrpg.combat.resolution.CombatMagnitudeRequest;
+import dev.worldrpg.combat.resolution.CombatPowerScaling;
+import dev.worldrpg.combat.resolution.CombatPowerTerm;
 import dev.worldrpg.combat.resolution.CombatResolutionGateway;
 import dev.worldrpg.combat.resource.ResourceChange;
 import dev.worldrpg.combat.resource.ResourcePool;
@@ -252,15 +254,12 @@ public final class ProfiledCombatResolver
             );
         }
 
-        double power = stats.value(
-                source,
-                powerStat(request.kind(), school)
-        );
-        double coefficient = powerCoefficient(
-                request.kind(),
-                school
-        );
-        double powerContribution = power * coefficient;
+        double powerContribution =
+                powerContribution(
+                        request,
+                        source,
+                        school
+                );
 
         double afterScaling = Math.max(
                 0.0,
@@ -463,7 +462,49 @@ public final class ProfiledCombatResolver
         );
     }
 
-    private StatKey powerStat(
+    private double powerContribution(
+            CombatMagnitudeRequest request,
+            CombatActor source,
+            CombatSchoolKey school
+    ) {
+        CombatPowerScaling scaling =
+                request.powerScaling();
+
+        if (scaling.mode()
+                == CombatPowerScaling.Mode.LEGACY_PROFILE) {
+            double power = stats.value(
+                    source,
+                    legacyPowerStat(
+                            request.kind(),
+                            school
+                    )
+            );
+
+            return power * legacyPowerCoefficient(
+                    request.kind(),
+                    school
+            );
+        }
+
+        double contribution = 0.0;
+
+        for (CombatPowerTerm term : scaling.terms()) {
+            contribution += stats.value(
+                    source,
+                    term.stat()
+            ) * term.coefficient();
+        }
+
+        if (!Double.isFinite(contribution)) {
+            throw new IllegalStateException(
+                    "power contribution became non-finite"
+            );
+        }
+
+        return contribution;
+    }
+
+    private StatKey legacyPowerStat(
             CombatMagnitudeKind kind,
             CombatSchoolKey school
     ) {
@@ -476,7 +517,7 @@ public final class ProfiledCombatResolver
                 : CombatMathStats.SPELL_POWER;
     }
 
-    private double powerCoefficient(
+    private double legacyPowerCoefficient(
             CombatMagnitudeKind kind,
             CombatSchoolKey school
     ) {

@@ -5,6 +5,7 @@ import dev.worldrpg.combat.condition.ConditionResult;
 import dev.worldrpg.combat.event.CombatEvent;
 import dev.worldrpg.combat.resolution.CombatMagnitudeKind;
 import dev.worldrpg.combat.resolution.CombatMagnitudeRequest;
+import dev.worldrpg.combat.resolution.CombatPowerScaling;
 import dev.worldrpg.combat.resolution.CombatResolutionGateway;
 
 import java.util.List;
@@ -16,6 +17,7 @@ public final class CombatMagnitudeEffect implements CombatEffect {
     private final RpgId causeId;
     private final RpgId schoolId;
     private final RpgId resolutionProfileId;
+    private final CombatPowerScaling powerScaling;
     private final double authoredBaseMagnitude;
     private final CombatResolutionGateway gateway;
 
@@ -25,18 +27,30 @@ public final class CombatMagnitudeEffect implements CombatEffect {
             RpgId causeId,
             RpgId schoolId,
             RpgId resolutionProfileId,
+            CombatPowerScaling powerScaling,
             double authoredBaseMagnitude,
             CombatResolutionGateway gateway
     ) {
-        this.recipient = Objects.requireNonNull(recipient, "recipient");
-        this.kind = Objects.requireNonNull(kind, "kind");
-        this.causeId = Objects.requireNonNull(causeId, "causeId");
-        this.schoolId = Objects.requireNonNull(schoolId, "schoolId");
-        this.resolutionProfileId = Objects.requireNonNull(
-                resolutionProfileId,
-                "resolutionProfileId"
-        );
-        this.gateway = Objects.requireNonNull(gateway, "gateway");
+        this.recipient =
+                Objects.requireNonNull(recipient, "recipient");
+        this.kind =
+                Objects.requireNonNull(kind, "kind");
+        this.causeId =
+                Objects.requireNonNull(causeId, "causeId");
+        this.schoolId =
+                Objects.requireNonNull(schoolId, "schoolId");
+        this.resolutionProfileId =
+                Objects.requireNonNull(
+                        resolutionProfileId,
+                        "resolutionProfileId"
+                );
+        this.powerScaling =
+                Objects.requireNonNull(
+                        powerScaling,
+                        "powerScaling"
+                );
+        this.gateway =
+                Objects.requireNonNull(gateway, "gateway");
 
         if (!Double.isFinite(authoredBaseMagnitude)
                 || authoredBaseMagnitude < 0.0) {
@@ -45,7 +59,33 @@ public final class CombatMagnitudeEffect implements CombatEffect {
             );
         }
 
-        this.authoredBaseMagnitude = authoredBaseMagnitude;
+        this.authoredBaseMagnitude =
+                authoredBaseMagnitude;
+    }
+
+    /**
+     * Compatibility constructor for fixtures/content not yet migrated to
+     * explicit power terms.
+     */
+    public CombatMagnitudeEffect(
+            EffectRecipient recipient,
+            CombatMagnitudeKind kind,
+            RpgId causeId,
+            RpgId schoolId,
+            RpgId resolutionProfileId,
+            double authoredBaseMagnitude,
+            CombatResolutionGateway gateway
+    ) {
+        this(
+                recipient,
+                kind,
+                causeId,
+                schoolId,
+                resolutionProfileId,
+                CombatPowerScaling.legacyProfile(),
+                authoredBaseMagnitude,
+                gateway
+        );
     }
 
     @Override
@@ -58,7 +98,9 @@ public final class CombatMagnitudeEffect implements CombatEffect {
         return gateway.resolve(request(context));
     }
 
-    private CombatMagnitudeRequest request(EffectContext context) {
+    private CombatMagnitudeRequest request(
+            EffectContext context
+    ) {
         Objects.requireNonNull(context, "context");
 
         return new CombatMagnitudeRequest(
@@ -69,6 +111,7 @@ public final class CombatMagnitudeEffect implements CombatEffect {
                 causeId,
                 schoolId,
                 resolutionProfileId,
+                powerScaling,
                 authoredBaseMagnitude
         );
     }
