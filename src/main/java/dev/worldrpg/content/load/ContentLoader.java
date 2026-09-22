@@ -79,7 +79,18 @@ public final class ContentLoader {
                 continue;
             }
 
-            accumulator.decodeAndAdd(document, report);
+            DefinitionSchemaMigrator migrator =
+                    catalog.schemaMigrator(
+                            document.header().registry()
+                    ).orElseGet(() ->
+                            new DefinitionSchemaMigrator(java.util.List.of())
+                    );
+
+            accumulator.decodeAndAdd(
+                    document,
+                    migrator,
+                    report
+            );
         }
 
         RegistrySnapshot.Builder snapshotBuilder =
@@ -220,6 +231,7 @@ public final class ContentLoader {
 
         private void decodeAndAdd(
                 DecodedJsonDocument document,
+                DefinitionSchemaMigrator schemaMigrator,
                 ValidationReport report
         ) {
             int sourceSchema = document.header().schema().value();
@@ -243,11 +255,7 @@ public final class ContentLoader {
 
             if (sourceSchema < currentSchema) {
                 Optional<DecodedJsonDocument> migrated =
-                        catalog.schemaMigrator(
-                                handler.domain().registryKey().id()
-                        ).orElseGet(() ->
-                                new DefinitionSchemaMigrator(java.util.List.of())
-                        ).migrate(
+                        schemaMigrator.migrate(
                                 document,
                                 handler.domain().currentSchema(),
                                 report
