@@ -1,6 +1,6 @@
 # Fabric server-data adapter
 
-Status: IMPLEMENTED CORE
+Status: IMPLEMENTED
 
 P2 content definitions are discovered from server-data resources under:
 
@@ -23,11 +23,6 @@ pack wins before World RPG sees the source.
 Different physical files that declare the same World RPG definition ID remain
 a duplicate-definition error in the core registry transaction.
 
-This gives us both:
-
-- normal datapack path override semantics,
-- stable explicit RPG IDs independent of file location.
-
 ## Atomicity
 
 The adapter produces a `ContentSourceBatch`:
@@ -48,8 +43,20 @@ resource read failure
 -> previous active snapshot preserved
 ```
 
-A broken physical resource cannot silently disappear and cause a partial
-registry set to publish.
+The actual Fabric server-data reload listener now runs that transaction during
+server resource reloads, including `/reload`.
+
+Invalid candidates are logged and rejected without replacing the active
+last-known-good snapshot.
+
+## Bootstrap contract
+
+`WorldRpgContentRuntime.initialize(catalog)` is one-shot.
+
+The domain catalog is frozen before the Fabric listener is registered.
+
+Later phases must compose ability/item/quest/etc. domains into that catalog
+before initialization rather than mutating a live global registry catalog.
 
 ## Provenance
 
@@ -61,10 +68,24 @@ pack=<pack id> resource=<namespace:path>
 
 Definition identity never derives from that string.
 
+## Developer inspection
+
+Permission-level-2 commands:
+
+```text
+/worldrpg content status
+/worldrpg content list
+/worldrpg content inspect <registry> <id>
+```
+
+These inspect only the active published snapshot.
+
+A rejected candidate remains visible through reload diagnostics but does not
+become active.
+
 ## Still pending
 
-- actual Fabric reload-listener registration,
-- developer inspection commands,
 - strict duplicate JSON-key rejection,
-- runtime reload-safety enforcement,
-- authored P3 definition domains.
+- runtime SAFE / GUARDED / RESTART enforcement,
+- authored domain registration,
+- persistence/migration work.
