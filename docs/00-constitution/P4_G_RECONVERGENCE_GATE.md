@@ -60,9 +60,11 @@ No synthetic level-20 fixture may silently become class, enemy, dungeon or party
 ## P4-G deliverables
 
 ### G1 — repository truth
-- [ ] STATUS reflects the real active phase.
-- [ ] P2/P3/P4 issues and PRs do not claim stale heads or stale future work.
-- [ ] stale design documents are either repaired or explicitly marked historical/provisional.
+- [x] STATUS reflects the real active phase.
+- [x] P2/P3/P4 issues and PRs do not claim stale heads or stale future work.
+- [x] stale design documents are either repaired or explicitly marked historical/provisional.
+
+G1 reconciliation included the P2 implementation/adapter docs and the combat-math landing page, not merely tracking-card edits.
 
 ### G2 — player life
 - [x] define the player's life at levels 1, 10, 25, 50, 75 and 100;
@@ -99,6 +101,8 @@ No synthetic level-20 fixture may silently become class, enemy, dungeon or party
 ### G8 — physical kernel evidence
 - [ ] execute and record the required P3 entity-backed Minecraft gate matrix;
 - [ ] do not weaken failed expectations to make the matrix pass.
+
+The harness has been audited and hardened; `P3_PHYSICAL_EVIDENCE_RUNBOOK.md` is the executable procedure. No manual row is claimed before it is actually observed.
 
 ### G9 — first province topology proof
 - [x] produce a low-cost authored topology/route prototype before production terrain;
