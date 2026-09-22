@@ -21,20 +21,9 @@ It also says:
 
 > We will not let architecture become the product.
 
-However, the active P4 branch advanced from routine combat calibration into elite, healer and dungeon-party stress fixtures while the broader Grounding Gate still lacked:
+The broader grounding package is now complete through the first fifteen-hour lived storyboard and anti-pattern catalog.
 
-- player life-cycle;
-- session rhythm;
-- world rhythm;
-- travel doctrine;
-- progression doctrine;
-- reward doctrine;
-- quest doctrine;
-- settlement doctrine;
-- anti-pattern catalog;
-- first 15-hour experiential storyboard.
-
-P3 also still has an active real-Minecraft verification matrix with manual evidence pending.
+P3 still has an active real-Minecraft verification matrix with manual evidence pending, and the first-province topology still needs physical graybox timing/decision validation.
 
 That does not invalidate current P4 code. It means the project must reconverge before adding more breadth.
 
@@ -102,19 +91,19 @@ No synthetic level-20 fixture may silently become class, enemy, dungeon or party
 - [x] define when field convenience becomes too strong.
 
 ### G7 — first 15-hour experiential storyboard
-- [ ] storyboard the first province as lived time rather than a content count;
-- [ ] identify roads, settlements, dangers, remembered items, unfinished places and return loops;
-- [ ] include at least one visible high-level threat encountered early;
-- [ ] end with a mental-map test.
+- [x] storyboard the first province as lived time rather than a content count;
+- [x] identify roads, settlements, dangers, remembered items, unfinished places and return loops;
+- [x] include at least one visible high-level threat encountered early;
+- [x] end with a mental-map test.
 
 ### G8 — physical kernel evidence
 - [ ] execute and record the required P3 entity-backed Minecraft gate matrix;
 - [ ] do not weaken failed expectations to make the matrix pass.
 
 ### G9 — first province topology proof
-- [ ] produce a low-cost authored topology/route prototype before production terrain;
-- [ ] validate representative local, settlement, regional and expedition travel times;
-- [ ] validate that geography creates decisions before investing in final world art.
+- [x] produce a low-cost authored topology/route prototype before production terrain;
+- [ ] validate representative local, settlement, regional and expedition travel times in the disposable graybox;
+- [ ] validate through physical traversal that geography creates decisions before investing in final world art.
 
 ## Exit condition
 
