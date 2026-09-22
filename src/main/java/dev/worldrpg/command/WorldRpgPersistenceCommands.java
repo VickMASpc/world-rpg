@@ -211,7 +211,8 @@ public final class WorldRpgPersistenceCommands {
         NbtCompound data =
                 state.readPlayerData(player.getUuid());
 
-        boolean existed = data.remove(PROBE_REF) != null;
+        boolean existed = data.contains(PROBE_REF);
+        data.remove(PROBE_REF);
         state.writePlayerData(player.getUuid(), data);
 
         player.sendMessage(
