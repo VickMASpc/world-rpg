@@ -45,6 +45,12 @@ final class RoutineCasterCalibrationSession {
             ResourceKey.of("world_rpg:resource/health");
     static final ResourceKey MANA =
             ResourceKey.of("world_rpg:resource/mana");
+    static final CombatActorId PLAYER_ID =
+            new CombatActorId(1);
+    static final CombatActorId FIRST_ENEMY_ID =
+            new CombatActorId(2);
+    static final CombatActorId SECOND_ENEMY_ID =
+            new CombatActorId(3);
 
     private static final long STEP_TICKS = 10L;
     private static final long MAX_FIGHT_TICKS = 2_000L;
@@ -59,7 +65,7 @@ final class RoutineCasterCalibrationSession {
     private long nextEnemyId = 2L;
 
     RoutineCasterCalibrationSession(long seed) {
-        player = new CombatActor(new CombatActorId(1));
+        player = new CombatActor(PLAYER_ID);
 
         double referenceHealth =
                 WorldRpgMagnitudeDraft.REFERENCE_HEALTH
@@ -204,6 +210,94 @@ final class RoutineCasterCalibrationSession {
                     "routine calibration exceeded "
                             + MAX_FIGHT_TICKS
                             + " ticks"
+            );
+        }
+    }
+
+    void fightTwoRoutineEnemies() {
+        CombatActor first = createEnemy();
+        CombatActor second = createEnemy();
+
+        HeadlessAbilityDriver firstDriver =
+                new HeadlessAbilityDriver(
+                        simulator,
+                        first,
+                        new CooldownBook(),
+                        observations
+                );
+        HeadlessAbilityDriver secondDriver =
+                new HeadlessAbilityDriver(
+                        simulator,
+                        second,
+                        new CooldownBook(),
+                        observations
+                );
+
+        long fightStart = simulator.now();
+
+        while ((!first.resources().require(HEALTH).isEmpty()
+                || !second.resources().require(HEALTH).isEmpty())
+                && !player.resources().require(HEALTH).isEmpty()
+                && simulator.now() - fightStart < MAX_FIGHT_TICKS) {
+            if (playerDriver.casts().activeCast().isEmpty()) {
+                CombatActor target =
+                        !first.resources().require(HEALTH).isEmpty()
+                                ? first
+                                : second;
+
+                var activation =
+                        playerDriver.activate(
+                                playerBolt,
+                                target
+                        );
+
+                if (!activation.accepted()) {
+                    throw new IllegalStateException(
+                            "player double-pull ability rejected: "
+                                    + activation.validation()
+                    );
+                }
+            }
+
+            activateEnemyIfReady(first, firstDriver);
+            activateEnemyIfReady(second, secondDriver);
+
+            playerDriver.advanceAndTick(STEP_TICKS);
+            firstDriver.tickNow();
+            secondDriver.tickNow();
+        }
+
+        if (!player.resources().require(HEALTH).isEmpty()
+                && (!first.resources().require(HEALTH).isEmpty()
+                || !second.resources().require(HEALTH).isEmpty())) {
+            throw new IllegalStateException(
+                    "double-pull calibration exceeded "
+                            + MAX_FIGHT_TICKS
+                            + " ticks"
+            );
+        }
+    }
+
+    private void activateEnemyIfReady(
+            CombatActor enemy,
+            HeadlessAbilityDriver driver
+    ) {
+        if (enemy.resources().require(HEALTH).isEmpty()
+                || !driver.casts().activeCast().isEmpty()
+                || player.resources().require(HEALTH).isEmpty()) {
+            return;
+        }
+
+        var activation =
+                driver.activate(
+                        enemyStrike,
+                        player
+                );
+
+        if (!activation.accepted()) {
+            throw new IllegalStateException(
+                    "enemy double-pull ability rejected: "
+                            + activation.validation()
             );
         }
     }
