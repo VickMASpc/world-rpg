@@ -136,6 +136,42 @@ public final class WorldRpgCommands {
                                 )
                 )
                 .then(
+                        CommandManager.literal("move")
+                                .then(
+                                        CommandManager.argument(
+                                                "distance",
+                                                IntegerArgumentType.integer(1, 30)
+                                        ).executes(context ->
+                                                moveRoomTarget(
+                                                        context.getSource()
+                                                                .getPlayerOrThrow(),
+                                                        IntegerArgumentType.getInteger(
+                                                                context,
+                                                                "distance"
+                                                        )
+                                                )
+                                        )
+                                )
+                )
+                .then(
+                        CommandManager.literal("health")
+                                .then(
+                                        CommandManager.argument(
+                                                "value",
+                                                IntegerArgumentType.integer(0, 100)
+                                        ).executes(context ->
+                                                setRoomTargetHealth(
+                                                        context.getSource()
+                                                                .getPlayerOrThrow(),
+                                                        IntegerArgumentType.getInteger(
+                                                                context,
+                                                                "value"
+                                                        )
+                                                )
+                                        )
+                                )
+                )
+                .then(
                         CommandManager.literal("status")
                                 .executes(context -> {
                                     ServerPlayerEntity player =
@@ -206,5 +242,55 @@ public final class WorldRpgCommands {
         );
 
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static int moveRoomTarget(
+            ServerPlayerEntity player,
+            int distance
+    ) {
+        try {
+            LivingEntity target = WorldRpgServerRuntime.p3Room()
+                    .moveTarget(player, distance);
+            player.sendMessage(
+                    Text.literal(
+                            "P3 developer target moved to "
+                                    + distance
+                                    + " blocks ahead without resetting RPG state"
+                                    + " | UUID=" + target.getUuid()
+                    ),
+                    false
+            );
+            return Command.SINGLE_SUCCESS;
+        } catch (IllegalStateException | IllegalArgumentException exception) {
+            player.sendMessage(
+                    Text.literal("P3 room move failed: " + exception.getMessage()),
+                    false
+            );
+            return 0;
+        }
+    }
+
+    private static int setRoomTargetHealth(
+            ServerPlayerEntity player,
+            int value
+    ) {
+        try {
+            double applied = WorldRpgServerRuntime.p3Room()
+                    .setTargetProofHealth(player, value);
+            player.sendMessage(
+                    Text.literal(
+                            "P3 target proof-health set to " + applied
+                                    + " (Minecraft entity health unchanged)"
+                    ),
+                    false
+            );
+            return Command.SINGLE_SUCCESS;
+        } catch (IllegalStateException | IllegalArgumentException exception) {
+            player.sendMessage(
+                    Text.literal("P3 room health failed: " + exception.getMessage()),
+                    false
+            );
+            return 0;
+        }
     }
 }
