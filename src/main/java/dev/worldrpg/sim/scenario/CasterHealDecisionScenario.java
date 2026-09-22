@@ -24,6 +24,8 @@ import dev.worldrpg.combat.math.SeededCombatRollSource;
 import dev.worldrpg.combat.math.WorldRpgDefenseDraft;
 import dev.worldrpg.combat.math.WorldRpgOutcomeDraft;
 import dev.worldrpg.combat.resolution.CombatMagnitudeKind;
+import dev.worldrpg.combat.resolution.CombatPowerScaling;
+import dev.worldrpg.combat.resolution.CombatPowerTerm;
 import dev.worldrpg.combat.resolution.CombatResolutionProfileIds;
 import dev.worldrpg.combat.resource.ResourceKey;
 import dev.worldrpg.combat.target.TargetConditions;
@@ -215,6 +217,12 @@ public final class CasterHealDecisionScenario
                         10.0,
                         CombatSchools.ARCANE.id(),
                         CombatResolutionProfileIds.DIRECT_SPELL,
+                        CombatPowerScaling.explicit(
+                                new CombatPowerTerm(
+                                        CombatMathStats.SPELL_POWER,
+                                        0.50
+                                )
+                        ),
                         resolver
                 );
 
@@ -226,6 +234,12 @@ public final class CasterHealDecisionScenario
                         5.0,
                         CombatSchools.PHYSICAL.id(),
                         CombatResolutionProfileIds.DIRECT_WEAPON,
+                        CombatPowerScaling.explicit(
+                                new CombatPowerTerm(
+                                        CombatMathStats.ATTACK_POWER,
+                                        0.35
+                                )
+                        ),
                         resolver
                 );
 
@@ -379,6 +393,7 @@ public final class CasterHealDecisionScenario
             double authoredBase,
             RpgId school,
             RpgId resolutionProfile,
+            CombatPowerScaling powerScaling,
             ProfiledCombatResolver resolver
     ) {
         return new AbilityDefinition(
@@ -405,6 +420,7 @@ public final class CasterHealDecisionScenario
                                         id,
                                         school,
                                         resolutionProfile,
+                                        powerScaling,
                                         authoredBase,
                                         resolver
                                 )
@@ -433,6 +449,7 @@ public final class CasterHealDecisionScenario
                                         HEAL_ID,
                                         CombatSchools.HOLY.id(),
                                         CombatResolutionProfileIds.GUARANTEED,
+                                        CombatPowerScaling.none(),
                                         60.0,
                                         resolver
                                 )

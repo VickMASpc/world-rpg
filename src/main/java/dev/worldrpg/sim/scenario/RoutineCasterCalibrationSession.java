@@ -22,6 +22,8 @@ import dev.worldrpg.combat.math.SeededCombatRollSource;
 import dev.worldrpg.combat.math.WorldRpgDefenseDraft;
 import dev.worldrpg.combat.math.WorldRpgOutcomeDraft;
 import dev.worldrpg.combat.resolution.CombatMagnitudeKind;
+import dev.worldrpg.combat.resolution.CombatPowerScaling;
+import dev.worldrpg.combat.resolution.CombatPowerTerm;
 import dev.worldrpg.combat.resolution.CombatResolutionProfileIds;
 import dev.worldrpg.combat.resource.ResourceKey;
 import dev.worldrpg.combat.target.TargetConditions;
@@ -136,7 +138,13 @@ final class RoutineCasterCalibrationSession {
                         4.0,
                         10.0,
                         CombatSchools.ARCANE.id(),
-                        CombatResolutionProfileIds.DIRECT_SPELL
+                        CombatResolutionProfileIds.DIRECT_SPELL,
+                        CombatPowerScaling.explicit(
+                                new CombatPowerTerm(
+                                        CombatMathStats.SPELL_POWER,
+                                        0.50
+                                )
+                        )
                 );
 
         enemyStrike =
@@ -146,7 +154,13 @@ final class RoutineCasterCalibrationSession {
                         0.0,
                         5.0,
                         CombatSchools.PHYSICAL.id(),
-                        CombatResolutionProfileIds.DIRECT_WEAPON
+                        CombatResolutionProfileIds.DIRECT_WEAPON,
+                        CombatPowerScaling.explicit(
+                                new CombatPowerTerm(
+                                        CombatMathStats.ATTACK_POWER,
+                                        0.35
+                                )
+                        )
                 );
     }
 
@@ -354,7 +368,8 @@ final class RoutineCasterCalibrationSession {
             double manaCost,
             double authoredBase,
             RpgId school,
-            RpgId resolutionProfile
+            RpgId resolutionProfile,
+            CombatPowerScaling powerScaling
     ) {
         RpgId abilityId = RpgId.parse(id);
 
@@ -385,6 +400,7 @@ final class RoutineCasterCalibrationSession {
                                         abilityId,
                                         school,
                                         resolutionProfile,
+                                        powerScaling,
                                         authoredBase,
                                         resolver
                                 )

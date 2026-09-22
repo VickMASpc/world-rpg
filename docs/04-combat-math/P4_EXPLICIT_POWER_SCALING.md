@@ -58,3 +58,15 @@ That separation is deliberate: special abilities are allowed to break the refere
 - final 1-100 ability budget tables.
 
 The important architectural rule is already enforced: damage school is not the production power-scaling identity.
+
+## Calibration migration
+
+The representative P4 scenarios now use explicit power scaling rather than
+legacy profile inference:
+
+- routine/caster bolt: Spell Power x 0.50,
+- routine/caster strike: Attack Power x 0.35,
+- attention-check heal: explicit flat magnitude with no power term.
+
+This means the routine, attrition, accidental-pull and caster-interrupt batch
+evidence exercises the production explicit-scaling contract.
