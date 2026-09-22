@@ -51,4 +51,84 @@ class ResourceConditionsTest {
                         .passed()
         );
     }
+
+    @Test
+    void targetFractionConditionUsesCurrentAgainstMaximum() {
+        CombatActor source =
+                new CombatActor(new CombatActorId(1));
+        CombatActor target =
+                new CombatActor(new CombatActorId(2));
+
+        target.resources().add(
+                MANA,
+                100.0,
+                70.0
+        );
+
+        AbilityContext context =
+                new AbilityContext(
+                        source,
+                        target,
+                        0
+                );
+
+        assertTrue(
+                ResourceConditions.targetAtOrBelowFraction(
+                        MANA,
+                        0.70
+                ).evaluate(context).passed()
+        );
+
+        target.resources()
+                .require(MANA)
+                .setCurrent(70.0001);
+
+        assertFalse(
+                ResourceConditions.targetAtOrBelowFraction(
+                        MANA,
+                        0.70
+                ).evaluate(context).passed()
+        );
+    }
+
+    @Test
+    void sourceFractionConditionFailsWhenResourceIsMissing() {
+        CombatActor source =
+                new CombatActor(new CombatActorId(1));
+        CombatActor target =
+                new CombatActor(new CombatActorId(2));
+
+        AbilityContext context =
+                new AbilityContext(
+                        source,
+                        target,
+                        0
+                );
+
+        assertFalse(
+                ResourceConditions.sourceAtOrBelowFraction(
+                        MANA,
+                        0.50
+                ).evaluate(context).passed()
+        );
+    }
+
+    @Test
+    void fractionConditionRejectsOutOfRangeFraction() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ResourceConditions.targetAtOrBelowFraction(
+                        MANA,
+                        -0.01
+                )
+        );
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ResourceConditions.targetAtOrBelowFraction(
+                        MANA,
+                        1.01
+                )
+        );
+    }
+
 }
