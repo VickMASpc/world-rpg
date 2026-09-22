@@ -19,6 +19,7 @@ public record CombatMagnitudeRequest(
         CombatActor target,
         RpgId causeId,
         RpgId schoolId,
+        RpgId resolutionProfileId,
         double authoredBaseMagnitude
 ) {
     public CombatMagnitudeRequest {
@@ -33,6 +34,10 @@ public record CombatMagnitudeRequest(
         Objects.requireNonNull(target, "target");
         Objects.requireNonNull(causeId, "causeId");
         Objects.requireNonNull(schoolId, "schoolId");
+        Objects.requireNonNull(
+                resolutionProfileId,
+                "resolutionProfileId"
+        );
 
         if (!Double.isFinite(authoredBaseMagnitude)
                 || authoredBaseMagnitude < 0.0) {
@@ -40,5 +45,32 @@ public record CombatMagnitudeRequest(
                     "authoredBaseMagnitude must be finite and >= 0"
             );
         }
+    }
+
+    /**
+     * Compatibility constructor for pre-profile callers.
+     *
+     * <p>It intentionally preserves the old guaranteed-contact behavior rather
+     * than guessing attack semantics from school or cause ID.</p>
+     */
+    public CombatMagnitudeRequest(
+            long gameTick,
+            CombatMagnitudeKind kind,
+            CombatActor source,
+            CombatActor target,
+            RpgId causeId,
+            RpgId schoolId,
+            double authoredBaseMagnitude
+    ) {
+        this(
+                gameTick,
+                kind,
+                source,
+                target,
+                causeId,
+                schoolId,
+                CombatResolutionProfileIds.GUARANTEED,
+                authoredBaseMagnitude
+        );
     }
 }

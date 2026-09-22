@@ -1,5 +1,8 @@
 package dev.worldrpg.combat.math;
 
+import dev.worldrpg.api.id.RpgId;
+
+import java.util.Objects;
 import java.util.OptionalDouble;
 
 /**
@@ -9,6 +12,10 @@ import java.util.OptionalDouble;
  * simulator regressions can explain every stage.</p>
  */
 public record CombatResolutionTrace(
+        RpgId resolutionProfileId,
+        CombatContactOutcome contactOutcome,
+        double missChance,
+        OptionalDouble contactRoll,
         double authoredBase,
         double powerContribution,
         double afterScaling,
@@ -27,10 +34,19 @@ public record CombatResolutionTrace(
         double excess
 ) {
     public CombatResolutionTrace {
-        java.util.Objects.requireNonNull(
-                criticalRoll,
-                "criticalRoll"
+        Objects.requireNonNull(
+                resolutionProfileId,
+                "resolutionProfileId"
         );
+        Objects.requireNonNull(
+                contactOutcome,
+                "contactOutcome"
+        );
+        Objects.requireNonNull(contactRoll, "contactRoll");
+        Objects.requireNonNull(criticalRoll, "criticalRoll");
+
+        requireUnitInterval(missChance, "missChance");
+        requireRoll(contactRoll, "contactRoll");
 
         requireNonNegativeFinite(authoredBase, "authoredBase");
         requireFinite(powerContribution, "powerContribution");
@@ -38,20 +54,15 @@ public record CombatResolutionTrace(
         requireNonNegativeFinite(outgoingMultiplier, "outgoingMultiplier");
         requireNonNegativeFinite(afterOutgoing, "afterOutgoing");
         requireUnitInterval(criticalChance, "criticalChance");
-        if (criticalRoll.isPresent()) {
-            double roll = criticalRoll.getAsDouble();
-            if (!Double.isFinite(roll) || roll < 0.0 || roll >= 1.0) {
-                throw new IllegalArgumentException(
-                        "criticalRoll must be in [0, 1)"
-                );
-            }
-        }
+        requireRoll(criticalRoll, "criticalRoll");
+
         if (!Double.isFinite(criticalMultiplierApplied)
                 || criticalMultiplierApplied < 1.0) {
             throw new IllegalArgumentException(
                     "criticalMultiplierApplied must be finite and >= 1"
             );
         }
+
         requireNonNegativeFinite(afterCritical, "afterCritical");
         requireUnitInterval(mitigationFraction, "mitigationFraction");
         requireNonNegativeFinite(afterMitigation, "afterMitigation");
@@ -63,6 +74,36 @@ public record CombatResolutionTrace(
         if (appliedFinal > requestedFinal + 1.0e-12) {
             throw new IllegalArgumentException(
                     "appliedFinal cannot exceed requestedFinal"
+            );
+        }
+
+        if (contactOutcome == CombatContactOutcome.MISS) {
+            if (critical
+                    || requestedFinal != 0.0
+                    || appliedFinal != 0.0
+                    || excess != 0.0) {
+                throw new IllegalArgumentException(
+                        "missed magnitude cannot crit or apply resource change"
+                );
+            }
+        }
+    }
+
+    private static void requireRoll(
+            OptionalDouble roll,
+            String label
+    ) {
+        if (roll.isEmpty()) {
+            return;
+        }
+
+        double value = roll.getAsDouble();
+
+        if (!Double.isFinite(value)
+                || value < 0.0
+                || value >= 1.0) {
+            throw new IllegalArgumentException(
+                    label + " must be in [0, 1)"
             );
         }
     }

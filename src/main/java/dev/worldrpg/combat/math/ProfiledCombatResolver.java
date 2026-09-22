@@ -18,8 +18,8 @@ import java.util.OptionalDouble;
 /**
  * Shared production resolution topology for runtime and headless simulation.
  *
- * <p>Calibration constants are supplied by CombatMathProfile. This class owns
- * ordering and equations, not a canonical balance profile.</p>
+ * <p>Calibration constants are supplied by P4 profiles. This class owns
+ * ordering and equations, not canonical balance values.</p>
  */
 public final class ProfiledCombatResolver
         implements CombatResolutionGateway {
@@ -27,6 +27,7 @@ public final class ProfiledCombatResolver
     private final CombatRollSource rolls;
     private final CombatStatResolver stats;
     private final CombatLevelSource levels;
+    private final CombatOutcomeProfileSet outcomes;
 
     public ProfiledCombatResolver(
             CombatMathProfile profile,
@@ -36,7 +37,8 @@ public final class ProfiledCombatResolver
                 profile,
                 rolls,
                 CombatStatResolver.direct(),
-                CombatLevelSource.constant(1)
+                CombatLevelSource.constant(1),
+                CombatOutcomeProfileSet.guaranteedOnly()
         );
     }
 
@@ -49,7 +51,8 @@ public final class ProfiledCombatResolver
                 profile,
                 rolls,
                 stats,
-                CombatLevelSource.constant(1)
+                CombatLevelSource.constant(1),
+                CombatOutcomeProfileSet.guaranteedOnly()
         );
     }
 
@@ -59,10 +62,27 @@ public final class ProfiledCombatResolver
             CombatStatResolver stats,
             CombatLevelSource levels
     ) {
+        this(
+                profile,
+                rolls,
+                stats,
+                levels,
+                CombatOutcomeProfileSet.guaranteedOnly()
+        );
+    }
+
+    public ProfiledCombatResolver(
+            CombatMathProfile profile,
+            CombatRollSource rolls,
+            CombatStatResolver stats,
+            CombatLevelSource levels,
+            CombatOutcomeProfileSet outcomes
+    ) {
         this.profile = Objects.requireNonNull(profile, "profile");
         this.rolls = Objects.requireNonNull(rolls, "rolls");
         this.stats = Objects.requireNonNull(stats, "stats");
         this.levels = Objects.requireNonNull(levels, "levels");
+        this.outcomes = Objects.requireNonNull(outcomes, "outcomes");
     }
 
     @Override
@@ -76,10 +96,51 @@ public final class ProfiledCombatResolver
         CombatSchoolKey school =
                 new CombatSchoolKey(request.schoolId());
 
+        CombatOutcomeProfile outcomeProfile =
+                outcomes.require(request.resolutionProfileId());
+
         ResourcePool health = target.resources()
                 .require(profile.healthResource());
 
-        double power = stats.value(source, 
+        double missChance = clamp(
+                outcomeProfile.baseMissChance()
+                        - stats.value(
+                                source,
+                                CombatMathStats.HIT_CHANCE
+                        ),
+                0.0,
+                1.0
+        );
+
+        OptionalDouble contactRoll = OptionalDouble.empty();
+        CombatContactOutcome contactOutcome =
+                CombatContactOutcome.HIT;
+
+        if (missChance > 0.0) {
+            double roll = rolls.nextUnit();
+            requireUnitRoll(roll);
+            contactRoll = OptionalDouble.of(roll);
+
+            if (roll < missChance) {
+                contactOutcome = CombatContactOutcome.MISS;
+            }
+        }
+
+        if (contactOutcome == CombatContactOutcome.MISS) {
+            CombatResolutionTrace trace =
+                    missedTrace(
+                            request,
+                            missChance,
+                            contactRoll
+                    );
+
+            return List.of(
+                    resolvedEvent(request, trace)
+            );
+        }
+
+        double power = stats.value(
+                source,
                 powerStat(request.kind(), school)
         );
         double coefficient = powerCoefficient(
@@ -96,20 +157,25 @@ public final class ProfiledCombatResolver
 
         double outgoingMultiplier = Math.max(
                 0.0,
-                1.0 + stats.value(source, 
+                1.0 + stats.value(
+                        source,
                         outgoingBonusStat(request.kind())
                 )
         );
         double afterOutgoing =
                 afterScaling * outgoingMultiplier;
 
-        double criticalChance = clamp(
-                stats.value(source, 
-                        CombatMathStats.CRIT_CHANCE
-                ),
-                0.0,
-                profile.maximumCriticalChance()
-        );
+        double criticalChance =
+                outcomeProfile.canCrit()
+                        ? clamp(
+                                stats.value(
+                                        source,
+                                        CombatMathStats.CRIT_CHANCE
+                                ),
+                                0.0,
+                                profile.maximumCriticalChance()
+                        )
+                        : 0.0;
 
         OptionalDouble criticalRoll = OptionalDouble.empty();
         boolean critical = false;
@@ -136,7 +202,8 @@ public final class ProfiledCombatResolver
 
         double incomingMultiplier = Math.max(
                 0.0,
-                1.0 + stats.value(target, 
+                1.0 + stats.value(
+                        target,
                         incomingBonusStat(request.kind())
                 )
         );
@@ -154,6 +221,10 @@ public final class ProfiledCombatResolver
 
         CombatResolutionTrace trace =
                 new CombatResolutionTrace(
+                        request.resolutionProfileId(),
+                        contactOutcome,
+                        missChance,
+                        contactRoll,
                         request.authoredBaseMagnitude(),
                         powerContribution,
                         afterScaling,
@@ -173,15 +244,7 @@ public final class ProfiledCombatResolver
                 );
 
         CombatMagnitudeResolvedEvent resolved =
-                new CombatMagnitudeResolvedEvent(
-                        request.gameTick(),
-                        request.kind(),
-                        source.id(),
-                        target.id(),
-                        request.causeId(),
-                        request.schoolId(),
-                        trace
-                );
+                resolvedEvent(request, trace);
 
         ResourceChangedEvent resourceChanged =
                 new ResourceChangedEvent(
@@ -192,6 +255,50 @@ public final class ProfiledCombatResolver
                 );
 
         return List.of(resolved, resourceChanged);
+    }
+
+    private CombatResolutionTrace missedTrace(
+            CombatMagnitudeRequest request,
+            double missChance,
+            OptionalDouble contactRoll
+    ) {
+        return new CombatResolutionTrace(
+                request.resolutionProfileId(),
+                CombatContactOutcome.MISS,
+                missChance,
+                contactRoll,
+                request.authoredBaseMagnitude(),
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                OptionalDouble.empty(),
+                false,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0
+        );
+    }
+
+    private CombatMagnitudeResolvedEvent resolvedEvent(
+            CombatMagnitudeRequest request,
+            CombatResolutionTrace trace
+    ) {
+        return new CombatMagnitudeResolvedEvent(
+                request.gameTick(),
+                request.kind(),
+                request.source().id(),
+                request.target().id(),
+                request.causeId(),
+                request.schoolId(),
+                trace
+        );
     }
 
     private StatKey powerStat(
@@ -243,7 +350,8 @@ public final class ProfiledCombatResolver
     ) {
         double defense = Math.max(
                 0.0,
-                stats.value(target, 
+                stats.value(
+                        target,
                         CombatMathStats.resistanceFor(school)
                 )
         );
