@@ -49,6 +49,7 @@ public final class AuraContainer {
 
             instance.setStacks(currentStacks);
             instance.setExpiresAtTick(refreshExpiry(instance, definition, gameTick));
+            refreshPeriodicSchedule(instance, definition, gameTick);
             refreshStatModifiers(instance);
 
             return new AuraApplicationResult(
@@ -67,7 +68,8 @@ public final class AuraContainer {
                 owner,
                 gameTick,
                 1,
-                initialExpiry(definition, gameTick)
+                initialExpiry(definition, gameTick),
+                initialPeriodicTick(definition, gameTick)
         );
 
         instances.put(id, instance);
@@ -110,6 +112,68 @@ public final class AuraContainer {
         }
 
         return List.copyOf(removals);
+    }
+
+    /**
+     * Collects all periodic ticks due through gameTick and advances each aura's
+     * next-tick cursor atomically per aura.
+     *
+     * <p>A periodic tick scheduled exactly at aura expiry is considered due.</p>
+     */
+    public List<AuraPeriodicOccurrence> collectDuePeriodicTicks(
+            long gameTick,
+            int maxTicksPerAura
+    ) {
+        requireTick(gameTick);
+        if (maxTicksPerAura < 1) {
+            throw new IllegalArgumentException("maxTicksPerAura must be >= 1");
+        }
+
+        List<AuraPeriodicOccurrence> occurrences = new ArrayList<>();
+
+        for (AuraInstance instance : instances.values()) {
+            if (instance.nextPeriodicTick().isEmpty()) {
+                continue;
+            }
+
+            AuraPeriodicEffect periodic =
+                    instance.definition().periodicEffect().orElseThrow();
+
+            long next = instance.nextPeriodicTick().getAsLong();
+            long upper = gameTick;
+
+            if (instance.expiresAtTick().isPresent()) {
+                upper = Math.min(upper, instance.expiresAtTick().getAsLong());
+            }
+
+            if (next > upper) {
+                continue;
+            }
+
+            long interval = periodic.intervalTicks();
+            long count = ((upper - next) / interval) + 1L;
+
+            if (count > maxTicksPerAura) {
+                throw new AuraPeriodicLimitException(
+                        "Aura " + instance.definition().id()
+                                + " requires " + count
+                                + " catch-up ticks; max is " + maxTicksPerAura
+                );
+            }
+
+            for (long index = 0; index < count; index++) {
+                occurrences.add(new AuraPeriodicOccurrence(
+                        instance,
+                        safeAdd(next, safeMultiply(interval, index))
+                ));
+            }
+
+            instance.setNextPeriodicTick(OptionalLong.of(
+                    safeAdd(next, safeMultiply(interval, count))
+            ));
+        }
+
+        return List.copyOf(occurrences);
     }
 
     public List<AuraRemoval> expireDue(long gameTick) {
@@ -197,6 +261,20 @@ public final class AuraContainer {
         ));
     }
 
+    private static OptionalLong initialPeriodicTick(
+            AuraDefinition definition,
+            long gameTick
+    ) {
+        if (definition.periodicEffect().isEmpty()) {
+            return OptionalLong.empty();
+        }
+
+        return OptionalLong.of(safeAdd(
+                gameTick,
+                definition.periodicEffect().get().intervalTicks()
+        ));
+    }
+
     private static OptionalLong refreshExpiry(
             AuraInstance instance,
             AuraDefinition definition,
@@ -217,6 +295,33 @@ public final class AuraContainer {
             );
             case KEEP_EXISTING -> instance.expiresAtTick();
         };
+    }
+
+    private static void refreshPeriodicSchedule(
+            AuraInstance instance,
+            AuraDefinition definition,
+            long gameTick
+    ) {
+        if (definition.periodicEffect().isEmpty()) {
+            instance.setNextPeriodicTick(OptionalLong.empty());
+            return;
+        }
+
+        AuraPeriodicEffect periodic = definition.periodicEffect().get();
+
+        if (periodic.refreshPolicy() == AuraTickRefreshPolicy.RESET_SCHEDULE) {
+            instance.setNextPeriodicTick(OptionalLong.of(
+                    safeAdd(gameTick, periodic.intervalTicks())
+            ));
+        }
+    }
+
+    private static long safeMultiply(long left, long right) {
+        try {
+            return Math.multiplyExact(left, right);
+        } catch (ArithmeticException overflow) {
+            return Long.MAX_VALUE;
+        }
     }
 
     private static long safeAdd(long left, long right) {

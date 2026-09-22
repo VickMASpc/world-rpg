@@ -13,6 +13,7 @@ public final class AuraInstance {
     private final long appliedAtTick;
     private int stacks;
     private OptionalLong expiresAtTick;
+    private OptionalLong nextPeriodicTick;
 
     AuraInstance(
             AuraInstanceId id,
@@ -21,7 +22,8 @@ public final class AuraInstance {
             CombatActorId target,
             long appliedAtTick,
             int stacks,
-            OptionalLong expiresAtTick
+            OptionalLong expiresAtTick,
+            OptionalLong nextPeriodicTick
     ) {
         this.id = Objects.requireNonNull(id, "id");
         this.definition = Objects.requireNonNull(definition, "definition");
@@ -30,6 +32,7 @@ public final class AuraInstance {
         this.appliedAtTick = appliedAtTick;
         this.stacks = stacks;
         this.expiresAtTick = Objects.requireNonNull(expiresAtTick, "expiresAtTick");
+        this.nextPeriodicTick = Objects.requireNonNull(nextPeriodicTick, "nextPeriodicTick");
     }
 
     public AuraInstanceId id() {
@@ -60,11 +63,19 @@ public final class AuraInstance {
         return expiresAtTick;
     }
 
+    public OptionalLong nextPeriodicTick() {
+        return nextPeriodicTick;
+    }
+
     void setStacks(int stacks) {
         this.stacks = stacks;
     }
 
     void setExpiresAtTick(OptionalLong expiresAtTick) {
         this.expiresAtTick = Objects.requireNonNull(expiresAtTick, "expiresAtTick");
+    }
+
+    void setNextPeriodicTick(OptionalLong nextPeriodicTick) {
+        this.nextPeriodicTick = Objects.requireNonNull(nextPeriodicTick, "nextPeriodicTick");
     }
 }
