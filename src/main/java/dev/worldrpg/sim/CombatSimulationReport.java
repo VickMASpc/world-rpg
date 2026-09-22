@@ -12,6 +12,8 @@ public record CombatSimulationReport(
         int eventCount,
         long resolutions,
         long damageResolutions,
+        long damageHits,
+        long damageMisses,
         long healingResolutions,
         long criticalResolutions,
         double damageApplied,
@@ -29,10 +31,18 @@ public record CombatSimulationReport(
         if (eventCount < 0
                 || resolutions < 0
                 || damageResolutions < 0
+                || damageHits < 0
+                || damageMisses < 0
                 || healingResolutions < 0
                 || criticalResolutions < 0) {
             throw new IllegalArgumentException(
                     "simulation counters must be >= 0"
+            );
+        }
+
+        if (damageHits + damageMisses != damageResolutions) {
+            throw new IllegalArgumentException(
+                    "damageHits + damageMisses must equal damageResolutions"
             );
         }
 

@@ -2,6 +2,7 @@ package dev.worldrpg.sim;
 
 import dev.worldrpg.combat.event.CombatEvent;
 import dev.worldrpg.combat.event.CombatMagnitudeResolvedEvent;
+import dev.worldrpg.combat.math.CombatContactOutcome;
 import dev.worldrpg.combat.resolution.CombatMagnitudeKind;
 import dev.worldrpg.combat.resource.ResourceKey;
 
@@ -11,6 +12,8 @@ import java.util.Map;
 final class CombatSimulationMetrics {
     private long resolutions;
     private long damageResolutions;
+    private long damageHits;
+    private long damageMisses;
     private long healingResolutions;
     private long criticalResolutions;
     private double damageApplied;
@@ -33,6 +36,14 @@ final class CombatSimulationMetrics {
 
         if (resolved.kind() == CombatMagnitudeKind.DAMAGE) {
             damageResolutions++;
+
+            if (resolved.trace().contactOutcome()
+                    == CombatContactOutcome.MISS) {
+                damageMisses++;
+            } else {
+                damageHits++;
+            }
+
             damageApplied += resolved.trace().appliedFinal();
             overkill += resolved.trace().excess();
         } else {
@@ -68,6 +79,8 @@ final class CombatSimulationMetrics {
                 eventCount,
                 resolutions,
                 damageResolutions,
+                damageHits,
+                damageMisses,
                 healingResolutions,
                 criticalResolutions,
                 damageApplied,
