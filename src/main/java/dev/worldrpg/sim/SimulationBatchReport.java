@@ -93,6 +93,41 @@ public record SimulationBatchReport(
         return (double) misses / (double) attempts;
     }
 
+    public double averageDefeats() {
+        return runs.stream()
+                .mapToLong(result ->
+                        result.report().defeats()
+                )
+                .average()
+                .orElseThrow();
+    }
+
+    public double averageResourceSpent(
+            ResourceKey resource
+    ) {
+        Objects.requireNonNull(resource, "resource");
+
+        return runs.stream()
+                .mapToDouble(result ->
+                        result.report().spent(resource)
+                )
+                .average()
+                .orElseThrow();
+    }
+
+    public double averageResourceGained(
+            ResourceKey resource
+    ) {
+        Objects.requireNonNull(resource, "resource");
+
+        return runs.stream()
+                .mapToDouble(result ->
+                        result.report().gained(resource)
+                )
+                .average()
+                .orElseThrow();
+    }
+
     public double averageCriticalResolutions() {
         return runs.stream()
                 .mapToLong(result ->

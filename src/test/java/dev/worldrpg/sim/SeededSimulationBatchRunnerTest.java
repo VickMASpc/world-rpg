@@ -28,10 +28,13 @@ class SeededSimulationBatchRunnerTest {
                     miss ? 1 : 0,
                     0,
                     0,
+                    miss ? 0 : 1,
                     miss ? 0.0 : 10.0,
                     0.0,
                     0.0,
                     0.0,
+                    Map.of(MANA, 2.0),
+                    Map.of(),
                     Map.of(MANA, 5.0)
             );
         };
@@ -55,6 +58,12 @@ class SeededSimulationBatchRunnerTest {
         assertEquals(113L, report.maximumElapsedTicks());
         assertEquals(5.0, report.averageDamageApplied(), 0.0);
         assertEquals(0.5, report.damageMissRate(), 0.0);
+        assertEquals(0.5, report.averageDefeats(), 0.0);
+        assertEquals(
+                2.0,
+                report.averageResourceSpent(MANA),
+                0.0
+        );
         assertEquals(
                 5.0,
                 report.averageExplicitRecovery(MANA),
@@ -75,10 +84,13 @@ class SeededSimulationBatchRunnerTest {
                         0,
                         0,
                         0,
+                        0,
                         0.0,
                         0.0,
                         0.0,
                         0.0,
+                        Map.of(),
+                        Map.of(),
                         Map.of()
                 );
 

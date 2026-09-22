@@ -106,6 +106,7 @@ public final class HeadlessCombatSimulator {
                 );
 
         events.add(event);
+        metrics.observe(event);
         metrics.recordRecovery(resource, change.applied());
         return event;
     }

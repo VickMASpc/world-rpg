@@ -2,6 +2,7 @@ package dev.worldrpg.combat.math;
 
 import dev.worldrpg.combat.actor.CombatActor;
 import dev.worldrpg.combat.condition.ConditionResult;
+import dev.worldrpg.combat.event.CombatActorDefeatedEvent;
 import dev.worldrpg.combat.event.CombatEvent;
 import dev.worldrpg.combat.event.CombatMagnitudeResolvedEvent;
 import dev.worldrpg.combat.event.ResourceChangedEvent;
@@ -12,6 +13,7 @@ import dev.worldrpg.combat.resource.ResourceChange;
 import dev.worldrpg.combat.resource.ResourcePool;
 import dev.worldrpg.combat.stat.StatKey;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.OptionalDouble;
@@ -335,7 +337,25 @@ public final class ProfiledCombatResolver
                         change
                 );
 
-        return List.of(resolved, resourceChanged);
+        List<CombatEvent> events =
+                new ArrayList<>();
+        events.add(resolved);
+        events.add(resourceChanged);
+
+        if (request.kind() == CombatMagnitudeKind.DAMAGE
+                && change.before() > 0.0
+                && change.after() == 0.0) {
+            events.add(
+                    new CombatActorDefeatedEvent(
+                            request.gameTick(),
+                            source.id(),
+                            target.id(),
+                            request.causeId()
+                    )
+            );
+        }
+
+        return List.copyOf(events);
     }
 
     private CombatResolutionTrace missedTrace(

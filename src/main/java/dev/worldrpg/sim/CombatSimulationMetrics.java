@@ -1,7 +1,9 @@
 package dev.worldrpg.sim;
 
+import dev.worldrpg.combat.event.CombatActorDefeatedEvent;
 import dev.worldrpg.combat.event.CombatEvent;
 import dev.worldrpg.combat.event.CombatMagnitudeResolvedEvent;
+import dev.worldrpg.combat.event.ResourceChangedEvent;
 import dev.worldrpg.combat.math.CombatContactOutcome;
 import dev.worldrpg.combat.resolution.CombatMagnitudeKind;
 import dev.worldrpg.combat.resource.ResourceKey;
@@ -16,18 +18,35 @@ final class CombatSimulationMetrics {
     private long damageMisses;
     private long healingResolutions;
     private long criticalResolutions;
+    private long defeats;
     private double damageApplied;
     private double healingApplied;
     private double overkill;
     private double overheal;
+    private final Map<ResourceKey, Double> resourceSpent =
+            new LinkedHashMap<>();
+    private final Map<ResourceKey, Double> resourceGained =
+            new LinkedHashMap<>();
     private final Map<ResourceKey, Double> explicitRecovery =
             new LinkedHashMap<>();
 
     void observe(CombatEvent event) {
-        if (!(event instanceof CombatMagnitudeResolvedEvent resolved)) {
-            return;
+        if (event instanceof CombatMagnitudeResolvedEvent resolved) {
+            observeMagnitude(resolved);
         }
 
+        if (event instanceof ResourceChangedEvent resourceChanged) {
+            observeResource(resourceChanged);
+        }
+
+        if (event instanceof CombatActorDefeatedEvent) {
+            defeats++;
+        }
+    }
+
+    private void observeMagnitude(
+            CombatMagnitudeResolvedEvent resolved
+    ) {
         resolutions++;
 
         if (resolved.trace().critical()) {
@@ -50,6 +69,28 @@ final class CombatSimulationMetrics {
             healingResolutions++;
             healingApplied += resolved.trace().appliedFinal();
             overheal += resolved.trace().excess();
+        }
+    }
+
+    private void observeResource(
+            ResourceChangedEvent event
+    ) {
+        double delta =
+                event.change().after()
+                        - event.change().before();
+
+        if (delta < 0.0) {
+            resourceSpent.merge(
+                    event.resource(),
+                    -delta,
+                    Double::sum
+            );
+        } else if (delta > 0.0) {
+            resourceGained.merge(
+                    event.resource(),
+                    delta,
+                    Double::sum
+            );
         }
     }
 
@@ -83,10 +124,13 @@ final class CombatSimulationMetrics {
                 damageMisses,
                 healingResolutions,
                 criticalResolutions,
+                defeats,
                 damageApplied,
                 healingApplied,
                 overkill,
                 overheal,
+                resourceSpent,
+                resourceGained,
                 explicitRecovery
         );
     }
