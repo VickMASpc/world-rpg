@@ -29,6 +29,8 @@ public record CombatResolutionTrace(
         double mitigationFraction,
         double afterMitigation,
         double incomingMultiplier,
+        double beforeAbsorb,
+        double absorbed,
         double requestedFinal,
         double appliedFinal,
         double excess
@@ -67,7 +69,19 @@ public record CombatResolutionTrace(
         requireUnitInterval(mitigationFraction, "mitigationFraction");
         requireNonNegativeFinite(afterMitigation, "afterMitigation");
         requireNonNegativeFinite(incomingMultiplier, "incomingMultiplier");
+        requireNonNegativeFinite(beforeAbsorb, "beforeAbsorb");
+        requireNonNegativeFinite(absorbed, "absorbed");
         requireNonNegativeFinite(requestedFinal, "requestedFinal");
+
+        double absorbTolerance =
+                1.0e-9 * Math.max(1.0, beforeAbsorb);
+        if (Math.abs(
+                beforeAbsorb - (absorbed + requestedFinal)
+        ) > absorbTolerance) {
+            throw new IllegalArgumentException(
+                    "absorbed + requestedFinal must equal beforeAbsorb"
+            );
+        }
         requireNonNegativeFinite(appliedFinal, "appliedFinal");
         requireNonNegativeFinite(excess, "excess");
 
@@ -79,6 +93,8 @@ public record CombatResolutionTrace(
 
         if (contactOutcome == CombatContactOutcome.MISS) {
             if (critical
+                    || beforeAbsorb != 0.0
+                    || absorbed != 0.0
                     || requestedFinal != 0.0
                     || appliedFinal != 0.0
                     || excess != 0.0) {

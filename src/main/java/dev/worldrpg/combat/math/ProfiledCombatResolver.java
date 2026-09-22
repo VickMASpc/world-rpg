@@ -1,7 +1,10 @@
 package dev.worldrpg.combat.math;
 
+import dev.worldrpg.combat.absorb.CombatAbsorbGateway;
+import dev.worldrpg.combat.absorb.CombatAbsorbResult;
 import dev.worldrpg.combat.actor.CombatActor;
 import dev.worldrpg.combat.condition.ConditionResult;
+import dev.worldrpg.combat.event.CombatAbsorbedEvent;
 import dev.worldrpg.combat.event.CombatActorDefeatedEvent;
 import dev.worldrpg.combat.event.CombatEvent;
 import dev.worldrpg.combat.event.CombatMagnitudeResolvedEvent;
@@ -47,6 +50,7 @@ public final class ProfiledCombatResolver
     private final CombatStatResolver stats;
     private final CombatLevelSource levels;
     private final CombatOutcomeProfileSet outcomes;
+    private final CombatAbsorbGateway absorbs;
 
     public ProfiledCombatResolver(
             CombatMathProfile profile,
@@ -57,7 +61,8 @@ public final class ProfiledCombatResolver
                 rolls,
                 CombatStatResolver.direct(),
                 CombatLevelSource.constant(1),
-                CombatOutcomeProfileSet.guaranteedOnly()
+                CombatOutcomeProfileSet.guaranteedOnly(),
+                CombatAbsorbGateway.none()
         );
     }
 
@@ -71,7 +76,8 @@ public final class ProfiledCombatResolver
                 rolls,
                 stats,
                 CombatLevelSource.constant(1),
-                CombatOutcomeProfileSet.guaranteedOnly()
+                CombatOutcomeProfileSet.guaranteedOnly(),
+                CombatAbsorbGateway.none()
         );
     }
 
@@ -86,7 +92,8 @@ public final class ProfiledCombatResolver
                 rolls,
                 stats,
                 levels,
-                CombatOutcomeProfileSet.guaranteedOnly()
+                CombatOutcomeProfileSet.guaranteedOnly(),
+                CombatAbsorbGateway.none()
         );
     }
 
@@ -97,11 +104,30 @@ public final class ProfiledCombatResolver
             CombatLevelSource levels,
             CombatOutcomeProfileSet outcomes
     ) {
+        this(
+                profile,
+                rolls,
+                stats,
+                levels,
+                outcomes,
+                CombatAbsorbGateway.none()
+        );
+    }
+
+    public ProfiledCombatResolver(
+            CombatMathProfile profile,
+            CombatRollSource rolls,
+            CombatStatResolver stats,
+            CombatLevelSource levels,
+            CombatOutcomeProfileSet outcomes,
+            CombatAbsorbGateway absorbs
+    ) {
         this.profile = Objects.requireNonNull(profile, "profile");
         this.rolls = Objects.requireNonNull(rolls, "rolls");
         this.stats = Objects.requireNonNull(stats, "stats");
         this.levels = Objects.requireNonNull(levels, "levels");
         this.outcomes = Objects.requireNonNull(outcomes, "outcomes");
+        this.absorbs = Objects.requireNonNull(absorbs, "absorbs");
     }
 
     @Override
@@ -136,6 +162,10 @@ public final class ProfiledCombatResolver
         }
 
         if (request.kind() == CombatMagnitudeKind.DAMAGE) {
+            result = result.plus(
+                    absorbs.validate(request)
+            );
+
             try {
                 CombatMathStats.resistanceFor(
                         new CombatSchoolKey(request.schoolId())
@@ -291,8 +321,21 @@ public final class ProfiledCombatResolver
                 )
         );
 
-        double requestedFinal =
+        double beforeAbsorb =
                 afterMitigation * incomingMultiplier;
+
+        CombatAbsorbResult absorbResult =
+                request.kind() == CombatMagnitudeKind.DAMAGE
+                        ? absorbs.absorb(
+                                request,
+                                beforeAbsorb
+                        )
+                        : CombatAbsorbResult.none(
+                                beforeAbsorb
+                        );
+
+        double requestedFinal =
+                absorbResult.remaining();
 
         ResourceChange change =
                 request.kind() == CombatMagnitudeKind.DAMAGE
@@ -321,6 +364,8 @@ public final class ProfiledCombatResolver
                         mitigationFraction,
                         afterMitigation,
                         incomingMultiplier,
+                        beforeAbsorb,
+                        absorbResult.absorbed(),
                         requestedFinal,
                         change.applied(),
                         excess
@@ -340,6 +385,20 @@ public final class ProfiledCombatResolver
         List<CombatEvent> events =
                 new ArrayList<>();
         events.add(resolved);
+
+        if (absorbResult.absorbed() > 0.0) {
+            events.add(
+                    new CombatAbsorbedEvent(
+                            request.gameTick(),
+                            source.id(),
+                            target.id(),
+                            request.causeId(),
+                            request.schoolId(),
+                            absorbResult.absorbed()
+                    )
+            );
+        }
+
         events.add(resourceChanged);
 
         if (request.kind() == CombatMagnitudeKind.DAMAGE
@@ -381,6 +440,8 @@ public final class ProfiledCombatResolver
                 0.0,
                 0.0,
                 1.0,
+                0.0,
+                0.0,
                 0.0,
                 0.0,
                 0.0
