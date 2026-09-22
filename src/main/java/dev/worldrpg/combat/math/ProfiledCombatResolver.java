@@ -85,6 +85,7 @@ public final class ProfiledCombatResolver
 
         if (afterOutgoing > 0.0 && criticalChance > 0.0) {
             double roll = rolls.nextUnit();
+            requireUnitRoll(roll);
             criticalRoll = OptionalDouble.of(roll);
             critical = roll < criticalChance;
         }
@@ -227,6 +228,17 @@ public final class ProfiledCombatResolver
                 0.0,
                 profile.maximumMitigation()
         );
+    }
+
+    private static void requireUnitRoll(double roll) {
+        if (!Double.isFinite(roll)
+                || roll < 0.0
+                || roll >= 1.0) {
+            throw new IllegalStateException(
+                    "CombatRollSource produced value outside [0, 1): "
+                            + roll
+            );
+        }
     }
 
     private static double clamp(
