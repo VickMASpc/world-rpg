@@ -33,7 +33,7 @@ Before a major system is designed or implemented, its specification must answer:
 - [x] Reward doctrine.
 - [x] Quest doctrine.
 - [x] Settlement doctrine.
-- [ ] Anti-pattern catalog.
+- [x] Anti-pattern catalog.
 - [ ] First 15-hour experiential storyboard.
 
 ## Architecture is subordinate
