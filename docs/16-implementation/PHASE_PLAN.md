@@ -1,6 +1,8 @@
 # Plant implementation phase plan
 
-Status: ACCEPTED — WITH P4-G RECONVERGENCE INSERTED
+Status: ACCEPTED — ARCHITECTURAL DEPENDENCY PLAN, NOT TOTAL-PROJECT TIMELINE
+
+> **Scale correction:** this file describes dependency/architecture ordering. It must not be used as a project-completion percentage or as a complete production schedule. In particular, P5/P6/P7 compress most of the game's content, world and presentation production into short labels. The scale-corrected project timeline is `docs/16-implementation/MASTER_PRODUCTION_TIMELINE.md`.
 
 P0 Constitution: freeze identity, pacing philosophy, world philosophy and anti-goals.
 
@@ -22,13 +24,17 @@ P6 World pipeline: zones/POIs, spawns, patrols, graveyards, travel, discovery an
 
 P7 Client: HUD, action bars, spellbook, character UI, map, dialogue, models/VFX/audio and UI design system.
 
+**P7 scale warning:** this label is an architectural bucket only. UI/UX/icons, models/textures, rigging/animation, VFX, audio/ambience and their asset pipelines are separate continuing production lanes in the master production timeline. They do not occur once and then end before content production.
+
 P8 Production readiness: profiling, migrations, integrity CI, authoring docs and packaging.
 
 P9 Vertical slice: complete roughly level 1-15 province targeting about 12-18 hours for a blind first playthrough, with later-level hooks so the province remains relevant.
 
+**P9 scale warning:** a finished vertical slice is not the end of the project timeline. It proves the production factory and the game experience, after which regional production waves continue toward the complete 1-100 world.
+
 ## Sequencing correction
 
-The old phase list was useful architecturally but too linear experientially.
+The old phase list was useful architecturally but too linear experientially and too compressed as a measure of production scale.
 
 From P4-G onward, phase progress is not permission to postpone actual world validation.
 
@@ -37,3 +43,5 @@ A cheap authored province/topology prototype must appear before expensive produc
 The project should cycle:
 
 idea -> player life -> place/session -> system requirement -> plant -> simulator -> playable evidence -> idea review.
+
+For total-project planning and progress accounting, use `MASTER_PRODUCTION_TIMELINE.md`, which separately tracks the runtime, content, world, models/animation, VFX, UI/icons, audio, items/economy, quests/NPCs/professions and testing lanes.
