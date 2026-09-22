@@ -7,11 +7,14 @@ import dev.worldrpg.combat.resource.ResourceKey;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ResourceConditionsTest {
     private static final ResourceKey HEALTH =
             ResourceKey.of("world_rpg:resource/test_health");
+    private static final ResourceKey MANA =
+            ResourceKey.of("world_rpg:resource/test_mana");
 
     @Test
     void targetResourceThresholdIsPureAndExplicit() {
