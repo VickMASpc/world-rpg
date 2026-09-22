@@ -17,6 +17,7 @@ See:
 - `docs/00-constitution/GROUNDING_GATE.md`
 - `docs/00-constitution/P4_G_RECONVERGENCE_GATE.md`
 - `docs/16-implementation/MASTER_PRODUCTION_TIMELINE.md`
+- `docs/16-implementation/FIRST_PROVINCE_PRODUCTION_LEDGER.md`
 
 ## Scale interpretation
 
@@ -32,10 +33,35 @@ The current project position is approximately:
 - Era 1 (data/runtime foundation): substantially complete;
 - Era 2 (RPG kernel/math/physical proof): advanced but open;
 - Era 3 (cross-domain production factory): mostly future;
-- Era 4 (first-province production specification): conceptual grounding exists, production ledger not yet frozen;
+- Era 4 (first-province production specification): conceptual grounding exists and a provisional production ledger now exposes expected production volume, but counts are not frozen;
 - Era 5+ (large-scale game production through 1-100): not begun at meaningful production scale.
 
 This interpretation is intentionally frank. Architectural progress is real, but it must not be mistaken for equivalent progress in producing the actual game.
+
+## First-province production scale
+
+The provisional production ledger now gives the first 12-18 hours an explicit planning denominator.
+
+It currently exposes order-of-magnitude ranges such as:
+
+- 3 settlement/refuge roles;
+- 12-20 major authored world nodes/landmarks;
+- 8-12 enemy families and 15-25 variants;
+- 25-40 named/service/story NPCs;
+- two reference slice classes for throughput planning, each with roughly 8-12 distinct opening abilities;
+- roughly 80-140 equipment definitions plus consumables/materials/quest items;
+- roughly 20-30 tracked quest definitions organized around longer chains rather than a conveyor;
+- 8-14 creature/hero base models plus reusable humanoid/NPC appearance kits;
+- approximately 70-140 animation clips after reuse/retargeting;
+- approximately 40-80 VFX definitions;
+- approximately 70-140 audio events plus ambience sets;
+- approximately 120-220 icons/symbols;
+- roughly 10-14 polished UI surfaces required by the opening slice;
+- substantial integrated playtest time before release-candidate quality.
+
+These are **planning ranges, not quotas**. They exist to expose hidden production dimensions. They will be recalibrated after graybox travel evidence, the golden cross-domain production-package test, and first-province pre-production.
+
+No project status should claim that vertical-slice production has truly begun merely because schemas or frameworks exist. Era 4 must convert these ranges into a real backlog after physical evidence and production-factory proof.
 
 ## Grounding state
 
@@ -104,13 +130,14 @@ Likewise, current infrastructure does not imply that the production-heavy dimens
 - fix real defects discovered by physical evidence at their owning layer;
 - walk/measure the cheap first-province graybox topology;
 - reconcile evidence into P4-G and phase gates;
-- begin planning the cross-domain production-factory bootstrap using the master timeline;
-- prepare the future First Province Production Ledger that will explicitly count world locations, actors, models, animations, VFX, audio, icons, UI surfaces, items, quests, professions and testing work;
+- plan and bootstrap the cross-domain production factory using the master timeline and production ledger;
+- design the golden end-to-end content package that will prove content + world + model/animation + VFX/audio + UI + reward + persistence as one chain;
+- refine the First Province Production Ledger into a real backlog after physical and factory evidence;
 - repair tests/docs or implementation defects discovered by this work.
 
 ## Work temporarily blocked
 
-Unless directly required by the reconvergence work:
+Unless directly required by the reconvergence or production-factory proof:
 
 - new combat mechanic families;
 - new synthetic encounter archetypes;
