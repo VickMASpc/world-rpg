@@ -21,24 +21,29 @@ class SeededSimulationBatchRunnerTest {
             boolean miss = (seed & 1L) == 0L;
 
             return new CombatSimulationReport(
-                    0,
-                    100 + seed,
+                    0L,
+                    100L + seed,
                     1,
-                    1,
-                    1,
-                    miss ? 0 : 1,
-                    miss ? 1 : 0,
-                    0,
-                    0,
-                    miss ? 0 : 1,
-                    miss ? 1 : 0,
+                    1L,
+                    1L,
+                    miss ? 0L : 1L,
+                    miss ? 1L : 0L,
+                    0L,
+                    0L,
+                    miss ? 1L : 0L,
                     miss
-                            ? Map.of(CastInterruptionReason.INTERRUPT, 1L)
+                            ? Map.of(
+                                    CastInterruptionReason.INTERRUPT,
+                                    1L
+                            )
                             : Map.of(),
-                    miss ? 0 : 1,
+                    miss ? 0L : 1L,
                     miss
                             ? Map.of()
-                            : Map.of(new CombatActorId(2), 1L),
+                            : Map.of(
+                                    new CombatActorId(2),
+                                    1L
+                            ),
                     miss ? 0.0 : 10.0,
                     0.0,
                     0.0,
@@ -98,19 +103,18 @@ class SeededSimulationBatchRunnerTest {
     void explicitSeedOrderIsPreservedAndRepeatable() {
         CombatSimulationScenario scenario = seed ->
                 new CombatSimulationReport(
+                        0L,
+                        Math.floorMod(seed, 100L),
                         0,
-                        Math.floorMod(seed, 100),
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
+                        0L,
+                        0L,
+                        0L,
+                        0L,
+                        0L,
+                        0L,
+                        0L,
                         Map.of(),
-                        0,
+                        0L,
                         Map.of(),
                         0.0,
                         0.0,
