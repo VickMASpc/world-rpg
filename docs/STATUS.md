@@ -16,6 +16,26 @@ See:
 - `docs/00-constitution/IDEA_FIDELITY_PACT.md`
 - `docs/00-constitution/GROUNDING_GATE.md`
 - `docs/00-constitution/P4_G_RECONVERGENCE_GATE.md`
+- `docs/16-implementation/MASTER_PRODUCTION_TIMELINE.md`
+
+## Scale interpretation
+
+The numbered P0-P9 architecture phases are **not a project-completion percentage**.
+
+The scale-corrected master timeline separates plant work from the much larger production program: authored world/map, settlements, dungeons, models/textures, animation, VFX, audio, UI/icons, classes, items/economy, professions, mobs/NPCs, quests/dialogue, encounters and repeated integration/balance passes.
+
+Relative to the complete 1-100 RPG, current work is still early in total production even though the runtime/data/combat foundation is substantially advanced.
+
+The current project position is approximately:
+
+- master timeline Era 0 (idea/constitution/repository plant): substantially complete;
+- Era 1 (data/runtime foundation): substantially complete;
+- Era 2 (RPG kernel/math/physical proof): advanced but open;
+- Era 3 (cross-domain production factory): mostly future;
+- Era 4 (first-province production specification): conceptual grounding exists, production ledger not yet frozen;
+- Era 5+ (large-scale game production through 1-100): not begun at meaningful production scale.
+
+This interpretation is intentionally frank. Architectural progress is real, but it must not be mistaken for equivalent progress in producing the actual game.
 
 ## Grounding state
 
@@ -76,12 +96,16 @@ They prove that the plant can express useful combat rhythms.
 
 They do not yet define final classes, enemies, dungeon roles or encounter design.
 
+Likewise, current infrastructure does not imply that the production-heavy dimensions are close to complete. The complete map, actor/model/animation library, VFX/audio library, UI system, large item/economy corpus, professions, authored quests/dialogue, NPC/mob populations and regional content waves remain major future work.
+
 ## Work now authorized
 
 - finish the P3 physical evidence matrix without weakening failed expectations;
 - fix real defects discovered by physical evidence at their owning layer;
 - walk/measure the cheap first-province graybox topology;
 - reconcile evidence into P4-G and phase gates;
+- begin planning the cross-domain production-factory bootstrap using the master timeline;
+- prepare the future First Province Production Ledger that will explicitly count world locations, actors, models, animations, VFX, audio, icons, UI surfaces, items, quests, professions and testing work;
 - repair tests/docs or implementation defects discovered by this work.
 
 ## Work temporarily blocked
@@ -100,8 +124,10 @@ Unless directly required by the reconvergence work:
 
 World RPG's primary risk is not failure to build enough systems.
 
-It is building an excellent system factory for a game whose lived experience was never specified deeply enough.
+It is building an excellent system factory for a game whose lived experience was never specified deeply enough—or mistaking completion of that factory for completion of the game.
 
 The conceptual grounding package now exists. The remaining reconvergence uncertainty is physical: prove the P3 kernel inside Minecraft and prove that the proposed first-province geography works when walked.
+
+After that, the next major challenge is production industrialization: building the connected content, world, asset, UI, VFX and audio pipelines needed to turn the grounded design into thousands of pieces of coherent game content.
 
 The plant remains subordinate to the game.
