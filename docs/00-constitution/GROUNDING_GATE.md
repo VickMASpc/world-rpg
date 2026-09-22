@@ -24,7 +24,7 @@ Before a major system is designed or implemented, its specification must answer:
 ## Grounding package
 
 - [x] Spirit of the game.
-- [ ] Player life-cycle: levels 1, 10, 25, 50, 75 and 100.
+- [x] Player life-cycle: levels 1, 10, 25, 50, 75 and 100.
 - [ ] Session rhythm: 30 minutes, 1 hour, 3 hours and a full weekend.
 - [ ] World rhythm: safe -> wild -> dangerous -> remote -> civilization.
 - [ ] Travel doctrine.

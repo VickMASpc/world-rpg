@@ -76,9 +76,9 @@ No synthetic level-20 fixture may silently become class, enemy, dungeon or party
 - [ ] stale design documents are either repaired or explicitly marked historical/provisional.
 
 ### G2 — player life
-- [ ] define the player's life at levels 1, 10, 25, 50, 75 and 100;
-- [ ] include geography, routines, toolkit, economy, equipment history, professions, reputation, travel knowledge and reasons to return;
-- [ ] identify what must feel different numerically versus experientially.
+- [x] define the player's life at levels 1, 10, 25, 50, 75 and 100;
+- [x] include geography, routines, toolkit, economy, equipment history, professions, reputation, travel knowledge and reasons to return;
+- [x] identify what must feel different numerically versus experientially.
 
 ### G3 — session rhythm
 - [ ] define healthy 30-minute, 1-hour, 3-hour and full-weekend play rhythms;
