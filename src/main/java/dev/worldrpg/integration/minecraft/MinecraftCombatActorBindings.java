@@ -39,9 +39,14 @@ public final class MinecraftCombatActorBindings {
 
     public boolean unbind(LivingEntity entity) {
         Objects.requireNonNull(entity, "entity");
+        return unbind(entity.getUuid());
+    }
 
-        Optional<CombatActor> actor = index.find(entity.getUuid());
-        boolean removed = index.unbind(entity.getUuid());
+    public boolean unbind(UUID entityUuid) {
+        Objects.requireNonNull(entityUuid, "entityUuid");
+
+        Optional<CombatActor> actor = index.find(entityUuid);
+        boolean removed = index.unbind(entityUuid);
 
         actor.ifPresent(value -> entityUuidByActor.remove(value.id()));
         return removed;

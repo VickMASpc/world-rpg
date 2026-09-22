@@ -34,12 +34,14 @@ import java.util.UUID;
  */
 public final class P3DeveloperCombatRuntime {
     private static final double MOVEMENT_EPSILON_SQUARED = 1.0e-6;
+    private static final long PRUNE_INTERVAL_TICKS = 100L;
 
     private final MinecraftCombatActorBindings bindings;
     private final Map<UUID, P3EntityCombatState> states =
             new LinkedHashMap<>();
 
     private MinecraftServer server;
+    private long lastPruneTick;
 
     public P3DeveloperCombatRuntime(
             MinecraftCombatActorBindings bindings
@@ -49,6 +51,7 @@ public final class P3DeveloperCombatRuntime {
 
     public void start(MinecraftServer server) {
         this.server = Objects.requireNonNull(server, "server");
+        lastPruneTick = server.getTicks();
     }
 
     public void stop() {
@@ -147,6 +150,11 @@ public final class P3DeveloperCombatRuntime {
                 state.clearCastStart();
             }
         }
+
+        if (gameTick - lastPruneTick >= PRUNE_INTERVAL_TICKS) {
+            pruneMissingEntities();
+            lastPruneTick = gameTick;
+        }
     }
 
     public String status(LivingEntity entity) {
@@ -167,6 +175,14 @@ public final class P3DeveloperCombatRuntime {
                 + " power=" + power
                 + " auras=" + state.actor().auras().instances().size()
                 + " casting=" + state.casts().activeCast().isPresent();
+    }
+
+    public boolean removeState(UUID entityUuid) {
+        Objects.requireNonNull(entityUuid, "entityUuid");
+
+        P3EntityCombatState removed = states.remove(entityUuid);
+        bindings.unbind(entityUuid);
+        return removed != null;
     }
 
     public void reset() {
@@ -228,6 +244,17 @@ public final class P3DeveloperCombatRuntime {
                 actor,
                 casts
         );
+    }
+
+    private void pruneMissingEntities() {
+        List<UUID> missing = states.keySet().stream()
+                .filter(uuid ->
+                        MinecraftEntityResolver.findLiving(server, uuid)
+                                .isEmpty()
+                )
+                .toList();
+
+        missing.forEach(this::removeState);
     }
 
     private void emitToPlayer(

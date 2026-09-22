@@ -116,6 +116,8 @@ public final class P3DeveloperRoom {
             return false;
         }
 
+        combat.removeState(targetUuid);
+
         MinecraftEntityResolver.findLiving(server, targetUuid)
                 .ifPresent(target -> target.discard());
 
@@ -123,8 +125,9 @@ public final class P3DeveloperRoom {
     }
 
     public void reset(ServerPlayerEntity player) {
+        Objects.requireNonNull(player, "player");
         removeTarget(player);
-        combat.reset();
+        combat.removeState(player.getUuid());
     }
 
     private void removeAllTargets() {
@@ -132,7 +135,8 @@ public final class P3DeveloperRoom {
             return;
         }
 
-        for (UUID targetUuid : targetByPlayer.values()) {
+        for (UUID targetUuid : List.copyOf(targetByPlayer.values())) {
+            combat.removeState(targetUuid);
             MinecraftEntityResolver.findLiving(server, targetUuid)
                     .ifPresent(target -> target.discard());
         }

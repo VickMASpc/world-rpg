@@ -10,6 +10,7 @@ import dev.worldrpg.combat.aura.AuraStatModifier;
 import dev.worldrpg.combat.aura.AuraUniqueness;
 import dev.worldrpg.combat.condition.ConditionResult;
 import dev.worldrpg.combat.condition.Conditions;
+import dev.worldrpg.combat.condition.ResourceConditions;
 import dev.worldrpg.combat.effect.ApplyAuraEffect;
 import dev.worldrpg.combat.effect.EffectRecipient;
 import dev.worldrpg.combat.effect.EffectSequence;
@@ -178,7 +179,8 @@ public final class P3FixtureDefinitions {
                 TargetConditions.requireSameWorld(),
                 TargetConditions.disallowSelf(),
                 TargetConditions.requireLineOfSight(),
-                TargetConditions.maxRange(maxRange)
+                TargetConditions.maxRange(maxRange),
+                ResourceConditions.targetAtLeast(HEALTH, 0.000001)
         );
     }
 }
