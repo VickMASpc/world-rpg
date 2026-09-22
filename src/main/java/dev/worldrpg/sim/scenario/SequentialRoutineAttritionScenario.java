@@ -5,12 +5,10 @@ import dev.worldrpg.sim.CombatSimulationReport;
 import dev.worldrpg.sim.CombatSimulationScenario;
 
 /**
- * First representative P4.4 routine encounter.
+ * Two routine encounters with no recovery/reset between them.
  */
-public final class RoutineSameLevelCasterScenario
+public final class SequentialRoutineAttritionScenario
         implements CombatSimulationScenario {
-    public static final int LEVEL =
-            RoutineCasterCalibrationSession.LEVEL;
     public static final ResourceKey HEALTH =
             RoutineCasterCalibrationSession.HEALTH;
     public static final ResourceKey MANA =
@@ -22,6 +20,8 @@ public final class RoutineSameLevelCasterScenario
                 new RoutineCasterCalibrationSession(seed);
 
         session.fightRoutineEnemy();
+        session.fightRoutineEnemy();
+
         return session.report();
     }
 }
