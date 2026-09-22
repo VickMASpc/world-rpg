@@ -38,6 +38,15 @@ public final class AuraRuntime {
             throw new IllegalArgumentException("gameTick must be >= 0");
         }
 
+        // Resolve all periodic sources before advancing any aura cursor.
+        // A missing actor is an integration error/policy question, not a reason
+        // to leave half-advanced scheduling state behind.
+        for (AuraInstance instance : target.auras().instances()) {
+            if (instance.definition().periodicEffect().isPresent()) {
+                actors.require(instance.source());
+            }
+        }
+
         List<CombatEvent> events = new ArrayList<>();
 
         List<AuraPeriodicOccurrence> occurrences =

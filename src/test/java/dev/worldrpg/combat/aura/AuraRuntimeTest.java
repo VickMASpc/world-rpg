@@ -13,6 +13,7 @@ import dev.worldrpg.combat.resource.ResourceKey;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.OptionalLong;
 
@@ -123,6 +124,34 @@ class AuraRuntimeTest {
         );
 
         assertEquals(1, instance.nextPeriodicTick().orElseThrow());
+    }
+
+    @Test
+    void missingSourceIsRejectedBeforePeriodicCursorAdvances() {
+        CombatActor source = actor(1, 100);
+        CombatActor target = actor(2, 100);
+
+        AuraDefinition aura = periodicAura(
+                "world_rpg:aura/test_missing_source",
+                20,
+                5,
+                AuraTickRefreshPolicy.KEEP_SCHEDULE
+        );
+
+        AuraInstance instance = target.auras().apply(aura, source.id(), 0).instance();
+
+        CombatActorDirectory directory = new CombatActorDirectory();
+        directory.register(target);
+
+        AuraRuntime runtime = new AuraRuntime(8);
+
+        assertThrows(
+                NoSuchElementException.class,
+                () -> runtime.advance(target, directory, 5)
+        );
+
+        assertEquals(5, instance.nextPeriodicTick().orElseThrow());
+        assertEquals(100.0, target.resources().require(HEALTH).current());
     }
 
     private static CombatActor actor(long id, double health) {
