@@ -1,438 +1,254 @@
 # Session rhythm
 
-Status: ACCEPTED FOR GROUNDING — TIME BANDS REMAIN TUNABLE
+Status: ACCEPTED FOR GROUNDING — CONSERVATIVE INTERPRETATION OF ORIGINAL IDEA
 
-World RPG is designed for both short visits and long evenings, but the game must not lie about what can be accomplished in each.
+This document interprets the original World RPG idea. It does not optimize it for modern session efficiency.
 
-The session model is built around **continuity rather than reset**.
+The original intent is explicitly slow and spacious:
 
-A player may log out:
+- minutes of ordinary walking are valid;
+- hour-long exploration/travel can be valid;
+- hours may pass without constant action;
+- one character should absorb days and months of play;
+- 1-3 hour expeditions are a core rhythm;
+- unfinished quests, routes and intentions may survive across real days.
 
-- in town;
-- at an inn;
-- at a field camp;
-- midway through a long quest;
-- partway through a profession goal;
-- after discovering a place but before entering it;
-- with an expedition intentionally unfinished.
+A healthy session therefore does **not** need to complete a content unit.
 
-A healthy session does not require clearing a complete content unit every time.
-
-The player's life persists across sessions.
-
----
-
-# Core rhythm
-
-The default long-form rhythm is:
-
-preparation
--> choose intentions
--> travel
--> encounter / quest / gather / explore
--> resource and bag pressure accumulate
--> decide whether to continue, divert, camp or return
--> travel home or reach new civilization
--> repair / sell / train / organize / profession work
--> log off with some threads complete and others still alive
-
-The game should create the feeling:
-
-**"I made progress in the world"**
-
-rather than requiring:
-
-**"I completed the activity."**
+The important continuity is the player's life in the world.
 
 ---
 
 # 30-minute session
 
-A thirty-minute session is valid but should be understood as a **small slice of an existing life**.
+Thirty minutes is enough to participate in the character's ongoing life.
 
-Healthy uses include:
+It may contain:
 
 - town organization;
-- trainer visit;
-- profession crafting;
+- training;
+- professions;
 - selling/repairing/banking;
-- gathering near a known settlement;
-- finishing the final leg of an existing quest;
-- one short local objective;
-- moving toward the next expedition staging point;
-- checking a known rare/merchant/event location;
-- preparing tomorrow's longer excursion.
+- gathering near a known route;
+- finishing part of an existing quest;
+- walking toward tomorrow's destination;
+- completing one small local objective;
+- simply relocating to a better staging point.
 
-It should also be possible to:
+It is also acceptable for thirty minutes to contain mostly travel or preparation if that is what the player chose to do.
 
-- make only part of a journey;
-- complete no quest at all;
-- improve one profession skill band;
-- sort bags and buy supplies;
-- log off at an inn closer to tomorrow's objective.
+The game must preserve unfinished intentions so a short login is not wasted.
 
-## What 30 minutes should not become
-
-The design must not force every system into a 30-minute completion capsule.
-
-Do not shorten:
-
-- meaningful travel;
-- dungeons;
-- quest chains;
-- rare exploration;
-- profession progression
-
-merely so every login produces a completion screen.
-
-The short session survives because the world preserves unfinished intentions.
+What must **not** happen is redesigning every quest, dungeon, journey or profession goal into a 30-minute capsule.
 
 ---
 
 # 1-hour session
 
-One hour should support a **complete local outing** or a meaningful segment of a larger expedition.
+One hour should be enough for meaningful progress without implying that an adventure must begin and end inside the hour.
 
-Typical shape:
+Possible sessions include:
 
-5-10 minutes:
-- town preparation;
-- choose one or two intentions;
-- repair / train / buy / organize.
+- a local outing;
+- a substantial leg of a long quest;
+- a first journey to a new place;
+- profession work plus travel/gathering;
+- several routine fights spread across exploration;
+- preparation for a longer expedition;
+- returning from an expedition begun previously.
 
-10-20 minutes:
-- travel into known nearby territory.
+A successful hour may end with:
 
-20-35 minutes:
-- quest progress;
-- combat;
-- gathering;
-- investigation;
-- discovery.
+- no quest turn-in;
+- an objective only partly complete;
+- a newly discovered route;
+- fuller bags;
+- lower resources;
+- a new item;
+- a clearer idea of where to go next.
 
-5-15 minutes:
-- return, reach an inn, or deliberately stop at a safe staging point.
-
-These are not mandatory percentages.
-
-The intended outcome is that one hour can feel substantial without demanding that the game compress every objective.
-
-A player may complete:
-
-- one medium quest;
-- part of a long chain;
-- a profession objective;
-- several connected small objectives;
-- one dangerous local landmark.
-
-They should often finish with another thread still open.
+The measure is continuity and memory, not completion count.
 
 ---
 
 # 3-hour session
 
-Three hours is the **natural expedition scale**.
+Three hours is the clearest expression of the original expedition rhythm.
 
-This is where World RPG should be strongest.
+A natural expedition can include:
 
-A representative rhythm may be:
+town preparation
+-> choose a direction
+-> long outbound travel
+-> quiet road/wilderness
+-> combat and gathering
+-> detours
+-> quest progress
+-> discovery
+-> possible death/recovery
+-> full bags / low resources
+-> decision to continue or return
+-> journey home or reach new civilization.
 
-15-25 minutes:
-- preparation in town;
-- trainer/profession/vendor/repair decisions;
-- choose route and supplies.
+Not every expedition uses every step.
 
-20-45 minutes:
-- outbound travel;
-- road choice;
-- weather/navigation;
-- familiar quiet stretches;
-- one or two diversions.
+The point is that a long session contains **space between events** and several emotional phases.
 
-90-120 minutes:
-- primary expedition activity;
-- several fights;
-- quest advancement;
-- gathering;
-- exploration;
-- one significant encounter, cave, ruin, elite objective or dungeon segment.
+Three hours of uninterrupted enemy killing is not the target.
 
-20-45 minutes:
-- return journey or push toward new civilization;
-- evaluate low resources/full bags/repair state;
-- possibly abandon a secondary objective.
-
-10-20 minutes:
-- sell;
-- repair;
-- bank;
-- train;
-- craft;
-- read new quest text;
-- log off.
-
-The player should not need three uninterrupted hours to avoid losing progress.
-
-The expedition is allowed to span sessions.
-
-The important thing is that a three-hour session can contain **multiple emotional phases** rather than three hours of the same activity.
+Three hours where some stretches are quiet, some tense, some productive, some uncertain, and some simply travel can be correct.
 
 ---
 
 # Full weekend rhythm
 
-A weekend is not one giant session.
+A weekend should feel like one chapter of the same character's life.
 
-It is a chain of remembered intentions.
-
-A healthy weekend may contain:
-
-Friday:
-- town preparation;
-- start a long chain;
-- travel into a new area;
-- stop at an inn or camp.
-
-Saturday:
-- major expedition;
-- profession detour;
-- dungeon;
-- death/recovery;
-- return to civilization;
-- acquire one memorable item.
-
-Sunday:
-- follow up the chain;
-- revisit a familiar place;
-- use the new item;
-- progress reputation/profession;
-- prepare the next distant objective.
-
-The game should support the feeling that Friday's decisions still matter on Sunday.
+Friday's decisions may matter on Sunday.
 
 Examples:
 
-- a quest accepted Friday remains relevant;
-- a weapon obtained Saturday changes Sunday's combat;
-- a shortcut discovered Saturday changes Sunday's travel;
-- a town reached Saturday becomes Sunday's staging point.
+- a quest accepted Friday is still active Sunday;
+- a road learned Friday changes Saturday's route;
+- a weapon found Saturday remains important Sunday;
+- a new inn/settlement becomes the staging point for the next day;
+- a profession goal spans several sessions;
+- a distant expedition requires preparation one day and execution another.
 
-The weekend should create a **chapter of the character's life**, not a pile of disconnected daily chores.
-
----
-
-# Time-sharing doctrine
-
-World RPG does not require fixed percentages of session time.
-
-However, a healthy long session should usually contain more than one of these:
-
-- preparation;
-- travel;
-- combat;
-- quest dialogue/investigation;
-- gathering/professions;
-- recovery;
-- discovery;
-- return;
-- town life.
-
-If one category consumes nearly all play for long stretches, that should be intentional.
-
-Examples that may justify dominance:
-
-- a dungeon evening;
-- a profession-focused session;
-- a first-time interregional journey;
-- a major quest climax.
-
-Routine leveling should not accidentally become:
-
-- 90% fighting;
-- 90% running;
-- 90% inventory management;
-- 90% dialogue clicking.
-
-The game breathes because rhythms change.
+The game should not reset the player's intentions into a daily checklist.
 
 ---
 
-# Preparation doctrine
+# Preparation
 
-Preparation must create **choices**, not chores.
+Preparation matters because expeditions have weight.
 
-Useful preparation questions include:
+Meaningful preparation may include:
 
-- Do I repair now?
-- Do I buy more food/drink?
-- Is my bag space enough?
-- Which quests overlap geographically?
-- Do I bring profession materials/tools?
-- Do I bind my hearth here?
-- Which route am I taking?
-- Is this worth attempting before night/weather changes?
+- repair;
+- food/drink;
+- reagents;
+- bag space;
+- profession tools/materials;
+- trainer purchases;
+- route choice;
+- binding/return planning;
+- deciding whether available money should be spent now or saved.
 
-Bad preparation is:
-
-- clicking the same mandatory vendor sequence every twenty minutes;
-- maintaining meters whose only purpose is to force repeated busywork;
-- restocking trivial items with no strategic meaning.
-
-Preparation earns its time only when it changes expedition confidence, reach or options.
+Preparation fails when it becomes a mandatory repetitive click sequence with no meaningful decision.
 
 ---
 
-# Recovery doctrine
+# Recovery
 
-Recovery creates pacing between encounters.
+Health, mana and consumables should matter across several fights.
 
-It should sometimes mean:
+The intended rhythm is accumulated attrition, not perfect reset after every encounter.
 
-- drink;
-- eat;
-- bandage;
-- potion;
-- class recovery tool;
-- field camp;
-- wait briefly in safety;
-- return to town.
+A routine fight often leaves the player able to continue.
 
-Recovery should not become:
+Several fights may create a recovery decision.
 
-- mandatory after every routine enemy;
-- a long idle timer;
-- a hidden tax that exists only to stretch leveling time.
+A bad pull may create that decision sooner.
 
-The desired pattern is accumulated pressure.
+Recovery can be ordinary and slow. It does not need to be eliminated for convenience.
 
-One fight often does not require recovery.
-
-Several fights may.
-
-A bad pull may accelerate the decision.
+It only becomes a problem when it is mechanically forced after essentially every routine enemy with no decision involved.
 
 ---
 
-# Return doctrine
+# Return
 
-Returning home is gameplay.
+"I'm going home" is part of the fantasy.
 
-The return journey should matter because the player is carrying accumulated expedition state:
+The player may return because:
 
-- low mana/health;
-- damaged equipment;
-- full bags;
-- valuable materials;
-- completed objectives;
-- a new item;
-- incomplete side goals;
-- route knowledge.
+- bags are full;
+- mana/health is low;
+- equipment needs repair;
+- quests are ready to report;
+- valuable materials should be banked;
+- training/profession work awaits;
+- continuing farther feels unwise.
 
-A return should not always be automatically skipped.
+The return trip may itself be part of the expedition.
 
-However, once a route has been repeatedly learned and infrastructure unlocked, the game may shorten repetition through established transport.
-
-This creates a progression from:
-
-**dangerous unknown trip**
-
-to:
-
-**known journey**
-
-to:
-
-**connected personal route**.
+Over time, learned routes and earned transport may make repeated travel easier. That progression should come from familiarity and infrastructure, not from assuming the original journey was wasted time.
 
 ---
 
-# Logout doctrine
+# Logout
 
-The design must respect real life.
+The world must respect real life without converting itself into short-session design.
 
-Safe logout should not require returning all the way to a capital.
+The player should be able to stop with an unfinished thread and continue later.
 
-Good stopping points include:
+Useful stopping places include:
 
 - inns;
 - settlements;
-- safe camps;
-- cleared expedition staging points where persistence permits.
+- camps or other credible safe points;
+- wilderness, if persistence rules permit it without exploitation.
 
-Logging out in wilderness may be allowed but should not create exploitative or punitive behavior.
-
-The game should preserve:
-
-- quest progress;
-- route progress;
-- profession intentions;
-- persistent resources according to final recovery rules.
-
-A player should be able to say:
-
-**"I'll continue from here tomorrow."**
+The important thing is that progress and intention survive.
 
 ---
 
-# Slowness failure modes
+# Slowness versus padding
 
-Slow becomes padding when time is consumed without creating memory, decision, tension, information or change.
+The project must be conservative here.
 
-Warning signs:
+**Long duration is not evidence of padding.**
 
-## Empty transit
-The player holds forward through indistinguishable terrain with no navigation, landmarks, route decisions or atmosphere shift.
+Minutes of quiet walking, a long road, a distant objective, or a quest that lives in the journal for days can be exactly the intended game.
 
-## Mandatory backtracking with no new state
-The player repeats the exact road immediately only because a quest designer split one objective into artificial turn-ins.
+Padding is not "time without a reward."
 
-## Combat conveyor
-Every minute contains another identical enemy because the game is afraid of silence.
+Padding is time added primarily to inflate duration while failing to strengthen the world, journey, decision, atmosphere, memory or progression.
 
-## Recovery tax
-Routine enemies force the same recovery action after every fight.
+Examples of real padding:
 
-## Vendor tax
-The player repeatedly performs predictable town chores too frequently.
+- artificially splitting one coherent quest into repeated mandatory turn-ins;
+- forcing identical immediate backtracking for no world reason;
+- increasing XP requirements because meaningful content is missing;
+- requiring the same trivial recovery action after every enemy;
+- repeatedly sending the player through indistinguishable space created only to add distance.
 
-## Inventory harassment
-Bag limits create constant interruption rather than expedition planning.
+Examples that are **not automatically padding**:
 
-## Quest fragmentation
-One coherent adventure is chopped into many tiny return trips to inflate duration.
+- five quiet minutes on a known road;
+- a forty-minute first journey;
+- a quest that remains incomplete for several sessions;
+- a long return from remote wilderness;
+- waiting until town to train or repair;
+- crossing a region mostly because the destination is genuinely far away.
 
-## False choice
-The game presents multiple routes/resources/actions where one option is obviously mandatory.
+World RPG is allowed to be slow because slowness is part of the fantasy.
 
-## Progress-bar slowness
-XP requirements increase without an equivalent increase in meaningful world life.
+The review question is not "can this be shortened?"
 
-Any system producing these patterns fails even if total playtime matches the 350-500 hour target.
+It is:
+
+**"Does this time belong to the world and the character's life, or was it added only to stretch a progress bar?"**
 
 ---
 
 # Session playtest questions
 
-For a 30-minute test:
+For a short session:
 
-- Did something meaningful change even if no quest completed?
-- Could the player stop without losing the thread?
+- Could the player make or preserve meaningful progress without the game forcing a completion capsule?
+- Could they stop and understand what they intend to do next?
 
-For a 1-hour test:
+For a long session:
 
-- Did the player experience at least one meaningful choice beyond target selection?
-- Was travel proportionate to the local goal?
+- Did it contain distinct phases rather than constant stimulation?
+- Did travel, attrition, bags, quests or geography create decisions?
+- Did the player remember something other than XP gained?
 
-For a 3-hour test:
+For a weekend:
 
-- Did the session contain distinct phases?
-- Did accumulated resources/bags/position create a return decision?
-- Did the player remember at least one place/event/item afterward?
+- Did earlier knowledge, items, quests or locations matter later?
+- Did the character's life feel continuous across sessions?
 
-For a weekend test:
-
-- Did Friday create intentions that survived into Saturday/Sunday?
-- Did acquired knowledge or equipment alter later play?
-- Did the weekend feel like one chapter rather than repeated daily resets?
-
-If the only evidence of a long session is XP gained, the session model failed.
+If the answer to the last question is no, the session model failed.

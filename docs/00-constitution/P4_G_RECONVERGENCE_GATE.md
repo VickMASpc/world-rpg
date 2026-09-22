@@ -87,7 +87,7 @@ No synthetic level-20 fixture may silently become class, enemy, dungeon or party
 
 ### G4 — world rhythm and travel
 - [x] define safe -> wild -> dangerous -> remote -> civilization rhythm;
-- [x] freeze first-pass road, shortcut, transport, hearth, mount and navigation doctrine;
+- [x] freeze first-pass road, shortcut, transport, mount and navigation doctrine; keep hearth details explicitly provisional;
 - [x] define what makes 20-60 minute travel valid rather than empty.
 
 ### G5 — progression/reward

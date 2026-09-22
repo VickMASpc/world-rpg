@@ -1,530 +1,413 @@
 # World rhythm and travel doctrine
 
-Status: ACCEPTED FOR GROUNDING — DISTANCE/TIME TARGETS REMAIN TUNABLE
+Status: ACCEPTED FOR GROUNDING — CONSERVATIVE INTERPRETATION OF ORIGINAL IDEA
 
-The world must create a repeating emotional rhythm:
+The original idea requires a fixed authored land where traversal is slow enough that geography becomes part of progression.
 
-**civilization -> edge -> wild -> danger -> remoteness -> relief / discovery / return to civilization**
+The player should spend:
 
-Not every journey uses every stage.
+- ordinary minutes walking;
+- long stretches exploring;
+- substantial time reaching major places;
+- 1-3 hours on expeditions;
+- potentially an hour or more on important first-time journeys.
 
-The purpose is to make distance legible and memorable.
+The world is not supposed to apologize for being large.
 
-Travel is progression because the player's relationship with the same geography changes over time.
+The task is to make that largeness feel like a place rather than procedurally stretched emptiness.
 
 ---
 
-# World rhythm
+# Core world rhythm
 
-## 1. Safe / civilized
+A common journey may move through:
 
-Examples:
+civilization
+-> edge of settlement
+-> familiar road
+-> wild country
+-> dangerous pocket or shortcut
+-> remote territory
+-> destination / refuge / return.
 
-- town streets;
-- farms;
-- guarded roads;
-- inn surroundings;
-- busy crossings.
+Not every journey needs every stage.
 
-Purpose:
+The rhythm exists so the player can feel when support is behind them and distance has accumulated.
 
+## Civilization
+
+Towns, villages, farms, inns, roads, bridges and guarded areas provide:
+
+- safety;
+- services;
 - orientation;
 - preparation;
-- social/economic life;
 - contrast with wilderness.
 
-Safe does not require zero enemies.
+## Wild country
 
-It means danger is predictable enough that the player can lower attention.
+This is normal expedition space.
 
-## 2. Edge
+It may contain:
 
-The transition between civilization and wilderness.
+- quiet road;
+- ordinary enemies;
+- gathering;
+- rivers;
+- forks;
+- landmarks;
+- caves;
+- ruins;
+- long stretches where nothing demands interaction.
+
+## Dangerous pockets
+
+Danger should often be **placed**, not uniformly smeared across the world.
 
 Examples:
 
-- last farm;
-- guard post;
-- road narrowing;
-- abandoned cart;
-- changing vegetation;
-- patrols becoming sparse.
+- hostile camps;
+- deep forest;
+- ruins;
+- caves;
+- elite territory;
+- dangerous crossing;
+- higher-level route visible before the player is ready.
 
-Purpose:
+This lets the player learn safer and riskier paths.
 
-- communicate that the player is leaving support behind;
-- create anticipation without immediately starting combat.
+## Remote territory
 
-## 3. Wild
+Remoteness means support is far away.
 
-Routine expedition territory.
+Its weight comes from:
 
-Characteristics:
+- position;
+- uncertain route;
+- low resources;
+- full bags;
+- repair state;
+- corpse-run consequences;
+- distance to an inn/town.
 
-- longer quiet stretches;
-- ordinary enemy families;
-- gathering;
-- forks;
-- small landmarks;
-- minor ruins/caves;
-- enough safety to travel deliberately.
+Remote does not simply mean "enemy numbers are larger."
 
-This is where much leveling life happens.
+## Return to civilization
 
-## 4. Dangerous
+An inn, outpost, ferry house, village or city can feel important because the player actually traveled to reach it.
 
-A noticeable escalation.
-
-Signals may include:
-
-- stronger enemy family;
-- denser patrol geometry;
-- elite signs;
-- environmental hazard;
-- ruined road;
-- difficult crossing;
-- threatening sound/visual language.
-
-Dangerous areas should often be avoidable or approached knowingly.
-
-## 5. Remote
-
-The player is far from easy support.
-
-Remoteness may mean:
-
-- long corpse run;
-- distant repair/vendor;
-- limited bag space;
-- few safe structures;
-- route uncertainty;
-- weather/night complications;
-- significant cost to abandoning the expedition.
-
-Remote is primarily about **position and support**, not enemy stat inflation.
-
-## 6. Civilization / refuge again
-
-A village, fort, ferry house, inn, expedition camp, monastery, city gate or other credible refuge.
-
-The emotional purpose is relief and punctuation.
-
-After genuine remoteness, ordinary services become satisfying.
+Relief is part of the intended rhythm.
 
 ---
 
-# Travel time targets
+# Distance and time
 
-Current design targets to validate:
+The original requirement is **slow traversal to major points**.
 
-- inn -> trainer / town service: roughly 30 seconds;
-- town -> nearby farm/objective: roughly 2-4 minutes;
-- village -> local mine/cave: roughly 5-8 minutes;
-- town -> neighboring settlement: roughly 8-15 minutes;
-- settlement -> distant regional objective: roughly 10-20 minutes;
-- crossing a major region: roughly 20-30 minutes;
-- important province/capital journey: roughly 25-40 minutes;
-- mountain/pass/remote first crossing: roughly 30-45 minutes;
-- remote dungeon first trip: roughly 40-60 minutes;
-- rare expedition landmarks: an hour or more may be valid.
+We should not replace that with a precise modernized target table before the first province topology exists.
 
-These are **experience targets**, not terrain quotas.
+First-pass doctrine:
 
-A 10 km continent is not automatically better than a 6 km continent.
+- nearby/local places: minutes away;
+- settlements: separated enough that walking between them feels like travel;
+- regional objectives: often substantial journeys rather than ninety-second hops;
+- major first-time journeys: tens of minutes and sometimes around an hour or more;
+- full expeditions: commonly 1-3 hours including travel, combat, gathering, objectives and return.
 
-The correct size is the size that produces these relationships without empty inflation.
+Exact minute bands must be measured on the first-province topology.
+
+The topology should be changed only when actual play shows the world is failing the intended experience—not because a spreadsheet prefers shorter traversal.
 
 ---
 
-# Travel legitimacy test
+# Quiet space
 
-A long journey is valid only if its time creates enough value through some combination of:
+Quiet is part of the original idea.
 
-- navigation;
-- preparation stakes;
-- route choice;
-- landscape change;
-- landmark recognition;
-- atmosphere;
-- danger management;
-- discovery;
-- gathering opportunity;
-- weather/time-of-day consequence;
-- social/world texture;
-- future shortcut knowledge;
-- emotional relief on arrival;
-- remembered geography.
+The player may spend several minutes with:
 
-A long journey fails if its primary justification is:
-
-**"the map is large."**
-
-A useful review question:
-
-> If this trip were shortened by 40%, what meaningful experience would disappear?
-
-If the answer is "nothing," shorten it.
-
----
-
-# Quiet-space doctrine
-
-Quiet terrain is necessary.
-
-The game is allowed to give the player:
-
-- several minutes of road;
+- road;
+- ambience;
 - distant scenery;
 - weather;
-- music/ambience;
+- music;
 - harmless wildlife;
 - occasional travelers;
-- nothing demanding interaction.
+- no required interaction.
 
-Quiet creates contrast.
+That is not a content failure.
 
-Without quiet:
+Constant stimulation would make the world feel like an amusement park.
 
-- enemies become noise;
-- landmarks lose emphasis;
-- wilderness becomes a theme park;
-- travel cannot feel long because every ten seconds is a content node.
+Quiet terrain still needs identity. The player should gradually recognize:
 
-Quiet does not mean visually empty.
+- road shape;
+- river position;
+- tree line;
+- mountain silhouette;
+- ruins;
+- towers;
+- bridges;
+- settlements;
+- distinctive terrain.
 
-The player should still receive orientation cues and a sense of place.
+The solution to boring travel is not automatically "make it shorter."
+
+It may instead be "make the place more legible, varied, or meaningful without filling it with events."
 
 ---
 
-# Road doctrine
+# Roads
 
-Roads are a real mechanical/geographic choice.
+Roads matter.
 
-Roads should usually be:
+They should generally be:
 
 - easier to follow;
 - safer;
-- connected to services;
-- reasonably efficient;
-- more likely to contain travelers/patrols/signage/bridges.
+- connected to civilization;
+- reliable.
 
-Roads are **not always shortest**.
+They need not always be shortest.
 
-Leaving the road may offer:
+Leaving a road may offer:
 
-- faster direct distance;
+- a shorter direct route;
 - gathering;
-- hidden content;
-- dangerous shortcut;
-- avoidance of a roadblock;
-- profession opportunities.
+- hidden places;
+- dangerous shortcuts;
+- avoidance of a hostile road section.
 
-This creates the fundamental choice:
-
-**certainty vs. opportunity/risk.**
-
-Road bonuses, if implemented, should be modest.
-
-The primary road advantage is readability and safety, not magical movement speed.
+The player should eventually have personal routes that were learned, not simply granted by UI.
 
 ---
 
-# Shortcut doctrine
+# Navigation
 
-Shortcuts are one of the most valuable forms of travel progression.
+The player should learn the land.
 
-A shortcut may be:
+Use:
 
-- a footpath discovered through exploration;
-- a cave/pass;
-- a bridge repaired/unlocked;
-- a gate opened from the far side;
-- a ferry discovered;
-- a dangerous route that becomes safe after growth;
-- knowledge that a river can be crossed at a specific point.
-
-The best shortcut often exists physically before the player understands it.
-
-It should create:
-
-**"I know a better way now."**
-
-rather than:
-
-**"I unlocked +15% map speed."**
-
----
-
-# Navigation doctrine
-
-Default navigation should support mental-map formation.
-
-Core tools:
-
-- world map;
-- regional/local maps where useful;
-- discovered landmarks;
-- named roads/settlements;
+- maps;
+- roads;
+- signs;
+- named settlements;
+- landmarks;
+- rivers;
+- mountains;
 - textual quest directions;
-- approximate search areas;
-- signs and environmental cues.
+- remembered routes.
 
-Avoid as default:
+Avoid making universal exact GPS guidance the default.
 
-- glowing GPS trail;
-- floating arrow permanently pointing to objective;
-- universal exact quest pin;
-- radar revealing every enemy/collectible.
+The long-term test is simple:
 
-Navigation assistance may become stronger for:
-
-- accessibility;
-- specific magical/class abilities;
-- already discovered transport/routes;
-- explicitly tracked known locations.
-
-The test is whether a player can eventually travel a familiar route **without looking at the UI**.
+**Can the player traverse familiar parts of the world from memory?**
 
 ---
 
 # Getting lost
 
-Getting lost can be valid in moderation.
+Getting lost occasionally can belong to the experience.
 
-Good lost:
+Good:
 
-- player recognizes they took the wrong fork;
-- uses landmark/river/road to recover;
-- discovers something unexpected;
-- loses a few minutes but gains knowledge.
+- wrong fork;
+- recovering by river/road/landmark;
+- finding an unexpected place;
+- learning something useful.
 
-Bad lost:
+Bad:
 
-- terrain provides no distinguishable cues;
-- map scale/UI is deliberately unhelpful;
-- recovery requires arbitrary trial and error;
-- quest wording is vague because information was omitted, not because navigation is interesting.
+- indistinguishable terrain;
+- intentionally withheld information;
+- arbitrary maze logic;
+- no meaningful way to reorient.
 
-The goal is **learning**, not confusion.
-
----
-
-# Hearth doctrine
-
-Current first-pass doctrine:
-
-- one bound inn/home point;
-- long cooldown on the order of about one hour;
-- meaningful cast time around ten seconds;
-- unusable as an emergency combat escape;
-- primarily a session/expedition return tool.
-
-The hearth exists because sometimes the return trip has already delivered all its value.
-
-It should not erase geography because:
-
-- only one bound destination exists;
-- cooldown prevents constant bouncing;
-- outbound travel still matters;
-- changing home is a strategic decision.
-
-Exact cooldown/cast values remain tunable.
+The goal is geographic learning, not confusion.
 
 ---
 
-# Transport doctrine
+# Shortcuts
 
-Transport is earned infrastructure.
+Knowledge should shorten some journeys naturally.
 
-Examples:
+A shortcut may be:
 
+- a footpath;
+- ford;
+- pass;
+- cave;
+- bridge;
+- opened gate;
+- ferry;
+- safer route learned through experience.
+
+The emotional result should be:
+
+**"I know a better way now."**
+
+This is travel progression without collapsing the world.
+
+---
+
+# Inns and transport
+
+The original idea treats inns and transport as earned world infrastructure.
+
+Relevant systems may include:
+
+- inns;
 - ferries;
 - carriages;
 - ships;
-- discovered flight routes;
-- regional transit.
+- crossroads;
+- villages;
+- discovered flight/transport points.
 
-Principles:
+A route generally matters because the player physically reached it first.
 
-1. A route normally must be physically reached/discovered before it helps.
-2. Transport connects believable nodes rather than every POI.
-3. It shortens repeated known travel more than first-time exploration.
-4. It preserves regional geography.
-5. Transport hubs become meaningful places.
+Repeated journeys can become easier through infrastructure.
 
-A first journey may take forty minutes.
+First-time exploration should remain physical.
 
-After learning roads and transport, the repeated journey may take twenty.
-
-Much later, an established route may take less.
-
-This is progression.
+No unrestricted global destination menu should replace the continent.
 
 ---
 
-# Mount doctrine
+# Hearth / return tools
 
-Current first-pass intent:
+A hearth-like return tool is compatible with the original WoW-like inspiration, but its exact implementation is **not frozen by the original idea**.
 
-- mounts arrive late enough that walking-scale geography becomes deeply familiar first;
-- around level 60 remains a plausible target, not a frozen unlock;
-- normal mount speed should feel transformative without turning the world into a blur;
-- a rough 135-145% of walking speed is a plausible first mount band;
-- higher-end grounded travel around 160-170% may be tested;
-- no rocket-like default mount movement.
+Conservative rule:
 
-A mount should change:
+- it may help end an expedition;
+- it must not trivialize outbound geography;
+- it should not function as unrestricted map teleportation.
 
-- route tolerance;
-- expedition radius;
-- return decisions;
-- how old roads feel.
+Cooldown, cast time, binding rules and availability remain design decisions for later validation.
 
-It should not eliminate:
+---
+
+# Mounts
+
+The accepted original direction is that mounts come **late**, around level 60 as a working target, after the player has spent a very large amount of time experiencing the world at walking scale.
+
+The first mount should feel transformative partly because the player remembers walking.
+
+Exact speed percentages are **not frozen**.
+
+A mount must not erase:
 
 - roads;
-- dangers;
+- landmarks;
 - crossings;
-- navigation;
-- transport hubs.
+- danger;
+- transport hubs;
+- navigation.
 
-The emotional payoff depends on remembering life before the mount.
-
----
-
-# Sprint / burst movement doctrine
-
-If sprint exists as a character utility:
-
-- it should be a short 15-25 second burst or class/ability tool;
-- it should not become a permanent stamina-maintenance minigame;
-- it should not replace mounts/roads/travel progression.
-
-Continuous mandatory sprinting would simply redefine normal walk speed and add annoyance.
+Later movement becomes easier because the character has grown and built a travel network, not because early geography was a mistake.
 
 ---
 
 # Time of day and weather
 
-Weather/time should alter travel texture, not simulate hardcore survival.
+These exist to give journeys texture, not to turn the game into hardcore survival.
 
-Possible effects:
+Possible consequences include:
 
-- fog reduces distant navigation;
-- night changes enemy families/density in selected places;
-- ferries/services have schedules;
-- some NPCs sleep;
-- storms change visibility/ambience;
-- certain rares/events require conditions.
+- fog affecting navigation;
+- night changing how a forest feels;
+- different creatures appearing;
+- NPC/service schedules;
+- ferry availability;
+- making an inn more attractive than continuing.
 
-The player should sometimes decide:
+The design goal is variation and atmosphere.
 
-**"I'll stop at this inn instead of crossing that forest tonight."**
-
-That is enough.
-
-Do not build a maintenance system merely because weather exists.
-
----
-
-# Danger bands
-
-First-pass geographic language:
-
-## Civilized
-Low routine danger, services nearby, patrol presence.
-
-## Wild
-Normal leveling danger, reasonable solo travel.
-
-## Dangerous
-Bad pulls and stronger enemies matter; route planning becomes relevant.
-
-## Elite
-The area visibly communicates that ordinary solo assumptions may fail.
-
-## Deadly
-The player is probably somewhere they should not be yet.
-
-Threat bands should be visible through world language, not only enemy level text.
-
-Examples:
-
-- corpses;
-- architecture;
-- sound;
-- enemy silhouettes;
-- patrol behavior;
-- NPC warnings;
-- road condition.
+Do not create maintenance systems merely because weather exists.
 
 ---
 
 # First journey versus repeated journey
 
-First-time travel should be the slowest because the player lacks:
+First-time travel should often be the longest and least certain.
+
+Later the player gains:
 
 - route knowledge;
+- confidence;
 - shortcuts;
-- transport discovery;
-- confidence about danger;
-- landmark familiarity.
+- inns;
+- ferries/carriages/other transport;
+- eventually mounts.
 
-Repeated travel should improve through knowledge.
-
-Later travel may improve further through infrastructure/mounts.
-
-The progression curve is therefore:
+The progression is:
 
 unknown geography
--> learned geography
+-> familiar geography
 -> connected geography
--> mastered geography
+-> mastered geography.
 
-not:
-
-walk slowly
--> unlock unrestricted teleport.
+The world becomes easier to traverse because the player has lived in it.
 
 ---
 
-# Return journey doctrine
+# Travel legitimacy
 
-The return should not always repeat the outbound journey identically.
+A long journey does **not** have to justify every minute with an interaction.
 
-Possible differences:
+The original fantasy explicitly includes long, quiet traversal.
 
-- bags are full;
-- equipment is damaged;
-- resources are lower;
-- weather changed;
-- night fell;
-- shortcut was discovered;
-- ferry/carriage is now available;
-- a new inn was reached;
-- the player chooses a safer road.
+A journey is healthy when, across the whole experience, it strengthens some combination of:
 
-This allows "going home" to remain a decision rather than mandatory duplicated runtime.
+- scale;
+- anticipation;
+- remoteness;
+- route knowledge;
+- landmark memory;
+- atmosphere;
+- preparation;
+- danger;
+- discovery;
+- relief on arrival;
+- connection between distant places.
+
+A journey is unhealthy when distance is obviously fabricated only to increase playtime and the terrain remains anonymous even after repeated travel.
+
+We therefore do **not** use an optimization rule such as:
+
+"if shortening the trip loses nothing, shorten it."
+
+That rule would bias the project against the original commitment to real distance and quiet time.
+
+Instead ask:
+
+**"After travelling this route several times, does the player feel they know a real piece of the world?"**
+
+If yes, the time may be doing exactly what World RPG needs even when nothing dramatic happened for several minutes.
 
 ---
 
 # First-province topology requirements
 
-Before production terrain, the topology prototype must contain enough structure to test:
+Before production terrain, build a cheap topology with enough structure to test the original idea:
 
-- one primary town;
+- one main town;
 - several smaller settlements/outposts;
-- roads with at least one meaningful fork;
-- a river/crossing or equivalent barrier;
-- one obvious but dangerous shortcut;
-- one early visible high-level/elite location;
-- one remote dungeon approach;
-- one refuge/inn that changes expedition reach;
-- one return loop where later knowledge materially shortens travel.
+- roads;
+- at least one meaningful fork;
+- river/crossing or comparable barrier;
+- wilderness with quiet stretches;
+- dangerous pocket or shortcut;
+- an early visible high-level threat/place;
+- a remote dungeon approach;
+- inns/refuges that change expedition reach;
+- reasons to return to earlier places later.
 
 The prototype may be ugly.
 
-The purpose is to prove rhythm before art.
+We are testing whether the land creates memory and long-form travel before spending heavily on final terrain.
 
 ---
 
@@ -532,46 +415,45 @@ The purpose is to prove rhythm before art.
 
 Reject:
 
-- huge empty fields added only to increase minutes;
-- mandatory zig-zag terrain with no decision value;
-- quest turn-ins that force immediate identical backtracking;
-- roads that are always mechanically inferior to straight-line travel;
-- universal teleport unlocks;
-- mounts so fast that landmarks become unreadable;
-- quest GPS that prevents route learning;
-- random combat every few seconds;
-- artificial stamina depletion whose only purpose is slowing movement;
-- hidden invisible barriers used instead of believable geography.
+- procedural-feeling empty distance with no identity;
+- identical terrain stretched to inflate travel time;
+- immediate mandatory backtracking inserted only to lengthen quests;
+- unrestricted teleportation;
+- constant enemy/event density;
+- GPS guidance that prevents route learning;
+- movement chores that exist only to slow the player.
+
+Do **not** reject merely because something is slow:
+
+- a long first journey;
+- quiet roads;
+- a distant dungeon;
+- an hour-long expedition approach;
+- returning physically from remote wilderness
+
+can all be correct.
 
 ---
 
 # Travel playtest questions
 
-For a 10-minute local trip:
+After a familiar route:
 
-- Can the player describe the route afterward?
-- Did at least one landmark help orientation?
+- Can the player describe it?
+- Can they travel it with less UI than before?
+- Do they recognize landmarks and danger pockets?
 
-For a 20-30 minute regional trip:
+After a first long journey:
 
-- Was there a real route/safety/opportunity decision?
-- Did quiet stretches provide contrast rather than boredom?
-- Would shortening the trip remove something meaningful?
+- Did the destination feel genuinely far away?
+- Did the player learn geography?
+- Did arrival feel meaningful before any reward screen?
 
-For a 40-60 minute first journey:
+After many hours:
 
-- Did the emotional state change from departure to remoteness to arrival?
-- Did the player gain knowledge that makes repetition easier?
-- Was arrival satisfying before any reward UI appeared?
+- Have shortcuts, transport and knowledge changed how the same continent feels?
+- Does the player remember life before those conveniences?
 
-For repeated journeys:
+If travel is only anonymous dead time, it failed.
 
-- Does learned knowledge reduce friction?
-- Does infrastructure shorten travel without erasing geography?
-
-For a level-75 return to an early region:
-
-- Does the route feel easier partly because the player remembers it?
-- Can the player still recognize the place at mount/transport speed?
-
-If geography is only something endured between objectives, the travel system failed.
+If it becomes a remembered part of the character's life, its slowness is doing its job.
