@@ -4,7 +4,7 @@
   "id": "world_rpg:ability/proof/focus",
   "cast_kind": "instant",
   "cast_duration_ticks": 0,
-  "cooldown_ticks": 60,
+  "cooldown_ticks": 100,
   "global_cooldown_ticks": 20,
   "movement_policy": "interrupt",
   "costs": [
