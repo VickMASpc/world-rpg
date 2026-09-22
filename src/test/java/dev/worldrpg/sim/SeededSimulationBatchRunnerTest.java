@@ -35,6 +35,7 @@ class SeededSimulationBatchRunnerTest {
                     miss
                             ? Map.of(CastInterruptionReason.INTERRUPT, 1L)
                             : Map.of(),
+                    miss ? 0 : 1,
                     miss
                             ? Map.of()
                             : Map.of(new CombatActorId(2), 1L),
