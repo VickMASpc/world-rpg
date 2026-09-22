@@ -91,10 +91,10 @@ No synthetic level-20 fixture may silently become class, enemy, dungeon or party
 - [x] define what makes 20-60 minute travel valid rather than empty.
 
 ### G5 — progression/reward
-- [ ] define what a level means beyond XP;
-- [ ] define gear longevity and replacement expectations;
-- [ ] define wealth/trainer/repair/travel pressure at representative levels;
-- [ ] define what old enemies/regions should feel like at +5/+10/+20/+30 levels.
+- [x] define what a level means beyond XP;
+- [x] define gear longevity and replacement expectations;
+- [x] define wealth/trainer/repair/travel pressure at representative levels;
+- [x] define what old enemies/regions should feel like at +5/+10/+20/+30 levels.
 
 ### G6 — quest/settlement life
 - [ ] define quest duration/chain/journal philosophy in production terms;

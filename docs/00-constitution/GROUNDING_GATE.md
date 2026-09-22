@@ -29,8 +29,8 @@ Before a major system is designed or implemented, its specification must answer:
 - [x] World rhythm: safe -> wild -> dangerous -> remote -> civilization.
 - [x] Travel doctrine.
 - [x] Combat doctrine.
-- [ ] Progression doctrine.
-- [ ] Reward doctrine.
+- [x] Progression doctrine.
+- [x] Reward doctrine.
 - [ ] Quest doctrine.
 - [ ] Settlement doctrine.
 - [ ] Anti-pattern catalog.
