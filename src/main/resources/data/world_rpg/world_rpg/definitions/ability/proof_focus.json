@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/abilities",
+  "id": "world_rpg:ability/proof/focus",
+  "cast_kind": "instant",
+  "cast_duration_ticks": 0,
+  "cooldown_ticks": 0,
+  "global_cooldown_ticks": 0,
+  "movement_policy": "interrupt",
+  "costs": [
+    {"resource": "world_rpg:resource/proof_mana", "amount": 10.0}
+  ],
+  "conditions": [
+    {"type": "require_self"}
+  ],
+  "effects": [
+    {
+      "type": "apply_aura",
+      "recipient": "source",
+      "aura": "world_rpg:aura/proof/focus"
+    }
+  ]
+}

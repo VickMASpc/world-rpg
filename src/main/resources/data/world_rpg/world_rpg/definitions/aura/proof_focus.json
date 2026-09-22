@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/auras",
+  "id": "world_rpg:aura/proof/focus",
+  "max_stacks": 1,
+  "duration_ticks": 200,
+  "uniqueness": "per_target",
+  "refresh_policy": "reset_duration",
+  "stat_modifiers": [
+    {
+      "stat": "world_rpg:stat/proof_power",
+      "operation": "add",
+      "amount_per_stack": 20.0,
+      "priority": 10
+    }
+  ]
+}
