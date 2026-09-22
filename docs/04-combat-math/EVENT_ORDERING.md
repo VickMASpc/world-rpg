@@ -1,8 +1,10 @@
 # P3 combat event ordering
 
-Status: PROPOSED
+Status: ACCEPTED FOR CURRENT P3 MECHANISMS
 
-This document records the ordering already enforced by the P3 kernel and the boundaries still intentionally missing.
+Combat state changes produce immutable events.
+
+Events are facts, not suggestions. A later reaction cannot rewrite the event that caused it.
 
 ## Ability activation
 
@@ -73,21 +75,43 @@ Removing an aura:
 2. remove modifiers owned by that exact instance,
 3. emit aura-removed when removal came through an effect.
 
-Expiry currently returns explicit removal records; the higher-level combat tick/event dispatcher still needs to convert expiry into the shared event stream.
+## Reaction topology
 
-## Still missing from P3.6
+The reaction pipeline is deliberately conservative.
 
-The project does not yet have a general proc/reaction dispatcher.
+1. Gameplay mutation emits immutable root events.
+2. Root events receive monotonically increasing sequence numbers.
+3. Listeners observe events only; listener code is contractually pure.
+4. Listener order is deterministic:
+   - lower numeric priority first,
+   - registration order breaks priority ties.
+5. Listeners return immutable reaction requests.
+6. Only the reaction executor may perform gameplay mutation.
+7. Mutation emits child events.
+8. Child events record their parent sequence and causal depth.
+9. Child events are processed breadth-first.
+10. Maximum depth is checked **before** a deeper reaction executes.
+11. Maximum total events per dispatch is bounded.
+12. Duplicate listener IDs are forbidden.
 
-Before procs are implemented we must define:
+This structure deliberately refuses mutable PRE-event interception during P3.
 
-- event phases that listeners are allowed to observe,
-- deterministic listener priority,
-- whether a listener may mutate the triggering event,
-- child-event sequencing,
-- recursion/re-entry limits,
-- loop detection,
-- maximum trigger depth,
-- exact semantics of on-cast vs on-complete vs on-hit vs on-damage.
+A reaction may respond to a fact, but it may not retroactively change whether that fact occurred.
 
-No proc system should be added ad hoc before these are explicit.
+If future mechanics genuinely require prevention/replacement (for example an absorb preventing damage), that belongs in the owning resolution pipeline before the immutable event is emitted, not in a generic event listener.
+
+## Still intentionally unresolved
+
+Event topology does not yet define final semantic proc categories such as:
+
+- on cast requested,
+- on cast started,
+- on cast completed,
+- on hit,
+- on damage attempted,
+- on damage dealt,
+- on heal,
+- on aura applied,
+- on interrupt.
+
+Those names must follow the final owning pipelines instead of being invented ahead of damage/healing resolution in P4.
