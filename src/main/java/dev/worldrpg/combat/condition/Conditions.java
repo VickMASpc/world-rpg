@@ -16,14 +16,22 @@ public final class Conditions {
 
     @SafeVarargs
     public static <C> Condition<C> all(Condition<C>... conditions) {
-        List<Condition<C>> immutable = List.of(conditions);
+        return all(List.of(conditions));
+    }
+
+    public static <C> Condition<C> all(
+            List<? extends Condition<C>> conditions
+    ) {
+        List<? extends Condition<C>> immutable =
+                List.copyOf(Objects.requireNonNull(conditions, "conditions"));
 
         return context -> {
             ConditionResult result = ConditionResult.pass();
 
             for (Condition<C> condition : immutable) {
                 result = result.plus(
-                        Objects.requireNonNull(condition, "condition").evaluate(context)
+                        Objects.requireNonNull(condition, "condition")
+                                .evaluate(context)
                 );
             }
 
@@ -33,7 +41,14 @@ public final class Conditions {
 
     @SafeVarargs
     public static <C> Condition<C> any(Condition<C>... conditions) {
-        List<Condition<C>> immutable = List.of(conditions);
+        return any(List.of(conditions));
+    }
+
+    public static <C> Condition<C> any(
+            List<? extends Condition<C>> conditions
+    ) {
+        List<? extends Condition<C>> immutable =
+                List.copyOf(Objects.requireNonNull(conditions, "conditions"));
 
         return context -> {
             if (immutable.isEmpty()) {
@@ -47,7 +62,8 @@ public final class Conditions {
 
             for (Condition<C> condition : immutable) {
                 ConditionResult result =
-                        Objects.requireNonNull(condition, "condition").evaluate(context);
+                        Objects.requireNonNull(condition, "condition")
+                                .evaluate(context);
 
                 if (result.passed()) {
                     return ConditionResult.pass();
