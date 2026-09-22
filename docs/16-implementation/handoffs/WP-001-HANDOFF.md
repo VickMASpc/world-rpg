@@ -16,13 +16,14 @@ WORK BRANCH:
 `codex/wp-001-p3-evidence-followup`
 
 HEAD SHA:
-`9539dde7dc6ed86ee0497e7d02d5a87b630391f8` (last packet checkpoint before this
-administrative handoff commit)
+`5a35eb078677d851d866e0e17638e9e49863c532` (completed packet/handoff commit;
+the final push-status-only commit follows it)
 
 ## COMMITS
 
 - `9539dde docs: establish local work packet workflow`
-- `docs(p3): record evidence follow-up assessment` (this handoff commit)
+- `5a35eb0 docs(p3): record evidence follow-up assessment`
+- `docs(p3): record pushed branch status` (final administrative status commit)
 
 ## FILES CHANGED
 
@@ -179,7 +180,9 @@ Expected clean after the handoff commit; verified again before push.
 
 ## PUSH STATUS
 
-Pending final handoff commit and branch push.
+PUSHED — upstream is configured and
+`origin/codex/wp-001-p3-evidence-followup` exists. The final push-status-only
+commit is pushed immediately after recording this field.
 
 ## PR
 
