@@ -26,10 +26,17 @@ public final class JsonDocumentDecoder {
             ContentSource source,
             ValidationReport report
     ) {
+        if (!StrictJsonStructureValidator.validate(source, report)) {
+            return Optional.empty();
+        }
+
         final JsonElement parsed;
         try {
             parsed = JsonParser.parseString(source.content());
         } catch (JsonParseException exception) {
+            // Strict preflight should already have rejected authored syntax.
+            // Keep this defensive boundary in case Gson's tree parser finds a
+            // representation issue not surfaced by the streaming reader.
             report.error(
                     "json.syntax",
                     "Invalid JSON: " + exception.getMessage(),
@@ -82,7 +89,9 @@ public final class JsonDocumentDecoder {
             ValidationReport report
     ) {
         JsonElement element = root.get("schema");
-        if (element == null || !element.isJsonPrimitive() || !element.getAsJsonPrimitive().isNumber()) {
+        if (element == null
+                || !element.isJsonPrimitive()
+                || !element.getAsJsonPrimitive().isNumber()) {
             report.error(
                     "json.schema.required_integer",
                     "Definition field 'schema' must be an integer >= 1",
@@ -92,7 +101,8 @@ public final class JsonDocumentDecoder {
         }
 
         try {
-            BigDecimal decimal = element.getAsBigDecimal().stripTrailingZeros();
+            BigDecimal decimal =
+                    element.getAsBigDecimal().stripTrailingZeros();
             if (decimal.scale() > 0) {
                 throw new ArithmeticException("not an integer");
             }
@@ -117,17 +127,23 @@ public final class JsonDocumentDecoder {
             ValidationReport report
     ) {
         JsonElement element = root.get(field);
-        if (element == null || !element.isJsonPrimitive() || !element.getAsJsonPrimitive().isString()) {
+        if (element == null
+                || !element.isJsonPrimitive()
+                || !element.getAsJsonPrimitive().isString()) {
             report.error(
                     codePrefix + ".required_string",
-                    "Definition field '" + field + "' must be a stable namespaced string",
+                    "Definition field '"
+                            + field
+                            + "' must be a stable namespaced string",
                     source.sourceRef()
             );
             return Optional.empty();
         }
 
         try {
-            return Optional.of(RpgId.parse(element.getAsString()));
+            return Optional.of(
+                    RpgId.parse(element.getAsString())
+            );
         } catch (IllegalArgumentException exception) {
             report.error(
                     codePrefix + ".invalid",
