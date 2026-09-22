@@ -25,7 +25,8 @@ public record AbilityDefinition(
         List<AbilityCost> costs,
         Condition<AbilityContext> activationCondition,
         EffectSequence effects,
-        AbilityMovementPolicy movementPolicy
+        AbilityMovementPolicy movementPolicy,
+        AbilityInterruptionPolicy interruptionPolicy
 ) implements RpgDefinition {
     public AbilityDefinition {
         Objects.requireNonNull(id, "id");
@@ -35,21 +36,28 @@ public record AbilityDefinition(
         Objects.requireNonNull(activationCondition, "activationCondition");
         Objects.requireNonNull(effects, "effects");
         Objects.requireNonNull(movementPolicy, "movementPolicy");
+        Objects.requireNonNull(interruptionPolicy, "interruptionPolicy");
 
-        if (castDurationTicks < 0 || cooldownTicks < 0 || globalCooldownTicks < 0) {
-            throw new IllegalArgumentException("ability tick durations must be >= 0");
+        if (castDurationTicks < 0
+                || cooldownTicks < 0
+                || globalCooldownTicks < 0) {
+            throw new IllegalArgumentException(
+                    "ability tick durations must be >= 0"
+            );
         }
 
         switch (castKind) {
             case INSTANT -> {
-                if (castDurationTicks != 0 || channelIntervalTicks.isPresent()) {
+                if (castDurationTicks != 0
+                        || channelIntervalTicks.isPresent()) {
                     throw new IllegalArgumentException(
                             "instant ability must have zero duration and no channel interval"
                     );
                 }
             }
             case TIMED -> {
-                if (castDurationTicks < 1 || channelIntervalTicks.isPresent()) {
+                if (castDurationTicks < 1
+                        || channelIntervalTicks.isPresent()) {
                     throw new IllegalArgumentException(
                             "timed ability requires positive duration and no channel interval"
                     );
@@ -59,7 +67,8 @@ public record AbilityDefinition(
                 if (castDurationTicks < 1
                         || channelIntervalTicks.isEmpty()
                         || channelIntervalTicks.getAsLong() < 1
-                        || channelIntervalTicks.getAsLong() > castDurationTicks) {
+                        || channelIntervalTicks.getAsLong()
+                                > castDurationTicks) {
                     throw new IllegalArgumentException(
                             "channel requires positive duration and interval <= duration"
                     );
@@ -69,10 +78,39 @@ public record AbilityDefinition(
     }
 
     /**
-     * Compatibility constructor for existing P3 fixtures/tests.
+     * Compatibility constructor preserving pre-interruption-policy callers.
+     */
+    public AbilityDefinition(
+            RpgId id,
+            AbilityCastKind castKind,
+            long castDurationTicks,
+            OptionalLong channelIntervalTicks,
+            long cooldownTicks,
+            long globalCooldownTicks,
+            List<AbilityCost> costs,
+            Condition<AbilityContext> activationCondition,
+            EffectSequence effects,
+            AbilityMovementPolicy movementPolicy
+    ) {
+        this(
+                id,
+                castKind,
+                castDurationTicks,
+                channelIntervalTicks,
+                cooldownTicks,
+                globalCooldownTicks,
+                costs,
+                activationCondition,
+                effects,
+                movementPolicy,
+                AbilityInterruptionPolicy.INTERRUPTIBLE
+        );
+    }
+
+    /**
+     * Compatibility constructor for original P3 fixtures/tests.
      *
-     * <p>The original P3 behavior was stationary casting, so the compatibility
-     * default preserves that behavior explicitly as INTERRUPT.</p>
+     * <p>The original behavior was stationary, interruptible casting.</p>
      */
     public AbilityDefinition(
             RpgId id,
@@ -95,7 +133,8 @@ public record AbilityDefinition(
                 costs,
                 activationCondition,
                 effects,
-                AbilityMovementPolicy.INTERRUPT
+                AbilityMovementPolicy.INTERRUPT,
+                AbilityInterruptionPolicy.INTERRUPTIBLE
         );
     }
 }
