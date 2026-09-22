@@ -5,6 +5,7 @@ import dev.worldrpg.combat.ability.AbilityCastKind;
 import dev.worldrpg.combat.ability.AbilityContext;
 import dev.worldrpg.combat.ability.AbilityCost;
 import dev.worldrpg.combat.ability.AbilityDefinition;
+import dev.worldrpg.combat.ability.AbilityObservationProvider;
 import dev.worldrpg.combat.actor.CombatActor;
 import dev.worldrpg.combat.condition.ConditionResult;
 import dev.worldrpg.combat.cooldown.CooldownBook;
@@ -46,16 +47,34 @@ public final class CastController {
 
     private final CombatActor owner;
     private final CooldownBook cooldowns;
+    private final AbilityObservationProvider observations;
     private ActiveCast activeCast;
     private long nextCastId = 1L;
 
     public CastController(CombatActor owner) {
-        this(owner, new CooldownBook());
+        this(
+                owner,
+                new CooldownBook(),
+                AbilityObservationProvider.unavailable()
+        );
     }
 
     public CastController(CombatActor owner, CooldownBook cooldowns) {
+        this(
+                owner,
+                cooldowns,
+                AbilityObservationProvider.unavailable()
+        );
+    }
+
+    public CastController(
+            CombatActor owner,
+            CooldownBook cooldowns,
+            AbilityObservationProvider observations
+    ) {
         this.owner = Objects.requireNonNull(owner, "owner");
         this.cooldowns = Objects.requireNonNull(cooldowns, "cooldowns");
+        this.observations = Objects.requireNonNull(observations, "observations");
     }
 
     public CombatActor owner() {
@@ -79,7 +98,7 @@ public final class CastController {
         Objects.requireNonNull(target, "target");
         requireTick(gameTick);
 
-        AbilityContext abilityContext = new AbilityContext(owner, target, gameTick);
+        AbilityContext abilityContext = abilityContext(target, gameTick);
         EffectContext effectContext = new EffectContext(owner, target, gameTick);
 
         ConditionResult validation = ConditionResult.pass();
@@ -294,12 +313,24 @@ public final class CastController {
 
     private boolean stillValid(ActiveCast cast, long gameTick) {
         AbilityContext abilityContext =
-                new AbilityContext(owner, cast.target(), gameTick);
+                abilityContext(cast.target(), gameTick);
         EffectContext effectContext =
                 new EffectContext(owner, cast.target(), gameTick);
 
         return cast.ability().activationCondition().evaluate(abilityContext).passed()
                 && cast.ability().effects().validate(effectContext).passed();
+    }
+
+    private AbilityContext abilityContext(
+            CombatActor target,
+            long gameTick
+    ) {
+        return new AbilityContext(
+                owner,
+                target,
+                gameTick,
+                observations.observe(owner, target)
+        );
     }
 
     private ConditionResult validateCosts(Map<ResourceKey, Double> costs) {
