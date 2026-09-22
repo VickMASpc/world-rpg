@@ -3,6 +3,7 @@ package dev.worldrpg.combat.math;
 import dev.worldrpg.api.id.RpgId;
 import dev.worldrpg.combat.actor.CombatActor;
 import dev.worldrpg.combat.actor.CombatActorId;
+import dev.worldrpg.combat.event.CombatActorDefeatedEvent;
 import dev.worldrpg.combat.event.CombatMagnitudeResolvedEvent;
 import dev.worldrpg.combat.event.ResourceChangedEvent;
 import dev.worldrpg.combat.resolution.CombatMagnitudeKind;
@@ -82,11 +83,13 @@ class ProfiledCombatResolverTest {
                 )
         );
 
-        assertEquals(2, events.size());
+        assertEquals(3, events.size());
         assertTrue(events.get(0)
                 instanceof CombatMagnitudeResolvedEvent);
         assertTrue(events.get(1)
                 instanceof ResourceChangedEvent);
+        assertTrue(events.get(2)
+                instanceof CombatActorDefeatedEvent);
 
         CombatMagnitudeResolvedEvent event =
                 (CombatMagnitudeResolvedEvent) events.get(0);
