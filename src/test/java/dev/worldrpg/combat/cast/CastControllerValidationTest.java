@@ -61,7 +61,7 @@ class CastControllerValidationTest {
         assertTrue(controller.activeCast().isEmpty());
         assertTrue(
                 controller.cooldowns()
-                        .asMap()
+                        .activeAt(0)
                         .isEmpty()
         );
 
