@@ -128,7 +128,16 @@ public final class CastController {
         startCooldowns(ability, gameTick, events);
 
         if (ability.castKind() == AbilityCastKind.INSTANT) {
-            events.addAll(ability.effects().applyValidated(effectContext));
+            EffectContext effectContext =
+                    new EffectContext(
+                            owner,
+                            target,
+                            gameTick
+                    );
+            events.addAll(
+                    ability.effects()
+                            .applyValidated(effectContext)
+            );
             return new AbilityActivationResult(
                     ConditionResult.pass(),
                     Optional.empty(),
