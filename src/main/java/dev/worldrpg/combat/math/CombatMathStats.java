@@ -13,6 +13,29 @@ public final class CombatMathStats {
             StatKey.of("world_rpg:stat/healing_power");
     public static final StatKey CRIT_CHANCE =
             StatKey.of("world_rpg:stat/crit_chance");
+    public static final StatKey HIT_CHANCE =
+            StatKey.of("world_rpg:stat/hit_chance");
+    public static final StatKey HASTE_BONUS =
+            StatKey.of("world_rpg:stat/haste_bonus");
+    public static final StatKey DODGE_CHANCE =
+            StatKey.of("world_rpg:stat/dodge_chance");
+    public static final StatKey PARRY_CHANCE =
+            StatKey.of("world_rpg:stat/parry_chance");
+    public static final StatKey BLOCK_CHANCE =
+            StatKey.of("world_rpg:stat/block_chance");
+
+    public static final StatKey CRIT_RATING =
+            StatKey.of("world_rpg:stat/rating/crit");
+    public static final StatKey HIT_RATING =
+            StatKey.of("world_rpg:stat/rating/hit");
+    public static final StatKey HASTE_RATING =
+            StatKey.of("world_rpg:stat/rating/haste");
+    public static final StatKey DODGE_RATING =
+            StatKey.of("world_rpg:stat/rating/dodge");
+    public static final StatKey PARRY_RATING =
+            StatKey.of("world_rpg:stat/rating/parry");
+    public static final StatKey BLOCK_RATING =
+            StatKey.of("world_rpg:stat/rating/block");
 
     public static final StatKey ARMOR =
             StatKey.of("world_rpg:stat/armor");

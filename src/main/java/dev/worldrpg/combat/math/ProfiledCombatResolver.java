@@ -25,13 +25,27 @@ public final class ProfiledCombatResolver
         implements CombatResolutionGateway {
     private final CombatMathProfile profile;
     private final CombatRollSource rolls;
+    private final CombatStatResolver stats;
 
     public ProfiledCombatResolver(
             CombatMathProfile profile,
             CombatRollSource rolls
     ) {
+        this(
+                profile,
+                rolls,
+                CombatStatResolver.direct()
+        );
+    }
+
+    public ProfiledCombatResolver(
+            CombatMathProfile profile,
+            CombatRollSource rolls,
+            CombatStatResolver stats
+    ) {
         this.profile = Objects.requireNonNull(profile, "profile");
         this.rolls = Objects.requireNonNull(rolls, "rolls");
+        this.stats = Objects.requireNonNull(stats, "stats");
     }
 
     @Override
@@ -48,7 +62,7 @@ public final class ProfiledCombatResolver
         ResourcePool health = target.resources()
                 .require(profile.healthResource());
 
-        double power = source.stats().value(
+        double power = stats.value(source, 
                 powerStat(request.kind(), school)
         );
         double coefficient = powerCoefficient(
@@ -65,7 +79,7 @@ public final class ProfiledCombatResolver
 
         double outgoingMultiplier = Math.max(
                 0.0,
-                1.0 + source.stats().value(
+                1.0 + stats.value(source, 
                         outgoingBonusStat(request.kind())
                 )
         );
@@ -73,7 +87,7 @@ public final class ProfiledCombatResolver
                 afterScaling * outgoingMultiplier;
 
         double criticalChance = clamp(
-                source.stats().value(
+                stats.value(source, 
                         CombatMathStats.CRIT_CHANCE
                 ),
                 0.0,
@@ -105,7 +119,7 @@ public final class ProfiledCombatResolver
 
         double incomingMultiplier = Math.max(
                 0.0,
-                1.0 + target.stats().value(
+                1.0 + stats.value(target, 
                         incomingBonusStat(request.kind())
                 )
         );
@@ -211,7 +225,7 @@ public final class ProfiledCombatResolver
     ) {
         double defense = Math.max(
                 0.0,
-                target.stats().value(
+                stats.value(target, 
                         CombatMathStats.resistanceFor(school)
                 )
         );
