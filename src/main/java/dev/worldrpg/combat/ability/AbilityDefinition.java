@@ -24,7 +24,8 @@ public record AbilityDefinition(
         long globalCooldownTicks,
         List<AbilityCost> costs,
         Condition<AbilityContext> activationCondition,
-        EffectSequence effects
+        EffectSequence effects,
+        AbilityMovementPolicy movementPolicy
 ) implements RpgDefinition {
     public AbilityDefinition {
         Objects.requireNonNull(id, "id");
@@ -33,6 +34,7 @@ public record AbilityDefinition(
         costs = List.copyOf(Objects.requireNonNull(costs, "costs"));
         Objects.requireNonNull(activationCondition, "activationCondition");
         Objects.requireNonNull(effects, "effects");
+        Objects.requireNonNull(movementPolicy, "movementPolicy");
 
         if (castDurationTicks < 0 || cooldownTicks < 0 || globalCooldownTicks < 0) {
             throw new IllegalArgumentException("ability tick durations must be >= 0");
@@ -64,5 +66,36 @@ public record AbilityDefinition(
                 }
             }
         }
+    }
+
+    /**
+     * Compatibility constructor for existing P3 fixtures/tests.
+     *
+     * <p>The original P3 behavior was stationary casting, so the compatibility
+     * default preserves that behavior explicitly as INTERRUPT.</p>
+     */
+    public AbilityDefinition(
+            RpgId id,
+            AbilityCastKind castKind,
+            long castDurationTicks,
+            OptionalLong channelIntervalTicks,
+            long cooldownTicks,
+            long globalCooldownTicks,
+            List<AbilityCost> costs,
+            Condition<AbilityContext> activationCondition,
+            EffectSequence effects
+    ) {
+        this(
+                id,
+                castKind,
+                castDurationTicks,
+                channelIntervalTicks,
+                cooldownTicks,
+                globalCooldownTicks,
+                costs,
+                activationCondition,
+                effects,
+                AbilityMovementPolicy.INTERRUPT
+        );
     }
 }

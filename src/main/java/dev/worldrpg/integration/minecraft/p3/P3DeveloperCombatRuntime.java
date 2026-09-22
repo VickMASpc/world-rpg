@@ -1,5 +1,6 @@
 package dev.worldrpg.integration.minecraft.p3;
 
+import dev.worldrpg.combat.ability.AbilityMovementPolicy;
 import dev.worldrpg.combat.actor.CombatActor;
 import dev.worldrpg.combat.cast.AbilityActivationResult;
 import dev.worldrpg.combat.cast.CastController;
@@ -128,7 +129,13 @@ public final class P3DeveloperCombatRuntime {
                 continue;
             }
 
-            if (state.castStartPosition().isPresent()
+            boolean interruptsOnMovement =
+                    state.casts().activeCast().orElseThrow()
+                            .ability().movementPolicy()
+                            == AbilityMovementPolicy.INTERRUPT;
+
+            if (interruptsOnMovement
+                    && state.castStartPosition().isPresent()
                     && entity.get().getPos().squaredDistanceTo(
                             state.castStartPosition().get()
                     ) > MOVEMENT_EPSILON_SQUARED) {
