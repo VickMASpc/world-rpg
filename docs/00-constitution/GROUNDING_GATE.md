@@ -31,8 +31,8 @@ Before a major system is designed or implemented, its specification must answer:
 - [x] Combat doctrine.
 - [x] Progression doctrine.
 - [x] Reward doctrine.
-- [ ] Quest doctrine.
-- [ ] Settlement doctrine.
+- [x] Quest doctrine.
+- [x] Settlement doctrine.
 - [ ] Anti-pattern catalog.
 - [ ] First 15-hour experiential storyboard.
 

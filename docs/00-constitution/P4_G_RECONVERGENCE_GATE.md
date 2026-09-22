@@ -97,9 +97,9 @@ No synthetic level-20 fixture may silently become class, enemy, dungeon or party
 - [x] define what old enemies/regions should feel like at +5/+10/+20/+30 levels.
 
 ### G6 — quest/settlement life
-- [ ] define quest duration/chain/journal philosophy in production terms;
-- [ ] define towns/inns/trainers/repair/storage/professions as expedition punctuation;
-- [ ] define when field convenience becomes too strong.
+- [x] define quest duration/chain/journal philosophy in production terms;
+- [x] define towns/inns/trainers/repair/storage/professions as expedition punctuation;
+- [x] define when field convenience becomes too strong.
 
 ### G7 — first 15-hour experiential storyboard
 - [ ] storyboard the first province as lived time rather than a content count;
