@@ -3,10 +3,8 @@ package dev.worldrpg.integration.minecraft;
 import dev.worldrpg.combat.ability.AbilityObservationProvider;
 import dev.worldrpg.combat.actor.CombatActor;
 import dev.worldrpg.combat.target.TargetObservation;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -42,9 +40,9 @@ public final class MinecraftTargetObservationProvider
         }
 
         Optional<LivingEntity> sourceEntity =
-                findLivingEntity(sourceUuid.get());
+                MinecraftEntityResolver.findLiving(server, sourceUuid.get());
         Optional<LivingEntity> targetEntity =
-                findLivingEntity(targetUuid.get());
+                MinecraftEntityResolver.findLiving(server, targetUuid.get());
 
         if (sourceEntity.isEmpty() || targetEntity.isEmpty()) {
             return TargetObservation.unavailable();
@@ -68,16 +66,5 @@ public final class MinecraftTargetObservationProvider
                         )
                         : OptionalDouble.empty()
         );
-    }
-
-    private Optional<LivingEntity> findLivingEntity(UUID uuid) {
-        for (ServerWorld world : server.getWorlds()) {
-            Entity entity = world.getEntity(uuid);
-            if (entity instanceof LivingEntity living) {
-                return Optional.of(living);
-            }
-        }
-
-        return Optional.empty();
     }
 }
