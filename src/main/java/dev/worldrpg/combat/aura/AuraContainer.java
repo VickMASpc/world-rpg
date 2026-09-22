@@ -92,6 +92,26 @@ public final class AuraContainer {
         return Optional.of(new AuraRemoval(removed, reason));
     }
 
+    public List<AuraRemoval> removeByDefinition(
+            RpgId auraDefinitionId,
+            AuraRemovalReason reason
+    ) {
+        Objects.requireNonNull(auraDefinitionId, "auraDefinitionId");
+        Objects.requireNonNull(reason, "reason");
+
+        List<AuraInstanceId> matching = instances.values().stream()
+                .filter(instance -> instance.definition().id().equals(auraDefinitionId))
+                .map(AuraInstance::id)
+                .toList();
+
+        List<AuraRemoval> removals = new ArrayList<>();
+        for (AuraInstanceId id : matching) {
+            remove(id, reason).ifPresent(removals::add);
+        }
+
+        return List.copyOf(removals);
+    }
+
     public List<AuraRemoval> expireDue(long gameTick) {
         requireTick(gameTick);
 
