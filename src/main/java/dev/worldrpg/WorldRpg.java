@@ -1,6 +1,7 @@
 package dev.worldrpg;
 
 import dev.worldrpg.command.WorldRpgContentCommands;
+import dev.worldrpg.command.WorldRpgPersistenceCommands;
 import dev.worldrpg.content.fabric.WorldRpgContentRuntime;
 import dev.worldrpg.content.load.DefinitionDomainCatalog;
 import net.fabricmc.api.ModInitializer;
@@ -17,6 +18,7 @@ public final class WorldRpg implements ModInitializer {
                 DefinitionDomainCatalog.builder().build()
         );
         WorldRpgContentCommands.register();
+        WorldRpgPersistenceCommands.register();
 
         LOGGER.info("World RPG runtime bootstrap initialized.");
     }
