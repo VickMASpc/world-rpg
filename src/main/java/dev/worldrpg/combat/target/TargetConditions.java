@@ -16,6 +16,8 @@ public final class TargetConditions {
             RpgId.parse("world_rpg:condition/target_wrong_world");
     private static final RpgId SELF_TARGET_DISALLOWED =
             RpgId.parse("world_rpg:condition/self_target_disallowed");
+    private static final RpgId SELF_TARGET_REQUIRED =
+            RpgId.parse("world_rpg:condition/self_target_required");
     private static final RpgId LINE_OF_SIGHT =
             RpgId.parse("world_rpg:condition/line_of_sight_required");
     private static final RpgId OUT_OF_RANGE =
@@ -33,10 +35,7 @@ public final class TargetConditions {
                 context,
                 observation -> observation.sourceAlive()
                         ? ConditionResult.pass()
-                        : ConditionResult.fail(
-                                SOURCE_DEAD,
-                                "Source must be alive"
-                        )
+                        : ConditionResult.fail(SOURCE_DEAD, "Source must be alive")
         );
     }
 
@@ -45,10 +44,7 @@ public final class TargetConditions {
                 context,
                 observation -> observation.targetAlive()
                         ? ConditionResult.pass()
-                        : ConditionResult.fail(
-                                TARGET_DEAD,
-                                "Target must be alive"
-                        )
+                        : ConditionResult.fail(TARGET_DEAD, "Target must be alive")
         );
     }
 
@@ -72,6 +68,18 @@ public final class TargetConditions {
                         : ConditionResult.fail(
                                 SELF_TARGET_DISALLOWED,
                                 "Ability cannot target the source actor"
+                        )
+        );
+    }
+
+    public static Condition<AbilityContext> requireSelf() {
+        return context -> withObservation(
+                context,
+                observation -> observation.sameActor()
+                        ? ConditionResult.pass()
+                        : ConditionResult.fail(
+                                SELF_TARGET_REQUIRED,
+                                "Ability requires the source actor as target"
                         )
         );
     }
@@ -117,12 +125,6 @@ public final class TargetConditions {
         );
     }
 
-    /**
-     * Requires the target to fall inside a full source-facing cone.
-     *
-     * <p>180 degrees means the front hemisphere. 360 degrees accepts every
-     * orientation. 0 degrees means exact forward alignment.</p>
-     */
     public static Condition<AbilityContext> requireFacingArcDegrees(
             double fullArcDegrees
     ) {

@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/abilities",
+  "id": "world_rpg:ability/proof/bolt",
+  "cast_kind": "timed",
+  "cast_duration_ticks": 20,
+  "cooldown_ticks": 10,
+  "global_cooldown_ticks": 5,
+  "movement_policy": "interrupt",
+  "costs": [
+    {"resource": "world_rpg:resource/proof_mana", "amount": 20.0}
+  ],
+  "conditions": [
+    {"type": "source_alive"},
+    {"type": "target_alive"},
+    {"type": "same_world"},
+    {"type": "disallow_self"},
+    {"type": "line_of_sight"},
+    {"type": "max_range", "blocks": 12.0},
+    {
+      "type": "target_resource_at_least",
+      "resource": "world_rpg:resource/proof_health",
+      "amount": 0.000001
+    }
+  ],
+  "effects": [
+    {
+      "type": "drain_resource",
+      "recipient": "target",
+      "resource": "world_rpg:resource/proof_health",
+      "amount": 15.0
+    }
+  ]
+}
