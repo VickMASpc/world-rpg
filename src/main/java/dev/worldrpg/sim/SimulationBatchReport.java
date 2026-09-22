@@ -1,5 +1,6 @@
 package dev.worldrpg.sim;
 
+import dev.worldrpg.combat.actor.CombatActorId;
 import dev.worldrpg.combat.resource.ResourceKey;
 
 import java.util.List;
@@ -91,6 +92,34 @@ public record SimulationBatchReport(
                 .sum();
 
         return (double) misses / (double) attempts;
+    }
+
+    public double defeatRateOf(
+            CombatActorId actorId
+    ) {
+        Objects.requireNonNull(actorId, "actorId");
+
+        long defeatedRuns = runs.stream()
+                .filter(result ->
+                        result.report().defeatsOf(actorId) > 0L
+                )
+                .count();
+
+        return (double) defeatedRuns
+                / (double) runs.size();
+    }
+
+    public double averageDefeatsOf(
+            CombatActorId actorId
+    ) {
+        Objects.requireNonNull(actorId, "actorId");
+
+        return runs.stream()
+                .mapToLong(result ->
+                        result.report().defeatsOf(actorId)
+                )
+                .average()
+                .orElseThrow();
     }
 
     public double averageDefeats() {

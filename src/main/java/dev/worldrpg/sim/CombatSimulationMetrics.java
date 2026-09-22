@@ -1,5 +1,6 @@
 package dev.worldrpg.sim;
 
+import dev.worldrpg.combat.actor.CombatActorId;
 import dev.worldrpg.combat.event.CombatActorDefeatedEvent;
 import dev.worldrpg.combat.event.CombatEvent;
 import dev.worldrpg.combat.event.CombatMagnitudeResolvedEvent;
@@ -23,6 +24,8 @@ final class CombatSimulationMetrics {
     private double healingApplied;
     private double overkill;
     private double overheal;
+    private final Map<CombatActorId, Long> defeatsByTarget =
+            new LinkedHashMap<>();
     private final Map<ResourceKey, Double> resourceSpent =
             new LinkedHashMap<>();
     private final Map<ResourceKey, Double> resourceGained =
@@ -39,8 +42,13 @@ final class CombatSimulationMetrics {
             observeResource(resourceChanged);
         }
 
-        if (event instanceof CombatActorDefeatedEvent) {
+        if (event instanceof CombatActorDefeatedEvent defeated) {
             defeats++;
+            defeatsByTarget.merge(
+                    defeated.targetActorId(),
+                    1L,
+                    Long::sum
+            );
         }
     }
 
@@ -125,6 +133,7 @@ final class CombatSimulationMetrics {
                 healingResolutions,
                 criticalResolutions,
                 defeats,
+                defeatsByTarget,
                 damageApplied,
                 healingApplied,
                 overkill,

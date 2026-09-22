@@ -1,5 +1,6 @@
 package dev.worldrpg.sim;
 
+import dev.worldrpg.combat.actor.CombatActorId;
 import dev.worldrpg.combat.resource.ResourceKey;
 
 import java.util.LinkedHashMap;
@@ -17,6 +18,7 @@ public record CombatSimulationReport(
         long healingResolutions,
         long criticalResolutions,
         long defeats,
+        Map<CombatActorId, Long> defeatsByTarget,
         double damageApplied,
         double healingApplied,
         double overkill,
@@ -50,6 +52,21 @@ public record CombatSimulationReport(
             );
         }
 
+        defeatsByTarget = checkedLongMap(
+                defeatsByTarget,
+                "defeatsByTarget"
+        );
+
+        long summedDefeats = defeatsByTarget.values().stream()
+                .mapToLong(Long::longValue)
+                .sum();
+
+        if (summedDefeats != defeats) {
+            throw new IllegalArgumentException(
+                    "defeatsByTarget total must equal defeats"
+            );
+        }
+
         requireNonNegativeFinite(damageApplied, "damageApplied");
         requireNonNegativeFinite(healingApplied, "healingApplied");
         requireNonNegativeFinite(overkill, "overkill");
@@ -73,6 +90,13 @@ public record CombatSimulationReport(
         return endTick - startTick;
     }
 
+    public long defeatsOf(CombatActorId actorId) {
+        return defeatsByTarget.getOrDefault(
+                Objects.requireNonNull(actorId, "actorId"),
+                0L
+        );
+    }
+
     public double spent(ResourceKey resource) {
         return resourceSpent.getOrDefault(
                 Objects.requireNonNull(resource, "resource"),
@@ -85,6 +109,34 @@ public record CombatSimulationReport(
                 Objects.requireNonNull(resource, "resource"),
                 0.0
         );
+    }
+
+    private static Map<CombatActorId, Long> checkedLongMap(
+            Map<CombatActorId, Long> input,
+            String label
+    ) {
+        Objects.requireNonNull(input, label);
+
+        Map<CombatActorId, Long> copy =
+                new LinkedHashMap<>();
+
+        input.forEach((key, value) -> {
+            Objects.requireNonNull(key, label + " key");
+            long checked = Objects.requireNonNull(
+                    value,
+                    label + " value"
+            );
+
+            if (checked < 0L) {
+                throw new IllegalArgumentException(
+                        label + " values must be >= 0"
+                );
+            }
+
+            copy.put(key, checked);
+        });
+
+        return java.util.Collections.unmodifiableMap(copy);
     }
 
     private static Map<ResourceKey, Double> checkedMap(

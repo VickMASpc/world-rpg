@@ -1,5 +1,6 @@
 package dev.worldrpg.sim;
 
+import dev.worldrpg.combat.actor.CombatActorId;
 import dev.worldrpg.combat.resource.ResourceKey;
 import org.junit.jupiter.api.Test;
 
@@ -29,6 +30,9 @@ class SeededSimulationBatchRunnerTest {
                     0,
                     0,
                     miss ? 0 : 1,
+                    miss
+                            ? Map.of()
+                            : Map.of(new CombatActorId(2), 1L),
                     miss ? 0.0 : 10.0,
                     0.0,
                     0.0,
@@ -60,6 +64,11 @@ class SeededSimulationBatchRunnerTest {
         assertEquals(0.5, report.damageMissRate(), 0.0);
         assertEquals(0.5, report.averageDefeats(), 0.0);
         assertEquals(
+                0.5,
+                report.defeatRateOf(new CombatActorId(2)),
+                0.0
+        );
+        assertEquals(
                 2.0,
                 report.averageResourceSpent(MANA),
                 0.0
@@ -85,6 +94,7 @@ class SeededSimulationBatchRunnerTest {
                         0,
                         0,
                         0,
+                        Map.of(),
                         0.0,
                         0.0,
                         0.0,
