@@ -20,6 +20,10 @@ public final class TargetConditions {
             RpgId.parse("world_rpg:condition/line_of_sight_required");
     private static final RpgId OUT_OF_RANGE =
             RpgId.parse("world_rpg:condition/target_out_of_range");
+    private static final RpgId FACING_UNAVAILABLE =
+            RpgId.parse("world_rpg:condition/target_facing_unavailable");
+    private static final RpgId OUTSIDE_FACING_ARC =
+            RpgId.parse("world_rpg:condition/target_outside_facing_arc");
 
     private TargetConditions() {
     }
@@ -108,6 +112,50 @@ public final class TargetConditions {
                             : ConditionResult.fail(
                                     OUT_OF_RANGE,
                                     "Target is farther than " + blocks + " blocks"
+                            );
+                }
+        );
+    }
+
+    /**
+     * Requires the target to fall inside a full source-facing cone.
+     *
+     * <p>180 degrees means the front hemisphere. 360 degrees accepts every
+     * orientation. 0 degrees means exact forward alignment.</p>
+     */
+    public static Condition<AbilityContext> requireFacingArcDegrees(
+            double fullArcDegrees
+    ) {
+        if (!Double.isFinite(fullArcDegrees)
+                || fullArcDegrees < 0.0
+                || fullArcDegrees > 360.0) {
+            throw new IllegalArgumentException(
+                    "facing arc must be finite and between 0 and 360 degrees"
+            );
+        }
+
+        double threshold = Math.cos(
+                Math.toRadians(fullArcDegrees / 2.0)
+        );
+
+        return context -> withObservation(
+                context,
+                observation -> {
+                    if (observation.sourceFacingDot().isEmpty()) {
+                        return ConditionResult.fail(
+                                FACING_UNAVAILABLE,
+                                "Source facing relative to target is unavailable"
+                        );
+                    }
+
+                    return observation.sourceFacingDot().getAsDouble()
+                            + 1.0e-12 >= threshold
+                            ? ConditionResult.pass()
+                            : ConditionResult.fail(
+                                    OUTSIDE_FACING_ARC,
+                                    "Target is outside the required "
+                                            + fullArcDegrees
+                                            + " degree facing arc"
                             );
                 }
         );

@@ -16,25 +16,32 @@ public record TargetObservation(
         boolean sourceAlive,
         boolean targetAlive,
         boolean lineOfSight,
-        OptionalDouble squaredDistance
+        OptionalDouble squaredDistance,
+        OptionalDouble sourceFacingDot
 ) {
     public TargetObservation {
         Objects.requireNonNull(squaredDistance, "squaredDistance");
+        Objects.requireNonNull(sourceFacingDot, "sourceFacingDot");
 
-        if (!available && squaredDistance.isPresent()) {
+        if (!available
+                && (squaredDistance.isPresent() || sourceFacingDot.isPresent())) {
             throw new IllegalArgumentException(
-                    "unavailable target observation cannot carry distance"
+                    "unavailable target observation cannot carry spatial facts"
             );
         }
 
-        if (squaredDistance.isPresent()) {
-            double value = squaredDistance.getAsDouble();
-            if (!Double.isFinite(value) || value < 0.0) {
-                throw new IllegalArgumentException(
-                        "squaredDistance must be finite and >= 0"
-                );
-            }
-        }
+        validateFiniteRange(
+                squaredDistance,
+                0.0,
+                Double.POSITIVE_INFINITY,
+                "squaredDistance"
+        );
+        validateFiniteRange(
+                sourceFacingDot,
+                -1.0,
+                1.0,
+                "sourceFacingDot"
+        );
     }
 
     public static TargetObservation unavailable() {
@@ -45,6 +52,7 @@ public record TargetObservation(
                 false,
                 false,
                 false,
+                OptionalDouble.empty(),
                 OptionalDouble.empty()
         );
     }
@@ -57,6 +65,26 @@ public record TargetObservation(
             boolean lineOfSight,
             OptionalDouble squaredDistance
     ) {
+        return observed(
+                sameActor,
+                sameWorld,
+                sourceAlive,
+                targetAlive,
+                lineOfSight,
+                squaredDistance,
+                OptionalDouble.empty()
+        );
+    }
+
+    public static TargetObservation observed(
+            boolean sameActor,
+            boolean sameWorld,
+            boolean sourceAlive,
+            boolean targetAlive,
+            boolean lineOfSight,
+            OptionalDouble squaredDistance,
+            OptionalDouble sourceFacingDot
+    ) {
         return new TargetObservation(
                 true,
                 sameActor,
@@ -64,7 +92,29 @@ public record TargetObservation(
                 sourceAlive,
                 targetAlive,
                 lineOfSight,
-                squaredDistance
+                squaredDistance,
+                sourceFacingDot
         );
+    }
+
+    private static void validateFiniteRange(
+            OptionalDouble value,
+            double minimum,
+            double maximum,
+            String label
+    ) {
+        if (value.isEmpty()) {
+            return;
+        }
+
+        double raw = value.getAsDouble();
+        if (!Double.isFinite(raw)
+                || raw < minimum
+                || raw > maximum) {
+            throw new IllegalArgumentException(
+                    label + " must be finite and between "
+                            + minimum + " and " + maximum
+            );
+        }
     }
 }

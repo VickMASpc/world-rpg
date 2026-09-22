@@ -5,6 +5,7 @@ import dev.worldrpg.combat.actor.CombatActor;
 import dev.worldrpg.combat.target.TargetObservation;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -48,23 +49,57 @@ public final class MinecraftTargetObservationProvider
             return TargetObservation.unavailable();
         }
 
-        LivingEntity sourceLiving = sourceEntity.get();
-        LivingEntity targetLiving = targetEntity.get();
+        return capture(sourceEntity.get(), targetEntity.get());
+    }
+
+    public static TargetObservation capture(
+            LivingEntity source,
+            LivingEntity target
+    ) {
+        Objects.requireNonNull(source, "source");
+        Objects.requireNonNull(target, "target");
 
         boolean sameWorld =
-                sourceLiving.getWorld() == targetLiving.getWorld();
+                source.getWorld() == target.getWorld();
+
+        OptionalDouble squaredDistance = sameWorld
+                ? OptionalDouble.of(source.squaredDistanceTo(target))
+                : OptionalDouble.empty();
+
+        OptionalDouble facingDot = sameWorld
+                ? OptionalDouble.of(facingDot(source, target))
+                : OptionalDouble.empty();
 
         return TargetObservation.observed(
-                sourceLiving == targetLiving,
+                source == target,
                 sameWorld,
-                sourceLiving.isAlive(),
-                targetLiving.isAlive(),
-                sameWorld && sourceLiving.canSee(targetLiving),
-                sameWorld
-                        ? OptionalDouble.of(
-                                sourceLiving.squaredDistanceTo(targetLiving)
-                        )
-                        : OptionalDouble.empty()
+                source.isAlive(),
+                target.isAlive(),
+                sameWorld && source.canSee(target),
+                squaredDistance,
+                facingDot
         );
+    }
+
+    private static double facingDot(
+            LivingEntity source,
+            LivingEntity target
+    ) {
+        if (source == target) {
+            return 1.0;
+        }
+
+        Vec3d toTarget = target.getEyePos()
+                .subtract(source.getEyePos());
+
+        if (toTarget.lengthSquared() <= 1.0e-12) {
+            return 1.0;
+        }
+
+        double raw = source.getRotationVec(1.0F)
+                .normalize()
+                .dotProduct(toTarget.normalize());
+
+        return Math.max(-1.0, Math.min(1.0, raw));
     }
 }

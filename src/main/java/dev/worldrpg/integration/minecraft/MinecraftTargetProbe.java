@@ -32,25 +32,14 @@ public record MinecraftTargetProbe(
 
         CombatActor sourceActor = bindings.bind(source);
         CombatActor targetActor = bindings.bind(target);
-        boolean sameWorld = source.getWorld() == target.getWorld();
-
-        TargetObservation observation = TargetObservation.observed(
-                source == target,
-                sameWorld,
-                source.isAlive(),
-                target.isAlive(),
-                sameWorld && source.canSee(target),
-                sameWorld
-                        ? java.util.OptionalDouble.of(
-                                source.squaredDistanceTo(target)
-                        )
-                        : java.util.OptionalDouble.empty()
-        );
 
         return new MinecraftTargetProbe(
                 sourceActor.id(),
                 targetActor.id(),
-                observation
+                MinecraftTargetObservationProvider.capture(
+                        source,
+                        target
+                )
         );
     }
 
@@ -61,6 +50,12 @@ public record MinecraftTargetProbe(
                 )
                 : "cross-world";
 
+        String facing = observation.sourceFacingDot().isPresent()
+                ? Double.toString(
+                        observation.sourceFacingDot().getAsDouble()
+                )
+                : "unavailable";
+
         return "sourceActor=" + sourceActor.value()
                 + " targetActor=" + targetActor.value()
                 + " sameEntity=" + observation.sameActor()
@@ -68,6 +63,7 @@ public record MinecraftTargetProbe(
                 + " sourceAlive=" + observation.sourceAlive()
                 + " targetAlive=" + observation.targetAlive()
                 + " lineOfSight=" + observation.lineOfSight()
-                + " distance=" + distance;
+                + " distance=" + distance
+                + " facingDot=" + facing;
     }
 }
