@@ -1,3 +1,6 @@
 {
-  "world_rpg.name": "World RPG"
+  "key.categories.world_rpg.p3": "World RPG - P3 Developer",
+  "key.world_rpg.p3.focus": "P3 Proof: Focus",
+  "key.world_rpg.p3.bolt": "P3 Proof: Bolt",
+  "key.world_rpg.p3.channel": "P3 Proof: Channel"
 }
