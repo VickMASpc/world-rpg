@@ -20,7 +20,7 @@ public final class EffectSequence {
         this.effects = List.copyOf(Objects.requireNonNull(effects, "effects"));
     }
 
-    public EffectSequenceResult execute(EffectContext context) {
+    public ConditionResult validate(EffectContext context) {
         Objects.requireNonNull(context, "context");
 
         ConditionResult validation = ConditionResult.pass();
@@ -31,16 +31,31 @@ public final class EffectSequence {
             );
         }
 
-        if (!validation.passed()) {
-            return new EffectSequenceResult(validation, List.of());
-        }
+        return validation;
+    }
+
+    public List<CombatEvent> applyValidated(EffectContext context) {
+        Objects.requireNonNull(context, "context");
 
         List<CombatEvent> events = new ArrayList<>();
         for (CombatEffect effect : effects) {
             events.addAll(effect.apply(context));
         }
 
-        return new EffectSequenceResult(ConditionResult.pass(), events);
+        return List.copyOf(events);
+    }
+
+    public EffectSequenceResult execute(EffectContext context) {
+        ConditionResult validation = validate(context);
+
+        if (!validation.passed()) {
+            return new EffectSequenceResult(validation, List.of());
+        }
+
+        return new EffectSequenceResult(
+                ConditionResult.pass(),
+                applyValidated(context)
+        );
     }
 
     public List<CombatEffect> effects() {
