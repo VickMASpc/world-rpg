@@ -2,10 +2,13 @@ package dev.worldrpg.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import dev.worldrpg.api.id.RpgId;
 import dev.worldrpg.debug.P3ProofReport;
 import dev.worldrpg.debug.P3ProofScenario;
 import dev.worldrpg.integration.minecraft.MinecraftTargetProbe;
 import dev.worldrpg.integration.minecraft.WorldRpgServerRuntime;
+import dev.worldrpg.integration.minecraft.p3.P3AbilityActivationRequest;
+import dev.worldrpg.integration.minecraft.p3.P3FixtureDefinitions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.Entity;
@@ -14,6 +17,8 @@ import net.minecraft.entity.mob.HuskEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+
+import java.util.UUID;
 
 public final class WorldRpgCommands {
     private WorldRpgCommands() {
@@ -172,6 +177,42 @@ public final class WorldRpgCommands {
                                 )
                 )
                 .then(
+                        CommandManager.literal("cast")
+                                .then(
+                                        CommandManager.literal("focus")
+                                                .executes(context ->
+                                                        activateRoomAbility(
+                                                                context.getSource()
+                                                                        .getPlayerOrThrow(),
+                                                                P3FixtureDefinitions.FOCUS,
+                                                                true
+                                                        )
+                                                )
+                                )
+                                .then(
+                                        CommandManager.literal("bolt")
+                                                .executes(context ->
+                                                        activateRoomAbility(
+                                                                context.getSource()
+                                                                        .getPlayerOrThrow(),
+                                                                P3FixtureDefinitions.BOLT,
+                                                                false
+                                                        )
+                                                )
+                                )
+                                .then(
+                                        CommandManager.literal("channel")
+                                                .executes(context ->
+                                                        activateRoomAbility(
+                                                                context.getSource()
+                                                                        .getPlayerOrThrow(),
+                                                                P3FixtureDefinitions.CHANNEL,
+                                                                false
+                                                        )
+                                                )
+                                )
+                )
+                .then(
                         CommandManager.literal("status")
                                 .executes(context -> {
                                     ServerPlayerEntity player =
@@ -288,6 +329,57 @@ public final class WorldRpgCommands {
         } catch (IllegalStateException | IllegalArgumentException exception) {
             player.sendMessage(
                     Text.literal("P3 room health failed: " + exception.getMessage()),
+                    false
+            );
+            return 0;
+        }
+    }
+
+    /**
+     * Direct server-side developer activation. This intentionally bypasses the
+     * C2S transport/replay layer and exists only to test server target
+     * conditions that the temporary vanilla crosshair cannot submit (for
+     * example, LOS-blocked or beyond-crosshair targets). F6/F7/F8 remain the
+     * required evidence for the real network path.
+     */
+    private static int activateRoomAbility(
+            ServerPlayerEntity player,
+            RpgId abilityId,
+            boolean selfTarget
+    ) {
+        try {
+            UUID targetUuid = selfTarget
+                    ? player.getUuid()
+                    : WorldRpgServerRuntime.p3Room()
+                            .targetUuid(player)
+                            .orElseThrow(() -> new IllegalStateException(
+                                    "No P3 developer target is active."
+                            ));
+
+            var response = WorldRpgServerRuntime.p3Combat().handle(
+                    player,
+                    new P3AbilityActivationRequest(
+                            0L,
+                            abilityId,
+                            targetUuid
+                    )
+            );
+
+            player.sendMessage(
+                    Text.literal(
+                            "P3 direct room activation "
+                                    + abilityId + ": " + response.summary()
+                                    + " (network path bypassed)"
+                    ),
+                    false
+            );
+            return response.accepted() ? Command.SINGLE_SUCCESS : 0;
+        } catch (IllegalStateException | IllegalArgumentException exception) {
+            player.sendMessage(
+                    Text.literal(
+                            "P3 direct room activation failed: "
+                                    + exception.getMessage()
+                    ),
                     false
             );
             return 0;
