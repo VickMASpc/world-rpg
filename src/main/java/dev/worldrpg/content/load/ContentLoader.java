@@ -226,22 +226,6 @@ public final class ContentLoader {
             int currentSchema =
                     handler.domain().currentSchema().value();
 
-            if (sourceSchema < currentSchema) {
-                report.error(
-                        "schema.migration_required",
-                        "Definition schema "
-                                + sourceSchema
-                                + " is older than current schema "
-                                + currentSchema
-                                + " for "
-                                + handler.domain().registryKey().id()
-                                + "; no migration has been registered yet",
-                        document.source().sourceRef(),
-                        document.header().id()
-                );
-                return;
-            }
-
             if (sourceSchema > currentSchema) {
                 report.error(
                         "schema.unsupported_newer",
@@ -255,6 +239,25 @@ public final class ContentLoader {
                         document.header().id()
                 );
                 return;
+            }
+
+            if (sourceSchema < currentSchema) {
+                Optional<DecodedJsonDocument> migrated =
+                        catalog.schemaMigrator(
+                                handler.domain().registryKey().id()
+                        ).orElseGet(() ->
+                                new DefinitionSchemaMigrator(java.util.List.of())
+                        ).migrate(
+                                document,
+                                handler.domain().currentSchema(),
+                                report
+                        );
+
+                if (migrated.isEmpty()) {
+                    return;
+                }
+
+                document = migrated.get();
             }
 
             Optional<T> definition =

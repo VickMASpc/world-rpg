@@ -15,11 +15,13 @@ public final class DefinitionDomainCatalog {
     private final Map<RpgId, DefinitionDomainHandler<?>> handlers;
     private final List<CrossRegistryValidator> crossRegistryValidators;
     private final Map<RpgId, DefinitionReloadGuard> reloadGuards;
+    private final Map<RpgId, DefinitionSchemaMigrator> schemaMigrators;
 
     private DefinitionDomainCatalog(
             Map<RpgId, DefinitionDomainHandler<?>> handlers,
             List<CrossRegistryValidator> crossRegistryValidators,
-            Map<RpgId, DefinitionReloadGuard> reloadGuards
+            Map<RpgId, DefinitionReloadGuard> reloadGuards,
+            Map<RpgId, DefinitionSchemaMigrator> schemaMigrators
     ) {
         this.handlers = Collections.unmodifiableMap(
                 new LinkedHashMap<>(handlers)
@@ -28,6 +30,9 @@ public final class DefinitionDomainCatalog {
                 List.copyOf(crossRegistryValidators);
         this.reloadGuards = Collections.unmodifiableMap(
                 new LinkedHashMap<>(reloadGuards)
+        );
+        this.schemaMigrators = Collections.unmodifiableMap(
+                new LinkedHashMap<>(schemaMigrators)
         );
     }
 
@@ -61,6 +66,16 @@ public final class DefinitionDomainCatalog {
         );
     }
 
+    public Optional<DefinitionSchemaMigrator> schemaMigrator(
+            RpgId registryId
+    ) {
+        return Optional.ofNullable(
+                schemaMigrators.get(
+                        Objects.requireNonNull(registryId, "registryId")
+                )
+        );
+    }
+
     public static final class Builder {
         private final Map<RpgId, DefinitionDomainHandler<?>> handlers =
                 new LinkedHashMap<>();
@@ -68,15 +83,15 @@ public final class DefinitionDomainCatalog {
                 new ArrayList<>();
         private final Map<RpgId, DefinitionReloadGuard> reloadGuards =
                 new LinkedHashMap<>();
+        private final Map<RpgId, List<DefinitionSchemaMigration>>
+                schemaMigrations = new LinkedHashMap<>();
 
         public Builder add(DefinitionDomainHandler<?> handler) {
             Objects.requireNonNull(handler, "handler");
             RpgId registryId =
                     handler.domain().registryKey().id();
 
-            DefinitionDomainHandler<?> previous =
-                    handlers.putIfAbsent(registryId, handler);
-            if (previous != null) {
+            if (handlers.putIfAbsent(registryId, handler) != null) {
                 throw new IllegalArgumentException(
                         "Duplicate definition domain: " + registryId
                 );
@@ -100,9 +115,7 @@ public final class DefinitionDomainCatalog {
             Objects.requireNonNull(registryId, "registryId");
             Objects.requireNonNull(guard, "guard");
 
-            DefinitionReloadGuard previous =
-                    reloadGuards.putIfAbsent(registryId, guard);
-            if (previous != null) {
+            if (reloadGuards.putIfAbsent(registryId, guard) != null) {
                 throw new IllegalArgumentException(
                         "Duplicate reload guard: " + registryId
                 );
@@ -110,21 +123,52 @@ public final class DefinitionDomainCatalog {
             return this;
         }
 
+        public Builder addSchemaMigration(
+                RpgId registryId,
+                DefinitionSchemaMigration migration
+        ) {
+            schemaMigrations.computeIfAbsent(
+                    Objects.requireNonNull(registryId, "registryId"),
+                    ignored -> new ArrayList<>()
+            ).add(Objects.requireNonNull(migration, "migration"));
+            return this;
+        }
+
         public DefinitionDomainCatalog build() {
-            for (RpgId guardedRegistry : reloadGuards.keySet()) {
-                if (!handlers.containsKey(guardedRegistry)) {
-                    throw new IllegalArgumentException(
-                            "Reload guard targets unknown definition domain: "
-                                    + guardedRegistry
-                    );
-                }
+            for (RpgId registryId : reloadGuards.keySet()) {
+                requireKnownDomain(registryId, "Reload guard");
             }
+
+            Map<RpgId, DefinitionSchemaMigrator> migrators =
+                    new LinkedHashMap<>();
+
+            schemaMigrations.forEach((registryId, migrations) -> {
+                requireKnownDomain(registryId, "Schema migration");
+                migrators.put(
+                        registryId,
+                        new DefinitionSchemaMigrator(migrations)
+                );
+            });
 
             return new DefinitionDomainCatalog(
                     handlers,
                     crossRegistryValidators,
-                    reloadGuards
+                    reloadGuards,
+                    migrators
             );
+        }
+
+        private void requireKnownDomain(
+                RpgId registryId,
+                String owner
+        ) {
+            if (!handlers.containsKey(registryId)) {
+                throw new IllegalArgumentException(
+                        owner
+                                + " targets unknown definition domain: "
+                                + registryId
+                );
+            }
         }
     }
 }
