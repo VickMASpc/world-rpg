@@ -11,6 +11,7 @@ import dev.worldrpg.combat.resource.ResourceKey;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ProfiledCombatResolverTest {
@@ -164,6 +165,51 @@ class ProfiledCombatResolverTest {
         assertEquals(20.0, trace.appliedFinal(), 0.0);
         assertEquals(10.0, trace.excess(), 1.0e-12);
         assertEquals(100.0, target.resources().require(HEALTH).current(), 0.0);
+    }
+
+    @Test
+    void invalidRollFailsBeforeTargetHealthMutation() {
+        CombatActor source =
+                new CombatActor(new CombatActorId(1));
+        CombatActor target =
+                new CombatActor(new CombatActorId(2));
+
+        source.stats().setBase(
+                CombatMathStats.CRIT_CHANCE,
+                0.5
+        );
+        target.resources().add(
+                HEALTH,
+                100.0,
+                100.0
+        );
+
+        ProfiledCombatResolver resolver =
+                new ProfiledCombatResolver(
+                        PROFILE,
+                        () -> Double.NaN
+                );
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> resolver.resolve(
+                        new CombatMagnitudeRequest(
+                                25,
+                                CombatMagnitudeKind.DAMAGE,
+                                source,
+                                target,
+                                RpgId.parse("world_rpg:ability/test/bad_roll"),
+                                CombatSchools.ARCANE.id(),
+                                20.0
+                        )
+                )
+        );
+
+        assertEquals(
+                100.0,
+                target.resources().require(HEALTH).current(),
+                0.0
+        );
     }
 
     @Test
