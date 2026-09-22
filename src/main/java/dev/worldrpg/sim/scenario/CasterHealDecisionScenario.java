@@ -7,12 +7,13 @@ import dev.worldrpg.combat.ability.AbilityDefinition;
 import dev.worldrpg.combat.ability.AbilityObservationProvider;
 import dev.worldrpg.combat.actor.CombatActor;
 import dev.worldrpg.combat.actor.CombatActorId;
-import dev.worldrpg.combat.cast.CastInterruptionReason;
+import dev.worldrpg.combat.cast.LookupCombatCastControlGateway;
 import dev.worldrpg.combat.condition.Conditions;
 import dev.worldrpg.combat.cooldown.CooldownBook;
 import dev.worldrpg.combat.effect.CombatMagnitudeEffect;
 import dev.worldrpg.combat.effect.EffectRecipient;
 import dev.worldrpg.combat.effect.EffectSequence;
+import dev.worldrpg.combat.effect.InterruptEffect;
 import dev.worldrpg.combat.math.CombatLevelSource;
 import dev.worldrpg.combat.math.CombatMathProfile;
 import dev.worldrpg.combat.math.CombatMathStats;
@@ -34,6 +35,8 @@ import dev.worldrpg.sim.HeadlessAbilityDriver;
 import dev.worldrpg.sim.HeadlessCombatSimulator;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalLong;
 
@@ -76,6 +79,10 @@ public final class CasterHealDecisionScenario
     private static final RpgId HEAL_ID =
             RpgId.parse(
                     "world_rpg:ability/calibration/caster_heal"
+            );
+    private static final RpgId INTERRUPT_ID =
+            RpgId.parse(
+                    "world_rpg:ability/calibration/caster_interrupt"
             );
 
     private final Decision decision;
@@ -182,6 +189,24 @@ public final class CasterHealDecisionScenario
                         observations
                 );
 
+        Map<CombatActorId, dev.worldrpg.combat.cast.CastController>
+                castControllers = Map.of(
+                        player.id(),
+                        playerDriver.casts(),
+                        enemy.id(),
+                        enemyDriver.casts()
+                );
+
+        LookupCombatCastControlGateway castControl =
+                new LookupCombatCastControlGateway(
+                        id -> Optional.ofNullable(
+                                castControllers.get(id)
+                        )
+                );
+
+        AbilityDefinition playerInterrupt =
+                interruptAbility(castControl);
+
         AbilityDefinition playerBolt =
                 damageAbility(
                         BOLT_ID,
@@ -220,6 +245,38 @@ public final class CasterHealDecisionScenario
         while (!enemy.resources().require(HEALTH).isEmpty()
                 && !player.resources().require(HEALTH).isEmpty()
                 && simulator.now() - fightStart < MAX_FIGHT_TICKS) {
+            boolean healReadyToInterrupt =
+                    decision == Decision.INTERRUPT
+                            && enemyDriver.casts()
+                                    .activeCast()
+                                    .filter(cast ->
+                                            cast.ability()
+                                                    .id()
+                                                    .equals(HEAL_ID)
+                                    )
+                                    .filter(cast ->
+                                            simulator.now()
+                                                    - cast.startedAtTick()
+                                                    >= INTERRUPT_REACTION_TICKS
+                                    )
+                                    .isPresent();
+
+            if (healReadyToInterrupt
+                    && playerDriver.casts().activeCast().isEmpty()) {
+                var activation =
+                        playerDriver.activate(
+                                playerInterrupt,
+                                enemy
+                        );
+
+                if (!activation.accepted()) {
+                    throw new IllegalStateException(
+                            "player interrupt rejected: "
+                                    + activation.validation()
+                    );
+                }
+            }
+
             if (playerDriver.casts().activeCast().isEmpty()) {
                 var activation =
                         playerDriver.activate(
@@ -271,25 +328,6 @@ public final class CasterHealDecisionScenario
                 }
             }
 
-            if (decision == Decision.INTERRUPT
-                    && enemyDriver.casts()
-                            .activeCast()
-                            .filter(cast ->
-                                    cast.ability()
-                                            .id()
-                                            .equals(HEAL_ID)
-                            )
-                            .filter(cast ->
-                                    simulator.now()
-                                            - cast.startedAtTick()
-                                            >= INTERRUPT_REACTION_TICKS
-                            )
-                            .isPresent()) {
-                enemyDriver.interrupt(
-                        CastInterruptionReason.INTERRUPT
-                );
-            }
-
             playerDriver.advanceAndTick(STEP_TICKS);
             enemyDriver.tickNow();
         }
@@ -309,6 +347,29 @@ public final class CasterHealDecisionScenario
         }
 
         return simulator.report();
+    }
+
+    private static AbilityDefinition interruptAbility(
+            LookupCombatCastControlGateway castControl
+    ) {
+        return new AbilityDefinition(
+                INTERRUPT_ID,
+                AbilityCastKind.INSTANT,
+                0,
+                OptionalLong.empty(),
+                0,
+                0,
+                List.of(),
+                aliveConditions(),
+                new EffectSequence(
+                        List.of(
+                                new InterruptEffect(
+                                        EffectRecipient.TARGET,
+                                        castControl
+                                )
+                        )
+                )
+        );
     }
 
     private static AbilityDefinition damageAbility(
