@@ -10,6 +10,7 @@ import dev.worldrpg.api.validation.ValidationReport;
 import dev.worldrpg.content.decode.DecodedJsonDocument;
 import dev.worldrpg.content.decode.JsonDocumentDecoder;
 import dev.worldrpg.content.source.ContentSource;
+import dev.worldrpg.content.source.ContentSourceBatch;
 import dev.worldrpg.content.source.ContentSourceSet;
 
 import java.util.LinkedHashMap;
@@ -32,9 +33,24 @@ public final class ContentLoader {
         this.publisher = Objects.requireNonNull(publisher, "publisher");
     }
 
-    public ContentLoadResult loadAndPublish(Iterable<ContentSource> inputSources) {
+    public ContentLoadResult loadAndPublish(
+            Iterable<ContentSource> inputSources
+    ) {
+        return loadAndPublish(
+                ContentSourceBatch.clean(inputSources)
+        );
+    }
+
+    public ContentLoadResult loadAndPublish(
+            ContentSourceBatch batch
+    ) {
+        Objects.requireNonNull(batch, "batch");
+
         ValidationReport report = new ValidationReport();
-        ContentSourceSet sourceSet = ContentSourceSet.create(inputSources, report);
+        report.merge(batch.diagnostics());
+
+        ContentSourceSet sourceSet =
+                ContentSourceSet.create(batch.sources(), report);
 
         Map<dev.worldrpg.api.id.RpgId, DomainAccumulator<?>> accumulators =
                 createAccumulators();
@@ -71,17 +87,14 @@ public final class ContentLoader {
         }
         RegistrySnapshot candidate = snapshotBuilder.build();
 
-        // Stage: reference resolution against the complete candidate snapshot.
         for (DomainAccumulator<?> accumulator : accumulators.values()) {
             accumulator.resolveReferences(candidate, report);
         }
 
-        // Stage: per-domain semantic validation.
         for (DomainAccumulator<?> accumulator : accumulators.values()) {
             accumulator.validateDefinitions(candidate, report);
         }
 
-        // Stage: whole-snapshot/cross-registry validation.
         for (CrossRegistryValidator validator : catalog.crossRegistryValidators()) {
             validator.validate(candidate, report);
         }
