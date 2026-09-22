@@ -17,11 +17,12 @@ public record CombatMathProfile(
         double healingPowerCoefficient,
         double criticalMultiplier,
         double maximumCriticalChance,
-        double mitigationScale,
+        LevelScalarCurve mitigationScale,
         double maximumMitigation
 ) {
     public CombatMathProfile {
         Objects.requireNonNull(healthResource, "healthResource");
+        Objects.requireNonNull(mitigationScale, "mitigationScale");
 
         requireNonNegativeFinite(
                 physicalPowerCoefficient,
@@ -48,16 +49,37 @@ public record CombatMathProfile(
                 "maximumCriticalChance"
         );
 
-        if (!Double.isFinite(mitigationScale)
-                || mitigationScale <= 0.0) {
-            throw new IllegalArgumentException(
-                    "mitigationScale must be finite and > 0"
-            );
-        }
-
         requireUnitInterval(
                 maximumMitigation,
                 "maximumMitigation"
+        );
+    }
+
+    /**
+     * Compatibility/convenience constructor for a flat mitigation scale.
+     */
+    public CombatMathProfile(
+            ResourceKey healthResource,
+            double physicalPowerCoefficient,
+            double spellPowerCoefficient,
+            double healingPowerCoefficient,
+            double criticalMultiplier,
+            double maximumCriticalChance,
+            double mitigationScale,
+            double maximumMitigation
+    ) {
+        this(
+                healthResource,
+                physicalPowerCoefficient,
+                spellPowerCoefficient,
+                healingPowerCoefficient,
+                criticalMultiplier,
+                maximumCriticalChance,
+                LevelScalarCurve.constant(
+                        100,
+                        mitigationScale
+                ),
+                maximumMitigation
         );
     }
 

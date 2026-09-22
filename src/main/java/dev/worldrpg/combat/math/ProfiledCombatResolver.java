@@ -26,6 +26,7 @@ public final class ProfiledCombatResolver
     private final CombatMathProfile profile;
     private final CombatRollSource rolls;
     private final CombatStatResolver stats;
+    private final CombatLevelSource levels;
 
     public ProfiledCombatResolver(
             CombatMathProfile profile,
@@ -34,7 +35,8 @@ public final class ProfiledCombatResolver
         this(
                 profile,
                 rolls,
-                CombatStatResolver.direct()
+                CombatStatResolver.direct(),
+                CombatLevelSource.constant(1)
         );
     }
 
@@ -43,9 +45,24 @@ public final class ProfiledCombatResolver
             CombatRollSource rolls,
             CombatStatResolver stats
     ) {
+        this(
+                profile,
+                rolls,
+                stats,
+                CombatLevelSource.constant(1)
+        );
+    }
+
+    public ProfiledCombatResolver(
+            CombatMathProfile profile,
+            CombatRollSource rolls,
+            CombatStatResolver stats,
+            CombatLevelSource levels
+    ) {
         this.profile = Objects.requireNonNull(profile, "profile");
         this.rolls = Objects.requireNonNull(rolls, "rolls");
         this.stats = Objects.requireNonNull(stats, "stats");
+        this.levels = Objects.requireNonNull(levels, "levels");
     }
 
     @Override
@@ -112,7 +129,7 @@ public final class ProfiledCombatResolver
 
         double mitigationFraction =
                 request.kind() == CombatMagnitudeKind.DAMAGE
-                        ? mitigation(target, school)
+                        ? mitigation(source, target, school)
                         : 0.0;
         double afterMitigation =
                 afterCritical * (1.0 - mitigationFraction);
@@ -220,6 +237,7 @@ public final class ProfiledCombatResolver
     }
 
     private double mitigation(
+            CombatActor source,
             CombatActor target,
             CombatSchoolKey school
     ) {
@@ -234,8 +252,11 @@ public final class ProfiledCombatResolver
             return 0.0;
         }
 
+        double scale = profile.mitigationScale()
+                .valueAt(levels.levelOf(source));
+
         double raw = defense
-                / (defense + profile.mitigationScale());
+                / (defense + scale);
 
         return clamp(
                 raw,
