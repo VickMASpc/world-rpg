@@ -15,6 +15,10 @@ public record SchemaVersion(int value) implements Comparable<SchemaVersion> {
         return Integer.compare(value, other.value);
     }
 
+    public SchemaVersion next() {
+        return new SchemaVersion(Math.addExact(value, 1));
+    }
+
     @Override
     public String toString() {
         return Integer.toString(value);
