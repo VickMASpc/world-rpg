@@ -9,6 +9,7 @@ import dev.worldrpg.combat.cooldown.CooldownBook;
 import dev.worldrpg.combat.event.CastCompletedEvent;
 import dev.worldrpg.combat.event.CastInterruptedEvent;
 import dev.worldrpg.combat.event.CombatEvent;
+import dev.worldrpg.combat.event.ResourceChangedEvent;
 import dev.worldrpg.combat.stat.ModifierSource;
 import dev.worldrpg.combat.stat.StatModifierOperation;
 import dev.worldrpg.integration.minecraft.MinecraftCombatActorBindings;
@@ -184,6 +185,19 @@ public final class P3DeveloperCombatRuntime {
                 + " casting=" + state.casts().activeCast().isPresent();
     }
 
+    /**
+     * Developer-gate setup only. This mutates the proof resource directly so
+     * exhaustion behavior can be tested without changing fixture balance or
+     * requiring an impossible amount of proof mana.
+     */
+    public double setProofHealth(LivingEntity entity, double value) {
+        P3EntityCombatState state = state(entity);
+        var pool = state.actor().resources()
+                .require(P3FixtureDefinitions.HEALTH);
+        pool.setCurrent(value);
+        return pool.current();
+    }
+
     public boolean removeState(UUID entityUuid) {
         Objects.requireNonNull(entityUuid, "entityUuid");
 
@@ -297,6 +311,17 @@ public final class P3DeveloperCombatRuntime {
                         Text.literal(
                                 "P3 cast interrupted: "
                                         + interrupted.reason()
+                        ),
+                        false
+                );
+            } else if (event instanceof ResourceChangedEvent changed) {
+                player.sendMessage(
+                        Text.literal(
+                                "P3 resource tick: actor="
+                                        + changed.actorId().value()
+                                        + " resource=" + changed.resource().id()
+                                        + " " + changed.change().before()
+                                        + " -> " + changed.change().after()
                         ),
                         false
                 );
