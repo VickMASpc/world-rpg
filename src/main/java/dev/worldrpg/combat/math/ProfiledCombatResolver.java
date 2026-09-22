@@ -1,6 +1,7 @@
 package dev.worldrpg.combat.math;
 
 import dev.worldrpg.combat.actor.CombatActor;
+import dev.worldrpg.combat.condition.ConditionResult;
 import dev.worldrpg.combat.event.CombatEvent;
 import dev.worldrpg.combat.event.CombatMagnitudeResolvedEvent;
 import dev.worldrpg.combat.event.ResourceChangedEvent;
@@ -23,6 +24,22 @@ import java.util.OptionalDouble;
  */
 public final class ProfiledCombatResolver
         implements CombatResolutionGateway {
+    private static final dev.worldrpg.api.id.RpgId UNKNOWN_PROFILE =
+            dev.worldrpg.api.id.RpgId.parse(
+                    "world_rpg:condition/unknown_resolution_profile"
+            );
+    private static final dev.worldrpg.api.id.RpgId MISSING_HEALTH =
+            dev.worldrpg.api.id.RpgId.parse(
+                    "world_rpg:condition/missing_health_resource"
+            );
+    private static final dev.worldrpg.api.id.RpgId UNSUPPORTED_SCHOOL =
+            dev.worldrpg.api.id.RpgId.parse(
+                    "world_rpg:condition/unsupported_combat_school"
+            );
+    private static final dev.worldrpg.api.id.RpgId INVALID_LEVEL =
+            dev.worldrpg.api.id.RpgId.parse(
+                    "world_rpg:condition/invalid_combat_level"
+            );
     private final CombatMathProfile profile;
     private final CombatRollSource rolls;
     private final CombatStatResolver stats;
@@ -83,6 +100,70 @@ public final class ProfiledCombatResolver
         this.stats = Objects.requireNonNull(stats, "stats");
         this.levels = Objects.requireNonNull(levels, "levels");
         this.outcomes = Objects.requireNonNull(outcomes, "outcomes");
+    }
+
+    @Override
+    public ConditionResult validate(
+            CombatMagnitudeRequest request
+    ) {
+        Objects.requireNonNull(request, "request");
+
+        ConditionResult result = ConditionResult.pass();
+
+        if (outcomes.find(request.resolutionProfileId()).isEmpty()) {
+            result = result.plus(
+                    ConditionResult.fail(
+                            UNKNOWN_PROFILE,
+                            "Unknown combat resolution profile: "
+                                    + request.resolutionProfileId()
+                    )
+            );
+        }
+
+        if (request.target()
+                .resources()
+                .find(profile.healthResource())
+                .isEmpty()) {
+            result = result.plus(
+                    ConditionResult.fail(
+                            MISSING_HEALTH,
+                            "Target lacks health resource "
+                                    + profile.healthResource()
+                    )
+            );
+        }
+
+        if (request.kind() == CombatMagnitudeKind.DAMAGE) {
+            try {
+                CombatMathStats.resistanceFor(
+                        new CombatSchoolKey(request.schoolId())
+                );
+            } catch (IllegalArgumentException exception) {
+                result = result.plus(
+                        ConditionResult.fail(
+                                UNSUPPORTED_SCHOOL,
+                                exception.getMessage()
+                        )
+                );
+            }
+
+            try {
+                profile.mitigationScale().valueAt(
+                        levels.levelOf(request.source())
+                );
+            } catch (RuntimeException exception) {
+                result = result.plus(
+                        ConditionResult.fail(
+                                INVALID_LEVEL,
+                                exception.getMessage() == null
+                                        ? "Invalid combat level"
+                                        : exception.getMessage()
+                        )
+                );
+            }
+        }
+
+        return result;
     }
 
     @Override

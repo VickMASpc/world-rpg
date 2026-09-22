@@ -59,6 +59,14 @@ public final class CombatOutcomeProfileSet {
         );
     }
 
+    public java.util.Optional<CombatOutcomeProfile> find(RpgId id) {
+        return java.util.Optional.ofNullable(
+                profiles.get(
+                        Objects.requireNonNull(id, "id")
+                )
+        );
+    }
+
     public CombatOutcomeProfile require(RpgId id) {
         CombatOutcomeProfile profile =
                 profiles.get(Objects.requireNonNull(id, "id"));
