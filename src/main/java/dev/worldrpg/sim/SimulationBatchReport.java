@@ -1,6 +1,7 @@
 package dev.worldrpg.sim;
 
 import dev.worldrpg.combat.actor.CombatActorId;
+import dev.worldrpg.combat.cast.CastInterruptionReason;
 import dev.worldrpg.combat.resource.ResourceKey;
 
 import java.util.List;
@@ -92,6 +93,28 @@ public record SimulationBatchReport(
                 .sum();
 
         return (double) misses / (double) attempts;
+    }
+
+    public double averageInterruptions() {
+        return runs.stream()
+                .mapToLong(result ->
+                        result.report().interruptions()
+                )
+                .average()
+                .orElseThrow();
+    }
+
+    public double averageInterruptionsOf(
+            CastInterruptionReason reason
+    ) {
+        Objects.requireNonNull(reason, "reason");
+
+        return runs.stream()
+                .mapToLong(result ->
+                        result.report().interruptionsOf(reason)
+                )
+                .average()
+                .orElseThrow();
     }
 
     public double defeatRateOf(

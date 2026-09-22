@@ -1,6 +1,7 @@
 package dev.worldrpg.sim;
 
 import dev.worldrpg.combat.actor.CombatActorId;
+import dev.worldrpg.combat.cast.CastInterruptionReason;
 import dev.worldrpg.combat.resource.ResourceKey;
 
 import java.util.LinkedHashMap;
@@ -17,6 +18,8 @@ public record CombatSimulationReport(
         long damageMisses,
         long healingResolutions,
         long criticalResolutions,
+        long interruptions,
+        Map<CastInterruptionReason, Long> interruptionsByReason,
         long defeats,
         Map<CombatActorId, Long> defeatsByTarget,
         double damageApplied,
@@ -40,6 +43,7 @@ public record CombatSimulationReport(
                 || damageMisses < 0
                 || healingResolutions < 0
                 || criticalResolutions < 0
+                || interruptions < 0
                 || defeats < 0) {
             throw new IllegalArgumentException(
                     "simulation counters must be >= 0"
@@ -49,6 +53,22 @@ public record CombatSimulationReport(
         if (damageHits + damageMisses != damageResolutions) {
             throw new IllegalArgumentException(
                     "damageHits + damageMisses must equal damageResolutions"
+            );
+        }
+
+        interruptionsByReason = checkedReasonMap(
+                interruptionsByReason,
+                "interruptionsByReason"
+        );
+
+        long summedInterruptions =
+                interruptionsByReason.values().stream()
+                        .mapToLong(Long::longValue)
+                        .sum();
+
+        if (summedInterruptions != interruptions) {
+            throw new IllegalArgumentException(
+                    "interruptionsByReason total must equal interruptions"
             );
         }
 
@@ -90,6 +110,15 @@ public record CombatSimulationReport(
         return endTick - startTick;
     }
 
+    public long interruptionsOf(
+            CastInterruptionReason reason
+    ) {
+        return interruptionsByReason.getOrDefault(
+                Objects.requireNonNull(reason, "reason"),
+                0L
+        );
+    }
+
     public long defeatsOf(CombatActorId actorId) {
         return defeatsByTarget.getOrDefault(
                 Objects.requireNonNull(actorId, "actorId"),
@@ -109,6 +138,34 @@ public record CombatSimulationReport(
                 Objects.requireNonNull(resource, "resource"),
                 0.0
         );
+    }
+
+    private static Map<CastInterruptionReason, Long> checkedReasonMap(
+            Map<CastInterruptionReason, Long> input,
+            String label
+    ) {
+        Objects.requireNonNull(input, label);
+
+        Map<CastInterruptionReason, Long> copy =
+                new LinkedHashMap<>();
+
+        input.forEach((key, value) -> {
+            Objects.requireNonNull(key, label + " key");
+            long checked = Objects.requireNonNull(
+                    value,
+                    label + " value"
+            );
+
+            if (checked < 0L) {
+                throw new IllegalArgumentException(
+                        label + " values must be >= 0"
+                );
+            }
+
+            copy.put(key, checked);
+        });
+
+        return java.util.Collections.unmodifiableMap(copy);
     }
 
     private static Map<CombatActorId, Long> checkedLongMap(

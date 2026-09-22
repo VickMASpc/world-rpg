@@ -1,6 +1,7 @@
 package dev.worldrpg.sim;
 
 import dev.worldrpg.combat.actor.CombatActorId;
+import dev.worldrpg.combat.cast.CastInterruptionReason;
 import dev.worldrpg.combat.resource.ResourceKey;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +31,10 @@ class SeededSimulationBatchRunnerTest {
                     0,
                     0,
                     miss ? 0 : 1,
+                    miss ? 1 : 0,
+                    miss
+                            ? Map.of(CastInterruptionReason.INTERRUPT, 1L)
+                            : Map.of(),
                     miss
                             ? Map.of()
                             : Map.of(new CombatActorId(2), 1L),
@@ -62,6 +67,14 @@ class SeededSimulationBatchRunnerTest {
         assertEquals(113L, report.maximumElapsedTicks());
         assertEquals(5.0, report.averageDamageApplied(), 0.0);
         assertEquals(0.5, report.damageMissRate(), 0.0);
+        assertEquals(0.5, report.averageInterruptions(), 0.0);
+        assertEquals(
+                0.5,
+                report.averageInterruptionsOf(
+                        CastInterruptionReason.INTERRUPT
+                ),
+                0.0
+        );
         assertEquals(0.5, report.averageDefeats(), 0.0);
         assertEquals(
                 0.5,
@@ -93,6 +106,9 @@ class SeededSimulationBatchRunnerTest {
                         0,
                         0,
                         0,
+                        0,
+                        0,
+                        Map.of(),
                         0,
                         Map.of(),
                         0.0,
