@@ -10,6 +10,13 @@ verification from physical Minecraft observation, and never promote unobserved m
 behavior to PASS. State both production-plant capability and actual authored/playable/
 presentable RPG impact when reporting material progress.
 
+Every handoff records both:
+
+- `IMPLEMENTATION HEAD` — the substantive completed packet commit before any purely administrative tail, when such a distinction exists;
+- `FINAL BRANCH HEAD` — the exact pushed remote SHA presented for Anchor review, PR and CI.
+
+Anchor acceptance and CI always refer to `FINAL BRANCH HEAD`.
+
 Before finalizing the handoff, inspect `git status` and
 `git log --oneline <BASE_SHA>..HEAD`, push only the work branch, and record PR status.
 Leave the worktree clean and understood. Do not self-merge or begin another packet.
