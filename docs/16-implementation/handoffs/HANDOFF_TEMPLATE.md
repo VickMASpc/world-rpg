@@ -11,7 +11,9 @@ BASE SHA:
 
 WORK BRANCH:
 
-HEAD SHA:
+IMPLEMENTATION HEAD:
+
+FINAL BRANCH HEAD:
 
 ## COMMITS
 
@@ -43,3 +45,10 @@ HEAD SHA:
 ## PUSH STATUS
 
 ## PR
+
+## HEAD SEMANTICS
+
+- `IMPLEMENTATION HEAD` is the commit containing the substantive completed packet work before purely administrative handoff/push-status commits, if such commits exist.
+- `FINAL BRANCH HEAD` is the exact pushed remote branch SHA presented for Anchor review/PR/CI.
+- If there is no administrative tail, both fields may be identical.
+- Anchor acceptance and CI should always identify the exact `FINAL BRANCH HEAD` under review.
