@@ -6,6 +6,7 @@ import dev.worldrpg.api.id.RpgId;
 import dev.worldrpg.debug.P3ProofReport;
 import dev.worldrpg.debug.P3ProofScenario;
 import dev.worldrpg.integration.minecraft.MinecraftTargetProbe;
+import dev.worldrpg.integration.minecraft.ProvinceGrayboxBuilder;
 import dev.worldrpg.integration.minecraft.WorldRpgServerRuntime;
 import dev.worldrpg.integration.minecraft.p3.P3AbilityActivationRequest;
 import dev.worldrpg.integration.minecraft.p3.P3FixtureDefinitions;
@@ -30,8 +31,53 @@ public final class WorldRpgCommands {
                         CommandManager.literal("worldrpg")
                                 .requires(source -> source.hasPermissionLevel(2))
                                 .then(p3Commands())
+                                .then(provinceCommands())
                 )
         );
+    }
+
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<
+            net.minecraft.server.command.ServerCommandSource
+            > provinceCommands() {
+        return CommandManager.literal("province")
+                .then(
+                        CommandManager.literal("graybox")
+                                .then(
+                                        CommandManager.literal("build")
+                                                .then(
+                                                        CommandManager.literal("confirm")
+                                                                .executes(context ->
+                                                                        buildProvinceGraybox(
+                                                                                context.getSource()
+                                                                                        .getPlayerOrThrow()
+                                                                        )
+                                                                )
+                                                )
+                                )
+                );
+    }
+
+    private static int buildProvinceGraybox(ServerPlayerEntity player) {
+        try {
+            var result = ProvinceGrayboxBuilder.build(player);
+            player.sendMessage(
+                    Text.literal(
+                            result.summary()
+                                    + " | confirmation accepted; use only in a fresh, dedicated Superflat Overworld; path, river, and landmark surface blocks are replaced"
+                    ),
+                    false
+            );
+            return Command.SINGLE_SUCCESS;
+        } catch (IllegalStateException | IllegalArgumentException exception) {
+            player.sendMessage(
+                    Text.literal(
+                            "Province graybox build failed: "
+                                    + exception.getMessage()
+                    ),
+                    false
+            );
+            return 0;
+        }
     }
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<

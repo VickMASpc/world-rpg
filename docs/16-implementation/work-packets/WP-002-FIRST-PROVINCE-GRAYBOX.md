@@ -44,6 +44,7 @@ The graybox is test infrastructure plus a small playable spatial prototype. It i
 
 - A developer-only, operator-level command to build the topology graybox in a dedicated fresh Superflat Overworld.
 - A fixed, explicitly provisional 1:1 block-coordinate layout anchored at the command user's current position, with +X east and +Z south.
+- Route distances estimated against a provisional 250 blocks/minute reference pace solely to check that the geometry is in the accepted measurement bands; human walking times remain authoritative.
 - Cheap, readable paths and landmarks for home A, local wild B, main corridor C, fork/bridge D, early danger pocket E, remote refuge F, regional settlement G, and outward threshold H.
 - The topology's relevant route choices: local ruin R1, work/resource detour B2, dangerous shorter route, and a narrower learned G-to-A return shortcut.
 - Primitive bridge/river and landmark geometry only where needed to make the physical route decisions legible.
@@ -76,11 +77,25 @@ The graybox is test infrastructure plus a small playable spatial prototype. It i
 - P3 G9 remains pending independently; the immediate P3 procedure is still the controlled stationary 20-block Bolt rejection test.
 - The topology prototype must remain cheap and disposable. No final art investment is authorized.
 
+The layout uses these deliberately provisional coordinate lengths, checked at a reference pace of 250 blocks/minute only to catch obvious scale errors:
+
+| Route | Graybox distance | Reference estimate | Existing target |
+| --- | ---: | ---: | ---: |
+| A -> B | 700 blocks | ~2.8 min | ~2-5 min |
+| A -> R1 via B | 2,300 blocks | ~9.2 min | ~6-12 min |
+| A -> D safe road | ~4,391 blocks | ~17.6 min | ~10-18 min |
+| D -> F safe road | 2,580 blocks | ~10.3 min | ~8-15 min |
+| A -> F safe road | ~6,971 blocks | ~27.9 min | ~20-30 min |
+| A -> G safe road | ~7,991 blocks | ~32.0 min | ~25-40 min |
+| F -> H | 4,000 blocks | ~16.0 min | ~15-30 min |
+
+The red C -> D route passes E and is about 771 blocks shorter than the safe curve. The brown G -> B -> A return is about 2,655 blocks shorter than retracing the safe A -> D -> G journey, but remains over 5,000 blocks. Actual human walking time supersedes these estimates.
+
 ## REQUIRED WORK
 
 1. Implement the developer-only builder and command using only the topology needed for this packet.
-2. Use the user's command-time position as node A; print the origin/orientation and a color/marker legend without changing player state or teleporting the player.
-3. Keep the builder safe to rerun within the dedicated disposable world and document that it replaces surface blocks along its paths and small landmarks.
+2. Use the user's command-time position as node A; require an explicit `confirm` argument and print the origin/orientation and a color/marker legend without changing player state or teleporting the player.
+3. Keep the builder idempotent when repeated at the same origin in the dedicated disposable world; document that a new origin creates another layout and that the builder replaces surface blocks along its paths and small landmarks.
 4. Add focused geometry tests for the route distances, route connections, and meaningful learned-shortcut savings.
 5. Add `docs/16-implementation/FIRST_PROVINCE_GRAYBOX_RUNBOOK.md` with exact setup and a minimal physical route batch, based on the existing topology measurement sheet.
 6. Do not add any unrelated abstractions or edit constitution/doctrine.
