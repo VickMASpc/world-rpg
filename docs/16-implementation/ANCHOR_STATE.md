@@ -10,7 +10,7 @@ Last accepted packet merge:
 `7c07950dfadcc6de7fd30620c0acc53713b0c82f` — WP-001 merged through PR #12
 
 Active Codex work packet:
-`NONE`
+`WP-002 — First-Province Graybox Generator`
 
 Current master era:
 Era 2 — RPG kernel / mathematics / physical proof
@@ -19,10 +19,11 @@ Current active gate:
 P4-G lived-experience reconvergence
 
 Current physical work:
-P3 G1-G18 evidence matrix
+P3 G1-G18 evidence matrix; first-province topology graybox construction and validation
 
-Immediate physical next step:
-Controlled G9 stationary range rejection test from the authoritative P3 runbook.
+Immediate physical next steps:
+- Build and walk the disposable topology graybox from WP-002 when its branch build is available.
+- The separate controlled P3 G9 stationary range rejection test remains pending from the authoritative P3 runbook.
 
 Current next era:
 Era 3 — Production Factory Bootstrap
@@ -49,7 +50,11 @@ Frozen / blocked:
 - mass NPC/quest/profession production
 - final UI/VFX/audio production
 
-Authorized before a new Codex packet is issued:
+Authorized for the active packet:
+
+- WP-002 disposable first-province graybox generator and physical walk-test runbook only.
+
+Other authorized work after WP-002:
 
 - human physical P3 evidence execution;
 - anchor interpretation/recording of that evidence;
@@ -57,7 +62,7 @@ Authorized before a new Codex packet is issued:
 - repository evidence/status reconciliation;
 - preparation of a future bounded work packet by the Anchor.
 
-Codex must not infer that WP-002 exists merely because WP-001 is merged.
+Codex must not infer a later packet or Era 3 work from WP-002 completion.
 A new packet must be explicitly authored/activated by the Anchor.
 
 Important:
