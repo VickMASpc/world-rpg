@@ -300,12 +300,15 @@ final class AdventureContentDecoders {
                         quantity.get()
                 ));
             } catch (IllegalArgumentException exception) {
-                return invalidList(
+                report.error(
                         "adventure.quest.item_reward.invalid",
-                        exception,
-                        document,
-                        report
+                        exception.getMessage() == null
+                                ? exception.getClass().getSimpleName()
+                                : exception.getMessage(),
+                        document.source().sourceRef(),
+                        document.header().id()
                 );
+                return Optional.empty();
             }
         }
 

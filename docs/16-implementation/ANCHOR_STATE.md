@@ -1,70 +1,59 @@
 # Anchor state
 
 Last anchor update:
-2026-09-23
+2026-09-24
 
 Current integration branch:
 `p4/math-simulator`
 
-Last accepted packet merge:
-`7c07950dfadcc6de7fd30620c0acc53713b0c82f` — WP-001 merged through PR #12
+Development mode:
+Direct continuation on the integration branch. There is no active Codex work packet and no intermediate "Midway" branch. Repository state is reconciled here as development proceeds.
 
-Active Codex work packet:
-`WP-002 — First-Province Graybox Generator`
+Last integrated graybox work:
+`0d2ad6df0bf219b4feda1f03e5dfdda091366ba9` — WP-002 first-province disposable graybox merged into `p4/math-simulator`.
 
-Current master era:
-Era 2 — RPG kernel / mathematics / physical proof
+Current development line:
+The first production-shaped RPG content graph has begun on top of the existing P2/P3/P4 plant.
+
+Implemented on the current line:
+
+- one combined content catalog for combat plus adventure domains;
+- authored world-location, NPC, item and quest definitions;
+- atomic cross-domain reference validation;
+- stable authored quest-objective keys suitable for multi-session persistence;
+- per-player persistent quest acceptance and objective progress;
+- completed-quest history;
+- persistent abstract RPG item stacks and copper;
+- atomic quest turn-in reward handoff;
+- developer quest/inventory commands for physical proof.
+
+These are production-factory seeds, not final first-province lore, final UI, final NPC interaction, or proof that vertical-slice production is complete.
+
+Current master position:
+Era 2 physical proof remains open while an initial Era 3 production-factory seed now overlaps it. The master timeline is intentionally non-linear.
 
 Current active gate:
-P4-G lived-experience reconvergence
+P4-G lived-experience reconvergence remains active.
 
 Current physical work:
-P3 G1-G18 evidence matrix; first-province topology graybox construction and validation
+
+- P3 G1-G18 evidence matrix;
+- first-province topology graybox walk/timing validation.
 
 Immediate physical next steps:
-- Build and walk the disposable topology graybox from WP-002 when its branch build is available.
-- The separate controlled P3 G9 stationary range rejection test remains pending from the authoritative P3 runbook.
 
-Current next era:
-Era 3 — Production Factory Bootstrap
+- walk and record the disposable first-province graybox using the authoritative runbook;
+- complete the controlled P3 G9 stationary range-rejection test and remaining physical rows without weakening expectations.
 
-Era 3 tracker:
-GitHub issue #11
+Still blocked / deliberately not mass-produced:
 
-Last completed Codex packet:
-`WP-001 — P3 Physical Evidence Follow-up`
+- new P4 mechanic-family expansion without doctrine need;
+- mass class/ability/item production;
+- mass NPC/quest/profession production;
+- final terrain;
+- final UI/VFX/audio;
+- treating provisional graybox dimensions or placeholder first-province content as canon.
 
-WP-001 result:
-- complete;
-- no runtime changes required;
-- existing harness judged sufficient for all remaining P3 physical rows;
-- no new physical PASS claims made;
-- workflow protocol established and merged.
+Development rule:
 
-Frozen / blocked:
-
-- new P4 feature-family expansion
-- mass class/content production
-- final terrain production
-- mass item production
-- mass NPC/quest/profession production
-- final UI/VFX/audio production
-
-Authorized for the active packet:
-
-- WP-002 disposable first-province graybox generator and physical walk-test runbook only.
-
-Other authorized work after WP-002:
-
-- human physical P3 evidence execution;
-- anchor interpretation/recording of that evidence;
-- first-province graybox validation planning/execution;
-- repository evidence/status reconciliation;
-- preparation of a future bounded work packet by the Anchor.
-
-Codex must not infer a later packet or Era 3 work from WP-002 completion.
-A new packet must be explicitly authored/activated by the Anchor.
-
-Important:
-The architecture phase list is not a project completion percentage.
-Before every future packet, Codex must fetch the integration branch and record the actual current BASE_SHA; this state file records accepted milestones, not a self-referential exact branch-head pointer.
+The plant remains subordinate to the RPG. New implementation work must answer what part of the player's long-form life it enables or proves. Infrastructure does not gain design authority merely because it exists.

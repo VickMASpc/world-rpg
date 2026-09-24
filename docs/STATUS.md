@@ -32,7 +32,7 @@ The current project position is approximately:
 - master timeline Era 0 (idea/constitution/repository plant): substantially complete;
 - Era 1 (data/runtime foundation): substantially complete;
 - Era 2 (RPG kernel/math/physical proof): advanced but open;
-- Era 3 (cross-domain production factory): mostly future;
+- Era 3 (cross-domain production factory): bootstrap begun with the first adventure content graph and persisted quest/reward path, but the broad production factory remains future;
 - Era 4 (first-province production specification): conceptual grounding exists and a provisional production ledger now exposes expected production volume, but counts are not frozen;
 - Era 5+ (large-scale game production through 1-100): not begun at meaningful production scale.
 
@@ -91,7 +91,28 @@ The first-province topology exists as an authored paper/graybox hypothesis, **no
 - Explicit hit/crit/mitigation/scaling/interrupt/absorb boundaries.
 - Provisional routine, attrition, accidental-pull, caster, elite, healer and dungeon stress fixtures.
 
-## P3 physical evidence state
+
+## Production-factory seed now implemented
+
+Direct development has begun the first small cross-domain production path without claiming vertical-slice production.
+
+The active integration branch now contains:
+
+- a combined authored-content catalog spanning combat and adventure definitions;
+- first adventure domains for world locations, NPCs, items and quests;
+- cross-domain validation so broken NPC/location, quest/NPC, quest/objective or quest/reward references reject the candidate snapshot atomically;
+- stable objective keys intended to survive multi-session quest progression and later definition growth;
+- per-player persisted quest acceptance, objective progress and completed-quest history;
+- a persisted abstract RPG inventory and copper balance;
+- typed quest item-stack rewards and an atomic quest turn-in path that grants item/currency rewards while moving the quest into completed history;
+- developer commands for quest/inventory inspection and physical proof.
+
+The current first-province definitions are intentionally provisional production-package content. They do **not** freeze final lore, geography, NPC identity, reward balance or quest writing.
+
+The developer commands are proof surfaces, not final player UX. NPC interaction, spatial visit detection, journal UI, real bag/equipment surfaces, world placement, dialogue, models, animation, VFX, audio and final reward presentation remain future connected production work.
+
+This advances Era 3 from "entirely future" to **bootstrap begun**, while Era 2 physical evidence and P4-G remain open. It does not mean the project has entered mass content production.
+\n## P3 physical evidence state
 
 The hardened Minecraft proof harness is implemented and the exact pre-test candidate
 `763681e6775058e2cd6c3d8fb9e96333677e7d5f` passed CI run `35770679890`.
