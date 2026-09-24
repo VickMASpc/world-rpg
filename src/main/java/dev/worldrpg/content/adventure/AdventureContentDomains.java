@@ -53,7 +53,7 @@ public final class AdventureContentDomains {
                 AdventureContentDecoders::decodeItem
         ));
         builder.add(new DefinitionDomainHandler<>(
-                domain(QUESTS),
+                domain(QUESTS, ReloadSafety.RESTART),
                 AdventureContentDecoders::decodeQuest,
                 QuestContentDefinition::resolveReferences,
                 (definition, snapshot, source, report) -> {
@@ -69,10 +69,18 @@ public final class AdventureContentDomains {
 
     private static <T extends dev.worldrpg.api.data.RpgDefinition>
     DefinitionDomain<T> domain(RegistryKey<T> key) {
+        return domain(key, ReloadSafety.SAFE);
+    }
+
+    private static <T extends dev.worldrpg.api.data.RpgDefinition>
+    DefinitionDomain<T> domain(
+            RegistryKey<T> key,
+            ReloadSafety reloadSafety
+    ) {
         return new DefinitionDomain<>(
                 key,
                 new SchemaVersion(1),
-                ReloadSafety.SAFE
+                reloadSafety
         );
     }
 }
