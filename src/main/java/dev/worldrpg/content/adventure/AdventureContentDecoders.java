@@ -145,7 +145,7 @@ final class AdventureContentDecoders {
                 document,
                 report
         );
-        Optional<List<RequiredDefinitionRef<ItemContentDefinition>>> itemRewards =
+        Optional<List<QuestItemRewardSpec>> itemRewards =
                 itemRewards(root, document, report);
         Optional<Long> copperReward = requiredLong(
                 root,
@@ -258,7 +258,7 @@ final class AdventureContentDecoders {
         return Optional.of(List.copyOf(result));
     }
 
-    private static Optional<List<RequiredDefinitionRef<ItemContentDefinition>>> itemRewards(
+    private static Optional<List<QuestItemRewardSpec>> itemRewards(
             JsonObject root,
             DecodedJsonDocument document,
             ValidationReport report
@@ -266,35 +266,46 @@ final class AdventureContentDecoders {
         JsonArray array = arrayOrEmpty(root, "item_rewards", document, report);
         if (array == null) return Optional.empty();
 
-        List<RequiredDefinitionRef<ItemContentDefinition>> result =
-                new ArrayList<>();
+        List<QuestItemRewardSpec> result = new ArrayList<>();
 
         for (int i = 0; i < array.size(); i++) {
             JsonElement element = array.get(i);
-            if (!element.isJsonPrimitive()
-                    || !element.getAsJsonPrimitive().isString()) {
+            if (!element.isJsonObject()) {
                 report.error(
-                        "adventure.quest.item_reward.id",
-                        "Quest item_rewards[" + i + "] must be a namespaced ID string",
+                        "adventure.quest.item_reward.object",
+                        "Quest item_rewards[" + i + "] must be an object",
                         document.source().sourceRef(),
                         document.header().id()
                 );
                 return Optional.empty();
             }
 
+            JsonObject object = element.getAsJsonObject();
+            Optional<RpgId> item = requiredId(
+                    object, "item", document, report
+            );
+            Optional<Integer> quantity = requiredInt(
+                    object, "quantity", document, report
+            );
+            if (item.isEmpty() || quantity.isEmpty()) {
+                return Optional.empty();
+            }
+
             try {
-                result.add(new RequiredDefinitionRef<>(
-                        AdventureContentDomains.ITEMS,
-                        RpgId.parse(element.getAsString())
+                result.add(new QuestItemRewardSpec(
+                        new RequiredDefinitionRef<>(
+                                AdventureContentDomains.ITEMS,
+                                item.get()
+                        ),
+                        quantity.get()
                 ));
             } catch (IllegalArgumentException exception) {
-                report.error(
-                        "adventure.quest.item_reward.id",
-                        exception.getMessage(),
-                        document.source().sourceRef(),
-                        document.header().id()
+                return invalidList(
+                        "adventure.quest.item_reward.invalid",
+                        exception,
+                        document,
+                        report
                 );
-                return Optional.empty();
             }
         }
 

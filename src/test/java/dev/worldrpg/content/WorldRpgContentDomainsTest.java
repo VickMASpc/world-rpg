@@ -136,7 +136,9 @@ class WorldRpgContentDomainsTest {
                       "npc": "world_rpg:npc/first_province/road_warden"
                     }
                   ],
-                  "item_rewards": ["%s"],
+                  "item_rewards": [
+                    {"item": "%s", "quantity": 1}
+                  ],
                   "copper_reward": 40
                 }
                 """.formatted(rewardId)

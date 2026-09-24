@@ -21,7 +21,7 @@ public record QuestContentDefinition(
         RequiredDefinitionRef<NpcContentDefinition> starter,
         RequiredDefinitionRef<NpcContentDefinition> turnIn,
         List<QuestObjectiveSpec> objectives,
-        List<RequiredDefinitionRef<ItemContentDefinition>> itemRewards,
+        List<QuestItemRewardSpec> itemRewards,
         long copperReward
 ) implements RpgDefinition {
     public QuestContentDefinition {
@@ -58,18 +58,17 @@ public record QuestContentDefinition(
     ) {
         ReferenceResolver.resolve(starter, snapshot, report, source);
         ReferenceResolver.resolve(turnIn, snapshot, report, source);
-
         for (QuestObjectiveSpec objective : objectives) {
             objective.resolveReferences(snapshot, source, report);
         }
-
-        for (RequiredDefinitionRef<ItemContentDefinition> reward : itemRewards) {
-            ReferenceResolver.resolve(reward, snapshot, report, source);
+        for (QuestItemRewardSpec reward : itemRewards) {
+            reward.resolveReferences(snapshot, source, report);
         }
     }
 
     public boolean hasObjective(String key) {
-        return objectives.stream().anyMatch(objective -> objective.key().equals(key));
+        return objectives.stream()
+                .anyMatch(objective -> objective.key().equals(key));
     }
 
     private static String requireText(String value, String field) {

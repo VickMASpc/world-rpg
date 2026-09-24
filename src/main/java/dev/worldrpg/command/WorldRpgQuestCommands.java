@@ -16,9 +16,7 @@ public final class WorldRpgQuestCommands {
     }
 
     public static synchronized void register() {
-        if (registered) {
-            return;
-        }
+        if (registered) return;
         registered = true;
 
         CommandRegistrationCallback.EVENT.register(
@@ -79,6 +77,22 @@ public final class WorldRpgQuestCommands {
                                 )
                 )
                 .then(
+                        CommandManager.literal("turnin")
+                                .then(
+                                        CommandManager.argument(
+                                                "quest",
+                                                StringArgumentType.word()
+                                        ).executes(context -> turnIn(
+                                                context.getSource()
+                                                        .getPlayerOrThrow(),
+                                                StringArgumentType.getString(
+                                                        context,
+                                                        "quest"
+                                                )
+                                        ))
+                                )
+                )
+                .then(
                         CommandManager.literal("status")
                                 .then(
                                         CommandManager.argument(
@@ -112,9 +126,7 @@ public final class WorldRpgQuestCommands {
 
         var result = MinecraftQuestRuntime.accept(player, questId);
         player.sendMessage(
-                Text.literal(
-                        "Quest " + questId + " | " + result
-                ),
+                Text.literal("Quest " + questId + " | " + result),
                 false
         );
         return result == MinecraftQuestRuntime.AcceptResult.ACCEPTED
@@ -145,8 +157,24 @@ public final class WorldRpgQuestCommands {
         );
 
         return result == MinecraftQuestRuntime.AdvanceResult.ADVANCED
-                || result
-                == MinecraftQuestRuntime.AdvanceResult.READY_TO_TURN_IN
+                || result == MinecraftQuestRuntime.AdvanceResult.READY_TO_TURN_IN
+                ? Command.SINGLE_SUCCESS
+                : 0;
+    }
+
+    private static int turnIn(
+            ServerPlayerEntity player,
+            String questText
+    ) {
+        RpgId questId = parseId(player, questText);
+        if (questId == null) return 0;
+
+        var result = MinecraftQuestRuntime.turnIn(player, questId);
+        player.sendMessage(
+                Text.literal("Quest " + questId + " | " + result),
+                false
+        );
+        return result == MinecraftQuestRuntime.TurnInResult.TURNED_IN
                 ? Command.SINGLE_SUCCESS
                 : 0;
     }
@@ -165,8 +193,7 @@ public final class WorldRpgQuestCommands {
                                 + " | " + view.state()
                                 + " objectives="
                                 + view.completedObjectives()
-                                + "/"
-                                + view.totalObjectives()
+                                + "/" + view.totalObjectives()
                 ),
                 false
         );
@@ -178,7 +205,10 @@ public final class WorldRpgQuestCommands {
 
         if (log.activeCount() == 0) {
             player.sendMessage(
-                    Text.literal("Quest log is empty."),
+                    Text.literal(
+                            "Quest log is empty. Completed="
+                                    + log.completedCount()
+                    ),
                     false
             );
             return Command.SINGLE_SUCCESS;
@@ -192,13 +222,16 @@ public final class WorldRpgQuestCommands {
                                     + " | " + view.state()
                                     + " objectives="
                                     + view.completedObjectives()
-                                    + "/"
-                                    + view.totalObjectives()
+                                    + "/" + view.totalObjectives()
                     ),
                     false
             );
         }
 
+        player.sendMessage(
+                Text.literal("Completed quests=" + log.completedCount()),
+                false
+        );
         return Command.SINGLE_SUCCESS;
     }
 

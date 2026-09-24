@@ -20,7 +20,10 @@
     }
   ],
   "item_rewards": [
-    "world_rpg:item/first_province/road_worn_cloak"
+    {
+      "item": "world_rpg:item/first_province/road_worn_cloak",
+      "quantity": 1
+    }
   ],
   "copper_reward": 40
 }

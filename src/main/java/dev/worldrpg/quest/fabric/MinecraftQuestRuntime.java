@@ -5,6 +5,8 @@ import dev.worldrpg.content.adventure.AdventureContentDomains;
 import dev.worldrpg.content.adventure.QuestContentDefinition;
 import dev.worldrpg.content.fabric.WorldRpgContentRuntime;
 import dev.worldrpg.persistence.fabric.WorldRpgPersistentState;
+import dev.worldrpg.player.PlayerRpgInventory;
+import dev.worldrpg.player.fabric.PlayerRpgInventoryNbtCodec;
 import dev.worldrpg.quest.PlayerQuestLog;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -15,13 +17,12 @@ import java.util.Optional;
 
 public final class MinecraftQuestRuntime {
     private static final String QUEST_LOG = "quest_log";
+    private static final String RPG_INVENTORY = "rpg_inventory";
 
     private MinecraftQuestRuntime() {
     }
 
-    public static Optional<QuestContentDefinition> definition(
-            RpgId questId
-    ) {
+    public static Optional<QuestContentDefinition> definition(RpgId questId) {
         return WorldRpgContentRuntime.publisher()
                 .active()
                 .find(AdventureContentDomains.QUESTS)
@@ -29,42 +30,11 @@ public final class MinecraftQuestRuntime {
     }
 
     public static PlayerQuestLog load(ServerPlayerEntity player) {
-        Objects.requireNonNull(player, "player");
-
-        WorldRpgPersistentState state =
-                WorldRpgPersistentState.get(player.getServer());
-        NbtCompound playerData =
-                state.readPlayerData(player.getUuid());
-
-        if (!playerData.contains(
-                QUEST_LOG,
-                NbtElement.COMPOUND_TYPE
-        )) {
-            return new PlayerQuestLog();
-        }
-
-        return PlayerQuestLogNbtCodec.decode(
-                playerData.getCompound(QUEST_LOG)
-        );
+        return decodeQuestLog(readPlayerData(player));
     }
 
-    public static void save(
-            ServerPlayerEntity player,
-            PlayerQuestLog log
-    ) {
-        Objects.requireNonNull(player, "player");
-        Objects.requireNonNull(log, "log");
-
-        WorldRpgPersistentState state =
-                WorldRpgPersistentState.get(player.getServer());
-        NbtCompound playerData =
-                state.readPlayerData(player.getUuid());
-
-        playerData.put(
-                QUEST_LOG,
-                PlayerQuestLogNbtCodec.encode(log)
-        );
-        state.writePlayerData(player.getUuid(), playerData);
+    public static PlayerRpgInventory loadInventory(ServerPlayerEntity player) {
+        return decodeInventory(readPlayerData(player));
     }
 
     public static AcceptResult accept(
@@ -75,12 +45,18 @@ public final class MinecraftQuestRuntime {
             return AcceptResult.UNKNOWN_QUEST;
         }
 
-        PlayerQuestLog log = load(player);
+        NbtCompound playerData = readPlayerData(player);
+        PlayerQuestLog log = decodeQuestLog(playerData);
+
+        if (log.hasCompleted(questId)) {
+            return AcceptResult.ALREADY_COMPLETED;
+        }
         if (!log.accept(questId)) {
             return AcceptResult.ALREADY_ACTIVE;
         }
 
-        save(player, log);
+        playerData.put(QUEST_LOG, PlayerQuestLogNbtCodec.encode(log));
+        writePlayerData(player, playerData);
         return AcceptResult.ACCEPTED;
     }
 
@@ -89,8 +65,7 @@ public final class MinecraftQuestRuntime {
             RpgId questId,
             String objectiveKey
     ) {
-        Optional<QuestContentDefinition> definition =
-                definition(questId);
+        Optional<QuestContentDefinition> definition = definition(questId);
         if (definition.isEmpty()) {
             return AdvanceResult.UNKNOWN_QUEST;
         }
@@ -98,16 +73,21 @@ public final class MinecraftQuestRuntime {
             return AdvanceResult.UNKNOWN_OBJECTIVE;
         }
 
-        PlayerQuestLog log = load(player);
+        NbtCompound playerData = readPlayerData(player);
+        PlayerQuestLog log = decodeQuestLog(playerData);
+
         if (log.find(questId).isEmpty()) {
-            return AdvanceResult.NOT_ACTIVE;
+            return log.hasCompleted(questId)
+                    ? AdvanceResult.ALREADY_TURNED_IN
+                    : AdvanceResult.NOT_ACTIVE;
         }
 
         if (!log.completeObjective(questId, objectiveKey)) {
             return AdvanceResult.ALREADY_COMPLETE;
         }
 
-        save(player, log);
+        playerData.put(QUEST_LOG, PlayerQuestLogNbtCodec.encode(log));
+        writePlayerData(player, playerData);
 
         return log.find(questId)
                 .orElseThrow()
@@ -116,12 +96,59 @@ public final class MinecraftQuestRuntime {
                 : AdvanceResult.ADVANCED;
     }
 
+    public static TurnInResult turnIn(
+            ServerPlayerEntity player,
+            RpgId questId
+    ) {
+        Optional<QuestContentDefinition> definition = definition(questId);
+        if (definition.isEmpty()) {
+            return TurnInResult.UNKNOWN_QUEST;
+        }
+
+        NbtCompound playerData = readPlayerData(player);
+        PlayerQuestLog log = decodeQuestLog(playerData);
+
+        if (log.hasCompleted(questId)) {
+            return TurnInResult.ALREADY_TURNED_IN;
+        }
+
+        var progress = log.find(questId);
+        if (progress.isEmpty()) {
+            return TurnInResult.NOT_ACTIVE;
+        }
+        if (!progress.get().readyToTurnIn(definition.get())) {
+            return TurnInResult.OBJECTIVES_INCOMPLETE;
+        }
+
+        PlayerRpgInventory inventory = decodeInventory(playerData);
+        for (var reward : definition.get().itemRewards()) {
+            inventory.grantItem(
+                    reward.item().id(),
+                    reward.quantity()
+            );
+        }
+        inventory.addCopper(definition.get().copperReward());
+
+        if (!log.markTurnedIn(questId)) {
+            throw new IllegalStateException(
+                    "quest disappeared during turn-in: " + questId
+            );
+        }
+
+        playerData.put(QUEST_LOG, PlayerQuestLogNbtCodec.encode(log));
+        playerData.put(
+                RPG_INVENTORY,
+                PlayerRpgInventoryNbtCodec.encode(inventory)
+        );
+        writePlayerData(player, playerData);
+        return TurnInResult.TURNED_IN;
+    }
+
     public static QuestView view(
             ServerPlayerEntity player,
             RpgId questId
     ) {
-        Optional<QuestContentDefinition> definition =
-                definition(questId);
+        Optional<QuestContentDefinition> definition = definition(questId);
         PlayerQuestLog log = load(player);
 
         if (definition.isEmpty()) {
@@ -130,6 +157,16 @@ public final class MinecraftQuestRuntime {
                     QuestState.UNRESOLVED_DEFINITION,
                     0,
                     0
+            );
+        }
+
+        if (log.hasCompleted(questId)) {
+            int total = definition.get().objectives().size();
+            return new QuestView(
+                    questId,
+                    QuestState.COMPLETED,
+                    total,
+                    total
             );
         }
 
@@ -151,8 +188,7 @@ public final class MinecraftQuestRuntime {
                 )
                 .count();
 
-        QuestState state = progress.get()
-                .readyToTurnIn(definition.get())
+        QuestState state = progress.get().readyToTurnIn(definition.get())
                 ? QuestState.READY_TO_TURN_IN
                 : QuestState.ACTIVE;
 
@@ -164,9 +200,44 @@ public final class MinecraftQuestRuntime {
         );
     }
 
+    private static NbtCompound readPlayerData(ServerPlayerEntity player) {
+        Objects.requireNonNull(player, "player");
+        return WorldRpgPersistentState.get(player.getServer())
+                .readPlayerData(player.getUuid());
+    }
+
+    private static void writePlayerData(
+            ServerPlayerEntity player,
+            NbtCompound playerData
+    ) {
+        WorldRpgPersistentState.get(player.getServer())
+                .writePlayerData(player.getUuid(), playerData);
+    }
+
+    private static PlayerQuestLog decodeQuestLog(NbtCompound playerData) {
+        if (!playerData.contains(QUEST_LOG, NbtElement.COMPOUND_TYPE)) {
+            return new PlayerQuestLog();
+        }
+        return PlayerQuestLogNbtCodec.decode(
+                playerData.getCompound(QUEST_LOG)
+        );
+    }
+
+    private static PlayerRpgInventory decodeInventory(
+            NbtCompound playerData
+    ) {
+        if (!playerData.contains(RPG_INVENTORY, NbtElement.COMPOUND_TYPE)) {
+            return new PlayerRpgInventory();
+        }
+        return PlayerRpgInventoryNbtCodec.decode(
+                playerData.getCompound(RPG_INVENTORY)
+        );
+    }
+
     public enum AcceptResult {
         ACCEPTED,
         ALREADY_ACTIVE,
+        ALREADY_COMPLETED,
         UNKNOWN_QUEST
     }
 
@@ -174,8 +245,17 @@ public final class MinecraftQuestRuntime {
         ADVANCED,
         READY_TO_TURN_IN,
         ALREADY_COMPLETE,
+        ALREADY_TURNED_IN,
         NOT_ACTIVE,
         UNKNOWN_OBJECTIVE,
+        UNKNOWN_QUEST
+    }
+
+    public enum TurnInResult {
+        TURNED_IN,
+        OBJECTIVES_INCOMPLETE,
+        NOT_ACTIVE,
+        ALREADY_TURNED_IN,
         UNKNOWN_QUEST
     }
 
@@ -183,6 +263,7 @@ public final class MinecraftQuestRuntime {
         NOT_ACTIVE,
         ACTIVE,
         READY_TO_TURN_IN,
+        COMPLETED,
         UNRESOLVED_DEFINITION
     }
 
