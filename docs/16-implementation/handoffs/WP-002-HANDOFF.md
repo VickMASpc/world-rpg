@@ -12,7 +12,7 @@ WORK BRANCH: `codex/wp-002-province-graybox`
 
 IMPLEMENTATION HEAD: `59f44c7117607929a825033774551836c80ef59d`
 
-FINAL BRANCH HEAD: recorded after this handoff is committed and pushed.
+FINAL BRANCH HEAD: the current head of `codex/wp-002-province-graybox`; PR #13 is the canonical live record of its exact SHA and checks. The handoff does not attempt to embed its own commit hash.
 
 ## Commits
 
@@ -50,7 +50,7 @@ FINAL BRANCH HEAD: recorded after this handoff is committed and pushed.
 - `./gradlew test` — not run; same environment limitation.
 - `./gradlew build` — not run; same environment limitation.
 - Workspace Java is 17.0.20; the project requires Java 21, and this workspace has no Gradle installation or Java 21 compiler.
-- GitHub Actions for the final pushed branch head: pending pull-request run; record the resulting run and exact head here after it completes.
+- GitHub Actions run `35987477483` started for the initial handoff head `7f767206707f118b251c74933536b99a9e16ebe9`; it was still running when this handoff was updated. The final docs-only head receives its own PR check. PR #13 records the exact final head and check result.
 
 ## Physical / behavioral evidence
 
@@ -90,12 +90,12 @@ The attached revised scale proposal describes the first slice as approximately 1
 
 ## Worktree and push status
 
-- Worktree status: to be recorded after the handoff commit.
-- Push status: to be recorded after pushing the final branch head.
+- Worktree status: clean after syncing to the remote packet branch.
+- Push status: the handoff and runbook changes are present on remote branch `codex/wp-002-province-graybox`. The local CLI push could not prompt for credentials; the reviewed local file content was transferred through the connected GitHub write path.
 
 ## PR
 
-- Draft PR against `p4/math-simulator`: to be created after the handoff commit is pushed.
+- Draft PR: [#13 — WP-002: First-Province Graybox Generator](https://github.com/VickMASpc/world-rpg/pull/13), against `p4/math-simulator`. It remains open and unmerged.
 
 ## Head semantics
 
