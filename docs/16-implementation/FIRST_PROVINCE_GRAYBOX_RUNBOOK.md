@@ -9,7 +9,11 @@ This is a disposable physical topology test, not production terrain. Its geometr
 1. Build the WP-002 branch with the normal Minecraft 1.21.1 / Fabric development setup:
 
    ```text
+   # Linux / macOS
    ./gradlew build
+
+   # Windows PowerShell
+   .\build.bat
    ```
 
 2. Create a new, dedicated **Superflat Overworld** test world. Do not use a production or personal world. The builder replaces surface blocks along its roads, river, bridge, and marker columns.
@@ -24,6 +28,12 @@ This is a disposable physical topology test, not production terrain. Its geometr
 5. After construction, use peaceful difficulty and Adventure or Survival. Walk on the ground only: do not sprint, fly, use speed effects, mount, or teleport during a timed leg. A phone stopwatch is sufficient.
 
 If the command fails its flatness check, preserve the error and stop. Do not try it in a natural world or change the layout to force construction.
+
+## Graybox extent and scale note
+
+From the chosen A origin, the sparse route network spans approximately 9.8 km east-west and 5.2 km north-south. This is its bounding extent, not a filled-in map area. It follows the currently accepted provisional route graph and travel bands so those routes can be physically measured.
+
+The revised slice proposal describes a starting province of roughly 1.5 x 1.5 km, with irregular boundaries preferred. The graybox bounds are therefore a scale question to resolve before this layout is treated as representative of the final first-province footprint. Walk results can test route legibility and felt travel time; they do not by themselves approve the final province dimensions. Keep all graybox geometry provisional until the Anchor reconciles those two planning scales.
 
 ## Marker and route key
 
