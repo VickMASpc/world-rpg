@@ -126,10 +126,12 @@ class WorldRpgContentDomainsTest {
                   "turn_in": "world_rpg:npc/first_province/road_warden",
                   "objectives": [
                     {
+                      "key": "inspect_route",
                       "type": "visit_location",
                       "location": "world_rpg:location/first_province/home"
                     },
                     {
+                      "key": "report_to_warden",
                       "type": "speak_to_npc",
                       "npc": "world_rpg:npc/first_province/road_warden"
                     }

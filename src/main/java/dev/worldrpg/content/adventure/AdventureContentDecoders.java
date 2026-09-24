@@ -211,8 +211,9 @@ final class AdventureContentDecoders {
             }
 
             JsonObject object = element.getAsJsonObject();
+            Optional<String> key = requiredString(object, "key", document, report);
             Optional<String> type = requiredString(object, "type", document, report);
-            if (type.isEmpty()) return Optional.empty();
+            if (key.isEmpty() || type.isEmpty()) return Optional.empty();
 
             switch (type.get()) {
                 case "visit_location" -> {
@@ -224,6 +225,7 @@ final class AdventureContentDecoders {
                     );
                     if (location.isEmpty()) return Optional.empty();
                     result.add(new QuestObjectiveSpec.VisitLocation(
+                            key.get(),
                             new RequiredDefinitionRef<>(
                                     AdventureContentDomains.WORLD_LOCATIONS,
                                     location.get()
@@ -234,6 +236,7 @@ final class AdventureContentDecoders {
                     Optional<RpgId> npc = requiredId(object, "npc", document, report);
                     if (npc.isEmpty()) return Optional.empty();
                     result.add(new QuestObjectiveSpec.SpeakToNpc(
+                            key.get(),
                             new RequiredDefinitionRef<>(
                                     AdventureContentDomains.NPCS,
                                     npc.get()

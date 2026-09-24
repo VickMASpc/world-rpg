@@ -8,8 +8,10 @@ import dev.worldrpg.api.registry.RegistrySnapshot;
 import dev.worldrpg.api.validation.SourceRef;
 import dev.worldrpg.api.validation.ValidationReport;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public record QuestContentDefinition(
         RpgId id,
@@ -36,6 +38,14 @@ public record QuestContentDefinition(
         if (objectives.isEmpty()) {
             throw new IllegalArgumentException("quest must contain at least one objective");
         }
+        Set<String> objectiveKeys = new HashSet<>();
+        for (QuestObjectiveSpec objective : objectives) {
+            if (!objectiveKeys.add(objective.key())) {
+                throw new IllegalArgumentException(
+                        "duplicate quest objective key: " + objective.key()
+                );
+            }
+        }
         if (copperReward < 0) {
             throw new IllegalArgumentException("copperReward must be >= 0");
         }
@@ -56,6 +66,10 @@ public record QuestContentDefinition(
         for (RequiredDefinitionRef<ItemContentDefinition> reward : itemRewards) {
             ReferenceResolver.resolve(reward, snapshot, report, source);
         }
+    }
+
+    public boolean hasObjective(String key) {
+        return objectives.stream().anyMatch(objective -> objective.key().equals(key));
     }
 
     private static String requireText(String value, String field) {
