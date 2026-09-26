@@ -1,0 +1,8 @@
+{
+  "schema":1,"registry":"world_rpg:registry/loot_tables","id":"world_rpg:loot/first_province/ashwood_wolf",
+  "entries":[
+    {"item":"world_rpg:dev/golden/item/ashwood_fang","minimum_quantity":1,"maximum_quantity":1,"chance":0.6},
+    {"item":"world_rpg:item/first_province/ashwood_pelt","minimum_quantity":1,"maximum_quantity":1,"chance":0.75}
+  ],
+  "minimum_copper":4,"maximum_copper":9
+}
