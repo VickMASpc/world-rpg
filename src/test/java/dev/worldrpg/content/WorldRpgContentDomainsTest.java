@@ -92,6 +92,28 @@ class WorldRpgContentDomainsTest {
         assertEquals(0, publisher.active().registryCount());
     }
 
+    @Test
+    void missingQuestPrerequisiteRejectsWholeCandidate() {
+        RegistryPublisher publisher = new RegistryPublisher();
+        ContentLoader loader = new ContentLoader(
+                WorldRpgContentDomains.catalog(),
+                publisher
+        );
+
+        var result = loader.loadAndPublish(List.of(
+                homeLocation(),
+                checkpointLocation(),
+                npc(),
+                questWithPrerequisite(
+                        "world_rpg:quest/first_province/missing_prerequisite"
+                )
+        ));
+
+        assertFalse(result.published());
+        assertTrue(result.report().hasErrors());
+        assertEquals(0, publisher.active().registryCount());
+    }
+
     private static ContentSource homeLocation() {
         return ContentSource.of(
                 "home_location.json",
@@ -155,6 +177,36 @@ class WorldRpgContentDomainsTest {
                   "tags": ["cloth", "quest_reward", "first_province"]
                 }
                 """.formatted(id)
+        );
+    }
+
+    private static ContentSource questWithPrerequisite(
+            String prerequisiteId
+    ) {
+        return ContentSource.of(
+                "prerequisite_quest.json",
+                """
+                {
+                  "schema": 1,
+                  "registry": "world_rpg:registry/quests",
+                  "id": "world_rpg:quest/first_province/east_road_disappearances",
+                  "title": "Disappearances Along the East Road",
+                  "journal_summary": "Prerequisite validation fixture.",
+                  "minimum_level": 1,
+                  "starter": "world_rpg:npc/first_province/road_warden",
+                  "turn_in": "world_rpg:npc/first_province/road_warden",
+                  "prerequisites": ["%s"],
+                  "objectives": [
+                    {
+                      "key": "inspect_route",
+                      "type": "visit_location",
+                      "location": "world_rpg:location/first_province/east_road_checkpoint"
+                    }
+                  ],
+                  "item_rewards": [],
+                  "copper_reward": 0
+                }
+                """.formatted(prerequisiteId)
         );
     }
 
