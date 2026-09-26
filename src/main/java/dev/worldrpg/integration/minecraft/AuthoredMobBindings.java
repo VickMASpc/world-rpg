@@ -14,8 +14,12 @@ import java.util.UUID;
 
 public final class AuthoredMobBindings {
     private static final String ROOT = "authored_mob_bindings";
+    private static final String SPAWN_GROUP_ROOT =
+            "authored_mob_spawn_groups";
 
     private final Map<UUID, RpgId> mobByEntity =
+            new LinkedHashMap<>();
+    private final Map<UUID, RpgId> spawnGroupByEntity =
             new LinkedHashMap<>();
     private MinecraftServer server;
 
@@ -29,6 +33,7 @@ public final class AuthoredMobBindings {
 
     public void stop() {
         mobByEntity.clear();
+        spawnGroupByEntity.clear();
         server = null;
     }
 
@@ -36,11 +41,28 @@ public final class AuthoredMobBindings {
             UUID entityUuid,
             RpgId mobId
     ) {
+        bind(entityUuid, mobId, null);
+    }
+
+    public void bind(
+            UUID entityUuid,
+            RpgId mobId,
+            RpgId spawnGroupId
+    ) {
         requireStarted();
+        UUID uuid = Objects.requireNonNull(
+                entityUuid,
+                "entityUuid"
+        );
         mobByEntity.put(
-                Objects.requireNonNull(entityUuid, "entityUuid"),
+                uuid,
                 Objects.requireNonNull(mobId, "mobId")
         );
+        if (spawnGroupId == null) {
+            spawnGroupByEntity.remove(uuid);
+        } else {
+            spawnGroupByEntity.put(uuid, spawnGroupId);
+        }
         persist();
     }
 
@@ -56,15 +78,39 @@ public final class AuthoredMobBindings {
         );
     }
 
+    public Optional<RpgId> spawnGroupId(UUID entityUuid) {
+        requireStarted();
+        return Optional.ofNullable(
+                spawnGroupByEntity.get(
+                        Objects.requireNonNull(
+                                entityUuid,
+                                "entityUuid"
+                        )
+                )
+        );
+    }
+
+    public Map<UUID, RpgId> mobBindings() {
+        requireStarted();
+        return Map.copyOf(mobByEntity);
+    }
+
+    public Map<UUID, RpgId> spawnGroupBindings() {
+        requireStarted();
+        return Map.copyOf(spawnGroupByEntity);
+    }
+
     public boolean unbind(UUID entityUuid) {
         requireStarted();
-        boolean removed = mobByEntity.remove(
-                Objects.requireNonNull(
-                        entityUuid,
-                        "entityUuid"
-                )
-        ) != null;
-        if (removed) {
+        UUID uuid = Objects.requireNonNull(
+                entityUuid,
+                "entityUuid"
+        );
+        boolean removed =
+                mobByEntity.remove(uuid) != null;
+        boolean groupRemoved =
+                spawnGroupByEntity.remove(uuid) != null;
+        if (removed || groupRemoved) {
             persist();
         }
         return removed;
@@ -76,18 +122,37 @@ public final class AuthoredMobBindings {
 
     private void load() {
         mobByEntity.clear();
+        spawnGroupByEntity.clear();
 
         NbtCompound worldData =
                 WorldRpgPersistentState.get(server)
                         .readWorldData();
-        if (!worldData.contains(
+
+        decodeMap(
+                worldData,
                 ROOT,
+                mobByEntity
+        );
+        decodeMap(
+                worldData,
+                SPAWN_GROUP_ROOT,
+                spawnGroupByEntity
+        );
+    }
+
+    private static void decodeMap(
+            NbtCompound worldData,
+            String key,
+            Map<UUID, RpgId> output
+    ) {
+        if (!worldData.contains(
+                key,
                 NbtElement.COMPOUND_TYPE
         )) {
             return;
         }
 
-        NbtCompound root = worldData.getCompound(ROOT);
+        NbtCompound root = worldData.getCompound(key);
         for (String uuidText : root.getKeys()) {
             if (!root.contains(
                     uuidText,
@@ -97,7 +162,7 @@ public final class AuthoredMobBindings {
             }
 
             try {
-                mobByEntity.put(
+                output.put(
                         UUID.fromString(uuidText),
                         RpgId.parse(root.getString(uuidText))
                 );
@@ -113,16 +178,28 @@ public final class AuthoredMobBindings {
         NbtCompound worldData =
                 persistence.readWorldData();
 
+        worldData.put(
+                ROOT,
+                encodeMap(mobByEntity)
+        );
+        worldData.put(
+                SPAWN_GROUP_ROOT,
+                encodeMap(spawnGroupByEntity)
+        );
+        persistence.writeWorldData(worldData);
+    }
+
+    private static NbtCompound encodeMap(
+            Map<UUID, RpgId> values
+    ) {
         NbtCompound root = new NbtCompound();
-        mobByEntity.forEach((uuid, mobId) ->
+        values.forEach((uuid, id) ->
                 root.putString(
                         uuid.toString(),
-                        mobId.toString()
+                        id.toString()
                 )
         );
-
-        worldData.put(ROOT, root);
-        persistence.writeWorldData(worldData);
+        return root;
     }
 
     private void requireStarted() {
