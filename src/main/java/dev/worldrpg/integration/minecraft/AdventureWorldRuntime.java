@@ -199,6 +199,42 @@ public final class AdventureWorldRuntime {
                         false
                 );
             }
+            case QUEST_LOCKED -> {
+                String prerequisites = result.quest()
+                        .prerequisites()
+                        .stream()
+                        .map(prerequisite ->
+                                MinecraftQuestRuntime.definition(
+                                        prerequisite.id()
+                                )
+                                        .map(value -> value.title())
+                                        .orElse(
+                                                prerequisite.id()
+                                                        .toString()
+                                        )
+                        )
+                        .reduce((left, right) ->
+                                left + ", " + right
+                        )
+                        .orElse("another quest");
+
+                player.sendMessage(
+                        Text.literal(
+                                npcName
+                                        + ": Finish what came before first."
+                        ),
+                        false
+                );
+                player.sendMessage(
+                        Text.literal(
+                                "Quest locked: "
+                                        + result.quest().title()
+                                        + " | requires: "
+                                        + prerequisites
+                        ),
+                        false
+                );
+            }
             case OBJECTIVE_COMPLETED -> {
                 player.sendMessage(
                         Text.literal(
