@@ -1,0 +1,6 @@
+{
+  "schema":1,"registry":"world_rpg:registry/spawn_groups","id":"world_rpg:spawn_group/first_province/ashwood_wolves",
+  "location":"world_rpg:location/first_province/ashwood_hunting_ground",
+  "mob":"world_rpg:mob/first_province/ashwood_wolf",
+  "target_population":3,"respawn_ticks":200,"spawn_radius":12.0,"leash_radius":24.0
+}
