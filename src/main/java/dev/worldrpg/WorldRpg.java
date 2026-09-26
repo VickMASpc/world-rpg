@@ -12,6 +12,7 @@ import dev.worldrpg.command.WorldRpgSliceCommands;
 import dev.worldrpg.content.WorldRpgContentDomains;
 import dev.worldrpg.content.combat.P3CombatContentRuntime;
 import dev.worldrpg.content.fabric.WorldRpgContentRuntime;
+import dev.worldrpg.entity.WorldRpgEntities;
 import dev.worldrpg.integration.minecraft.WorldRpgServerRuntime;
 import dev.worldrpg.network.WorldRpgNetworking;
 import net.fabricmc.api.ModInitializer;
@@ -24,6 +25,8 @@ public final class WorldRpg implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        WorldRpgEntities.register();
+
         P3CombatContentRuntime.configureResolutionGateway(
                 WorldRpgServerRuntime.productionCombat()
         );
