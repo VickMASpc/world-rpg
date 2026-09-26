@@ -20,6 +20,7 @@ public record QuestContentDefinition(
         int minimumLevel,
         RequiredDefinitionRef<NpcContentDefinition> starter,
         RequiredDefinitionRef<NpcContentDefinition> turnIn,
+        List<RequiredDefinitionRef<QuestContentDefinition>> prerequisites,
         List<QuestObjectiveSpec> objectives,
         List<QuestItemRewardSpec> itemRewards,
         long copperReward
@@ -33,6 +34,25 @@ public record QuestContentDefinition(
         }
         Objects.requireNonNull(starter, "starter");
         Objects.requireNonNull(turnIn, "turnIn");
+        prerequisites = List.copyOf(
+                Objects.requireNonNull(prerequisites, "prerequisites")
+        );
+        Set<RpgId> prerequisiteIds = new HashSet<>();
+        for (RequiredDefinitionRef<QuestContentDefinition> prerequisite
+                : prerequisites) {
+            Objects.requireNonNull(prerequisite, "prerequisite");
+            if (prerequisite.id().equals(id)) {
+                throw new IllegalArgumentException(
+                        "quest cannot require itself: " + id
+                );
+            }
+            if (!prerequisiteIds.add(prerequisite.id())) {
+                throw new IllegalArgumentException(
+                        "duplicate quest prerequisite: "
+                                + prerequisite.id()
+                );
+            }
+        }
         objectives = List.copyOf(Objects.requireNonNull(objectives, "objectives"));
         itemRewards = List.copyOf(Objects.requireNonNull(itemRewards, "itemRewards"));
         if (objectives.isEmpty()) {
@@ -58,6 +78,15 @@ public record QuestContentDefinition(
     ) {
         ReferenceResolver.resolve(starter, snapshot, report, source);
         ReferenceResolver.resolve(turnIn, snapshot, report, source);
+        for (RequiredDefinitionRef<QuestContentDefinition> prerequisite
+                : prerequisites) {
+            ReferenceResolver.resolve(
+                    prerequisite,
+                    snapshot,
+                    report,
+                    source
+            );
+        }
         for (QuestObjectiveSpec objective : objectives) {
             objective.resolveReferences(snapshot, source, report);
         }
