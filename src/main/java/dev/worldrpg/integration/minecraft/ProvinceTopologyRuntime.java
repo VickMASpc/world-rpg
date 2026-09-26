@@ -656,6 +656,10 @@ public final class ProvinceTopologyRuntime {
             int x,
             int z
     ) {
+        world.getChunk(
+                Math.floorDiv(x, 16),
+                Math.floorDiv(z, 16)
+        );
         return world.getTopY(
                 Heightmap.Type.WORLD_SURFACE,
                 x,
