@@ -139,10 +139,12 @@ public final class AuthoredMobRuntime {
                 EntityAttributes.GENERIC_MAX_HEALTH,
                 definition.maximumHealth()
         );
+        // Vanilla attack damage is deliberately neutralized. Authored mobs
+        // resolve damage through ProductionCombatRuntime.
         applyAttribute(
                 living,
                 EntityAttributes.GENERIC_ATTACK_DAMAGE,
-                definition.attackDamage()
+                0.0
         );
         applyAttribute(
                 living,
@@ -158,16 +160,46 @@ public final class AuthoredMobRuntime {
             mob.setTarget(player);
         }
 
+        // Ordinary player swings cannot mutate this entity's health. The
+        // production combat runtime temporarily clears invulnerability only
+        // for its canonical defeat bridge.
+        living.setInvulnerable(true);
+
         bindings.bind(
                 living.getUuid(),
                 definition.id()
         );
+        WorldRpgServerRuntime.productionCombat()
+                .registerAuthoredMob(
+                        living,
+                        definition
+                );
 
         return new SpawnResult(
                 definition,
                 living.getUuid(),
                 position
         );
+    }
+
+    public Optional<MobContentDefinition> definition(
+            java.util.UUID entityUuid
+    ) {
+        requireStarted();
+        return bindings.mobId(
+                Objects.requireNonNull(
+                        entityUuid,
+                        "entityUuid"
+                )
+        ).map(AuthoredMobRuntime::requireMob);
+    }
+
+    public void tick(MinecraftServer tickingServer) {
+        if (server == null || server != tickingServer) {
+            return;
+        }
+        // Enemy ability/AI scheduling is added by the spawn-ecology wave.
+        // This runtime already owns persistence and loot resolution.
     }
 
     public String statusSummary() {
