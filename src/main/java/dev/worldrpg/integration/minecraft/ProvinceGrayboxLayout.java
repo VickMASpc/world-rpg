@@ -178,6 +178,18 @@ public final class ProvinceGrayboxLayout {
                     30.0,
                     routeLength("refuge-to-beyond"),
                     "deeper outward leg beyond the refuge"
+            ),
+            new Journey(
+                    "d-to-e-danger",
+                    Node.FORK,
+                    Node.DANGER,
+                    0.0,
+                    0.0,
+                    Math.hypot(
+                            FORK.east() - DANGER.east(),
+                            FORK.south() - DANGER.south()
+                    ),
+                    "cautious approach from the fork to the visible danger pocket; retreat is part of the manual proof"
             )
     );
 
