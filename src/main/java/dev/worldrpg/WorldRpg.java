@@ -5,6 +5,7 @@ import dev.worldrpg.command.WorldRpgContentCommands;
 import dev.worldrpg.command.WorldRpgPersistenceCommands;
 import dev.worldrpg.command.WorldRpgInventoryCommands;
 import dev.worldrpg.command.WorldRpgQuestCommands;
+import dev.worldrpg.command.WorldRpgSliceCommands;
 import dev.worldrpg.content.WorldRpgContentDomains;
 import dev.worldrpg.content.combat.P3CombatContentRuntime;
 import dev.worldrpg.content.fabric.WorldRpgContentRuntime;
@@ -31,6 +32,7 @@ public final class WorldRpg implements ModInitializer {
         WorldRpgPersistenceCommands.register();
         WorldRpgInventoryCommands.register();
         WorldRpgQuestCommands.register();
+        WorldRpgSliceCommands.register();
         WorldRpgCommands.register();
 
         LOGGER.info("World RPG runtime bootstrap initialized.");

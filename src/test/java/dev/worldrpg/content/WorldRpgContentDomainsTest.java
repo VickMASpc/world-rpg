@@ -23,10 +23,14 @@ class WorldRpgContentDomainsTest {
         );
 
         var result = loader.loadAndPublish(List.of(
-                location(),
+                homeLocation(),
+                checkpointLocation(),
                 npc(),
                 item("world_rpg:item/first_province/road_worn_cloak"),
-                quest("world_rpg:item/first_province/road_worn_cloak")
+                quest(
+                        "world_rpg:location/first_province/east_road_checkpoint",
+                        "world_rpg:item/first_province/road_worn_cloak"
+                )
         ));
 
         assertTrue(result.published());
@@ -51,9 +55,13 @@ class WorldRpgContentDomainsTest {
         );
 
         var result = loader.loadAndPublish(List.of(
-                location(),
+                homeLocation(),
+                checkpointLocation(),
                 npc(),
-                quest("world_rpg:item/first_province/missing")
+                quest(
+                        "world_rpg:location/first_province/east_road_checkpoint",
+                        "world_rpg:item/first_province/missing"
+                )
         ));
 
         assertFalse(result.published());
@@ -61,9 +69,32 @@ class WorldRpgContentDomainsTest {
         assertEquals(0, publisher.active().registryCount());
     }
 
-    private static ContentSource location() {
+    @Test
+    void missingPhysicalVisitLocationRejectsWholeCandidate() {
+        RegistryPublisher publisher = new RegistryPublisher();
+        ContentLoader loader = new ContentLoader(
+                WorldRpgContentDomains.catalog(),
+                publisher
+        );
+
+        var result = loader.loadAndPublish(List.of(
+                homeLocation(),
+                npc(),
+                item("world_rpg:item/first_province/road_worn_cloak"),
+                quest(
+                        "world_rpg:location/first_province/missing_checkpoint",
+                        "world_rpg:item/first_province/road_worn_cloak"
+                )
+        ));
+
+        assertFalse(result.published());
+        assertTrue(result.report().hasErrors());
+        assertEquals(0, publisher.active().registryCount());
+    }
+
+    private static ContentSource homeLocation() {
         return ContentSource.of(
-                "location.json",
+                "home_location.json",
                 """
                 {
                   "schema": 1,
@@ -72,6 +103,22 @@ class WorldRpgContentDomainsTest {
                   "display_name": "Home Settlement (A)",
                   "kind": "settlement",
                   "tags": ["home", "services", "first_province"]
+                }
+                """
+        );
+    }
+
+    private static ContentSource checkpointLocation() {
+        return ContentSource.of(
+                "checkpoint_location.json",
+                """
+                {
+                  "schema": 1,
+                  "registry": "world_rpg:registry/world_locations",
+                  "id": "world_rpg:location/first_province/east_road_checkpoint",
+                  "display_name": "East Road Abandoned Checkpoint",
+                  "kind": "road_checkpoint",
+                  "tags": ["east_road", "investigation", "first_province"]
                 }
                 """
         );
@@ -111,7 +158,10 @@ class WorldRpgContentDomainsTest {
         );
     }
 
-    private static ContentSource quest(String rewardId) {
+    private static ContentSource quest(
+            String locationId,
+            String rewardId
+    ) {
         return ContentSource.of(
                 "quest.json",
                 """
@@ -128,7 +178,7 @@ class WorldRpgContentDomainsTest {
                     {
                       "key": "inspect_route",
                       "type": "visit_location",
-                      "location": "world_rpg:location/first_province/home"
+                      "location": "%s"
                     },
                     {
                       "key": "report_to_warden",
@@ -141,7 +191,7 @@ class WorldRpgContentDomainsTest {
                   ],
                   "copper_reward": 40
                 }
-                """.formatted(rewardId)
+                """.formatted(locationId, rewardId)
         );
     }
 }

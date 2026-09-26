@@ -12,6 +12,8 @@ public final class WorldRpgServerRuntime {
             new P3DeveloperCombatRuntime(ACTORS);
     private static final P3DeveloperRoom P3_ROOM =
             new P3DeveloperRoom(P3_COMBAT);
+    private static final FirstPlayableSliceRuntime PLAYABLE_SLICE =
+            new FirstPlayableSliceRuntime();
 
     private static boolean registered;
 
@@ -30,22 +32,31 @@ public final class WorldRpgServerRuntime {
         return P3_ROOM;
     }
 
+    public static FirstPlayableSliceRuntime playableSlice() {
+        return PLAYABLE_SLICE;
+    }
+
     public static void registerLifecycle() {
         if (registered) {
             return;
         }
         registered = true;
 
+        PLAYABLE_SLICE.registerInteraction();
+
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             P3_COMBAT.start(server);
             P3_ROOM.start(server);
+            PLAYABLE_SLICE.start(server);
         });
 
-        ServerTickEvents.END_SERVER_TICK.register(
-                P3_COMBAT::tick
-        );
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            P3_COMBAT.tick(server);
+            PLAYABLE_SLICE.tick(server);
+        });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            PLAYABLE_SLICE.stop();
             P3_ROOM.stop();
             P3_COMBAT.stop();
             ACTORS.clear();

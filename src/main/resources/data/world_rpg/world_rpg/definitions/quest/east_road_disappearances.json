@@ -3,7 +3,7 @@
   "registry": "world_rpg:registry/quests",
   "id": "world_rpg:quest/first_province/east_road_disappearances",
   "title": "Disappearances Along the East Road",
-  "journal_summary": "The road warden has asked you to follow the east road, investigate the troubled route, and return with what you learn. This definition is a provisional production package, not final first-province lore.",
+  "journal_summary": "The road warden has asked you to follow the east road, inspect an abandoned checkpoint where travelers stopped returning, and report what you find. This definition is a provisional playable-slice production package, not final first-province lore.",
   "minimum_level": 1,
   "starter": "world_rpg:npc/first_province/road_warden",
   "turn_in": "world_rpg:npc/first_province/road_warden",
@@ -11,7 +11,7 @@
     {
       "key": "inspect_route",
       "type": "visit_location",
-      "location": "world_rpg:location/first_province/home"
+      "location": "world_rpg:location/first_province/east_road_checkpoint"
     },
     {
       "key": "report_to_warden",
