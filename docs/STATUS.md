@@ -307,7 +307,40 @@ The first integrated milestone, **Cycle 1 — First real combat expedition**, is
 
 Its implementation package now exists across combat authority, spawn ecology, Ashwood family content, custom creature presentation, first-pass combat HUD/input, authored loot/quest hooks and the physical hunting-ground route.
 
-Cycle 1 physical end-to-end acceptance is complete. Cycle 2 now begins with persistent character progression/equipment authority before interactive character/bag/service UI is layered on top.
+Cycle 1 physical end-to-end acceptance is complete.
+
+## Cycle 2 — Packet 1 character authority candidate
+
+Cycle 2 is now actively implemented in bounded packets:
+
+- `docs/16-implementation/CYCLE2_WORK_PACKETS.md`
+
+Packet 1 establishes persistent character/equipment authority before interactive UI is layered on top.
+
+The branch now contains:
+
+- persistent level 1-100 character state;
+- persistent XP-within-level state and a provisional deterministic progression curve;
+- authored mob XP rewards;
+- persistent equipment slots;
+- item-authored equipment slot/stat payloads;
+- level and ownership validation for equip requests;
+- equip/replace/unequip authority;
+- equipment modifiers applied through the production StatSheet;
+- character level feeding live production HP, attack power, armor and combat level;
+- live combat refresh on level-up/equipment/reset;
+- Road-Worn Cloak as BACK equipment with +4 armor;
+- Ashwood-Carved Charm as level-2 NECK equipment with +3 attack power;
+- the Charm as a provisional rare Ashwood Stalker drop;
+- `/rpgcharacter` and equip/unequip proof surfaces;
+- deterministic developer XP/item grant commands for physical acceptance;
+- persistence/unit coverage for progression and equipment state.
+
+Packet 1 is implemented and automated-test green through the current candidate, but remains open until the physical acceptance suite passes:
+
+- `docs/16-implementation/CYCLE2_PACKET1_ACCEPTANCE.md`
+
+After Packet 1 acceptance, Packet 2 replaces the command proof surfaces with real character/bag/equipment UI.
 
 ## Work now authorized
 
@@ -330,7 +363,7 @@ Unless directly required by the reconvergence or production-factory proof:
 - mass class/ability/item content;
 - mass quest/NPC/profession content;
 - final terrain production;
-- final UI/VFX production.
+- final polished UI/VFX production beyond the active Cycle 2 character/inventory surfaces.
 
 ## Why
 
