@@ -39,6 +39,8 @@ public final class ProvinceTopologyRuntime {
     private static final String MEASUREMENTS = "measurements";
     private static final String ELAPSED_TICKS = "elapsed_ticks";
     private static final String PATH_BLOCKS = "path_blocks";
+    private static final String ACTUAL_BLOCKS = "actual_blocks";
+    private static final String SUSPICIOUS_JUMPS = "suspicious_jumps";
     private static final String MODE = "mode";
     private static final String RUNS = "runs";
 
@@ -58,6 +60,31 @@ public final class ProvinceTopologyRuntime {
     public void stop() {
         active.clear();
         server = null;
+    }
+
+    public void tick(MinecraftServer tickingServer) {
+        if (server == null || server != tickingServer) {
+            return;
+        }
+
+        for (var entry :
+                new ArrayList<>(active.entrySet())) {
+            ServerPlayerEntity player =
+                    server.getPlayerManager()
+                            .getPlayer(entry.getKey());
+            if (player == null
+                    || !player.isAlive()
+                    || !player.getServerWorld()
+                    .getRegistryKey()
+                    .equals(World.OVERWORLD)) {
+                continue;
+            }
+
+            entry.getValue().sample(
+                    player.getX(),
+                    player.getZ()
+            );
+        }
     }
 
     public ProvinceGrayboxBuilder.BuildResult build(
@@ -315,11 +342,18 @@ public final class ProvinceTopologyRuntime {
         double elapsedMinutes =
                 elapsedTicks / 1200.0;
 
+        measurement.sample(
+                player.getX(),
+                player.getZ()
+        );
+
         MeasurementRecord record =
                 persistMeasurement(
                         journey,
                         measurement.mode(),
-                        elapsedTicks
+                        elapsedTicks,
+                        measurement.actualBlocks(),
+                        measurement.suspiciousJumps()
                 );
         active.remove(player.getUuid());
 
@@ -334,6 +368,8 @@ public final class ProvinceTopologyRuntime {
                 measurement.mode(),
                 elapsedTicks,
                 elapsedMinutes,
+                record.actualBlocks(),
+                record.suspiciousJumps(),
                 record.runCount(),
                 comparison
         );
@@ -368,6 +404,10 @@ public final class ProvinceTopologyRuntime {
                     measurements.getCompound(key);
             long ticks =
                     entry.getLong(ELAPSED_TICKS);
+            double actualBlocks =
+                    entry.getDouble(ACTUAL_BLOCKS);
+            int suspiciousJumps =
+                    entry.getInt(SUSPICIOUS_JUMPS);
             int runs =
                     entry.getInt(RUNS);
             lines.add(
@@ -375,6 +415,11 @@ public final class ProvinceTopologyRuntime {
                             + " | latest="
                             + format(ticks / 1200.0)
                             + " min"
+                            + " | actual="
+                            + format(actualBlocks)
+                            + " blocks"
+                            + " | suspiciousJumps="
+                            + suspiciousJumps
                             + " | runs="
                             + runs
             );
@@ -389,7 +434,9 @@ public final class ProvinceTopologyRuntime {
     private MeasurementRecord persistMeasurement(
             Journey journey,
             MeasurementMode mode,
-            long elapsedTicks
+            long elapsedTicks,
+            double actualBlocks,
+            int suspiciousJumps
     ) {
         WorldRpgPersistentState persistence =
                 WorldRpgPersistentState.get(server);
@@ -430,6 +477,14 @@ public final class ProvinceTopologyRuntime {
                 PATH_BLOCKS,
                 journey.pathBlocks()
         );
+        entry.putDouble(
+                ACTUAL_BLOCKS,
+                actualBlocks
+        );
+        entry.putInt(
+                SUSPICIOUS_JUMPS,
+                suspiciousJumps
+        );
         entry.putString(
                 MODE,
                 mode.name()
@@ -455,6 +510,8 @@ public final class ProvinceTopologyRuntime {
                 mode,
                 elapsedTicks,
                 journey.pathBlocks(),
+                actualBlocks,
+                suspiciousJumps,
                 previousRuns + 1
         );
     }
@@ -498,6 +555,8 @@ public final class ProvinceTopologyRuntime {
                         mode,
                         entry.getLong(ELAPSED_TICKS),
                         entry.getDouble(PATH_BLOCKS),
+                        entry.getDouble(ACTUAL_BLOCKS),
+                        entry.getInt(SUSPICIOUS_JUMPS),
                         entry.getInt(RUNS)
                 )
         );
@@ -661,13 +720,76 @@ public final class ProvinceTopologyRuntime {
         }
     }
 
-    private record ActiveMeasurement(
-            String journeyId,
-            MeasurementMode mode,
-            long startedAtTick,
-            double startX,
-            double startZ
-    ) {
+    private static final class ActiveMeasurement {
+        private final String journeyId;
+        private final MeasurementMode mode;
+        private final long startedAtTick;
+        private double lastX;
+        private double lastZ;
+        private double actualBlocks;
+        private int suspiciousJumps;
+
+        private ActiveMeasurement(
+                String journeyId,
+                MeasurementMode mode,
+                long startedAtTick,
+                double startX,
+                double startZ
+        ) {
+            this.journeyId =
+                    Objects.requireNonNull(
+                            journeyId,
+                            "journeyId"
+                    );
+            this.mode =
+                    Objects.requireNonNull(
+                            mode,
+                            "mode"
+                    );
+            this.startedAtTick = startedAtTick;
+            this.lastX = startX;
+            this.lastZ = startZ;
+        }
+
+        public String journeyId() {
+            return journeyId;
+        }
+
+        public MeasurementMode mode() {
+            return mode;
+        }
+
+        public long startedAtTick() {
+            return startedAtTick;
+        }
+
+        public double actualBlocks() {
+            return actualBlocks;
+        }
+
+        public int suspiciousJumps() {
+            return suspiciousJumps;
+        }
+
+        private void sample(
+                double x,
+                double z
+        ) {
+            double step =
+                    Math.hypot(
+                            x - lastX,
+                            z - lastZ
+                    );
+
+            if (step <= 12.0) {
+                actualBlocks += step;
+            } else if (step > 0.01) {
+                suspiciousJumps++;
+            }
+
+            lastX = x;
+            lastZ = z;
+        }
     }
 
     public record MeasurementRecord(
@@ -675,6 +797,8 @@ public final class ProvinceTopologyRuntime {
             MeasurementMode mode,
             long elapsedTicks,
             double pathBlocks,
+            double actualBlocks,
+            int suspiciousJumps,
             int runCount
     ) {
         public double elapsedMinutes() {
@@ -708,6 +832,8 @@ public final class ProvinceTopologyRuntime {
             MeasurementMode mode,
             long elapsedTicks,
             double elapsedMinutes,
+            double actualBlocks,
+            int suspiciousJumps,
             int runCount,
             Optional<MeasurementRecord> comparison
     ) {
@@ -764,6 +890,17 @@ public final class ProvinceTopologyRuntime {
                     + " | path≈"
                     + Math.round(journey.pathBlocks())
                     + " blocks"
+                    + " | walked="
+                    + format(actualBlocks)
+                    + " blocks"
+                    + " | routeRatio="
+                    + format(
+                            actualBlocks
+                                    / journey.pathBlocks()
+                    )
+                    + "x"
+                    + " | suspiciousJumps="
+                    + suspiciousJumps
                     + " | run="
                     + runCount
                     + target
