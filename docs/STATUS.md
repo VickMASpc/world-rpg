@@ -128,10 +128,46 @@ The disposable slice connects the existing production graph to physical Minecraf
 - the physical slice anchor is stored in World RPG world persistence, while quest history and RPG inventory remain in player persistence;
 - the runtime validates that the authored starter, turn-in NPC and physical visit objective still match the slice contract instead of silently drifting into a parallel hard-coded quest.
 
-The implementation/build candidate is covered by the normal CI build and content-domain tests. **Physical milestone acceptance is still pending the complete manual run** in `docs/16-implementation/FIRST_PLAYABLE_SLICE_TESTING.md`.
+A manual Minecraft run on 2026-09-26 proved the core physical chain: content publication, fixture creation, duplicate-build rejection, NPC quest acceptance, physical checkpoint progression, NPC report progression, persistent item/copper reward, completed-state persistence and duplicate-reward resistance.
 
-Until that physical matrix passes, this should be described as the **first playable-slice candidate**, not proof that the first province or vertical slice is complete.
-\n## P3 physical evidence state
+That run also exposed two integration defects:
+
+- full RPG IDs were being parsed with the wrong Brigadier argument grammar;
+- one physical Warden interaction could be delivered twice, which duplicated dialogue and could cross the report/turn-in boundary in one click.
+
+The command grammar is now corrected. Interaction ownership has moved into the generic adventure runtime with server-side single-interaction gating. The skipped explicit pre-turn-in inventory subcheck from the first run is not being treated as a blocker; the report/turn-in boundary is instead a required regression row in the new adventure-runtime acceptance gate.
+
+The **core first-playable milestone is therefore accepted as achieved**, while the generalized adventure-runtime expansion remains pending physical acceptance.
+
+
+## Adventure-runtime expansion candidate
+
+The first slice is no longer allowed to own quest progression directly.
+
+The active branch now introduces a reusable physical adventure path:
+
+- persistent entity UUID -> authored NPC ID bindings;
+- persistent world-volume -> authored location ID bindings;
+- one generic `AdventureWorldRuntime` for NPC interaction and location-entry events;
+- ordered quest-event routing, so only the first incomplete authored objective can react;
+- single-transition NPC interactions, preventing one physical click from reporting and turning in simultaneously;
+- data-level quest prerequisites with cross-quest reference validation;
+- a second authored quest, `waystation_silence`, gated behind completion of `east_road_disappearances`;
+- a second physical NPC, the Refuge Scout;
+- two additional physical locations, East Road Refuge and Collapsed Waystation;
+- `/rpgjournal` and `/rpgbag` as temporary non-operator player-facing quest/reward surfaces;
+- `/worldrpg persistence resetplayer confirm` for repeatable progression testing without rebuilding the world;
+- CI coverage that loads the actual packaged adventure JSON graph, not only synthetic decoder fixtures.
+
+The second quest exists specifically as an architecture proof: its progression uses the same NPC/location event router as the first quest rather than a second quest-specific Java state machine.
+
+Physical acceptance procedure:
+
+- `docs/16-implementation/ADVENTURE_RUNTIME_ACCEPTANCE.md`
+
+Until that matrix passes, describe this as the **generic adventure-runtime expansion candidate**, not as production-ready first-province questing.
+
+## P3 physical evidence state
 
 The hardened Minecraft proof harness is implemented and the exact pre-test candidate
 `763681e6775058e2cd6c3d8fb9e96333677e7d5f` passed CI run `35770679890`.
