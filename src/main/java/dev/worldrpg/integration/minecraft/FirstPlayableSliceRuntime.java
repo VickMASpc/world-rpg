@@ -52,6 +52,9 @@ public final class FirstPlayableSliceRuntime {
     public static final RpgId WAYSTATION_LOCATION_ID = RpgId.parse(
             "world_rpg:location/first_province/collapsed_waystation"
     );
+    public static final RpgId HUNTING_LOCATION_ID = RpgId.parse(
+            "world_rpg:location/first_province/ashwood_hunting_ground"
+    );
 
     private static final String WORLD_KEY = "first_playable_slice";
     private static final String ORIGIN_X = "origin_x";
@@ -72,6 +75,8 @@ public final class FirstPlayableSliceRuntime {
     private static final int CHECKPOINT_EAST = 48;
     private static final int REFUGE_EAST = 104;
     private static final int WAYSTATION_EAST = 160;
+    private static final int HUNTING_EAST = 128;
+    private static final int HUNTING_SOUTH = 32;
 
     private final AdventureWorldRuntime adventureWorld;
     private MinecraftServer server;
@@ -178,6 +183,12 @@ public final class FirstPlayableSliceRuntime {
                 waystationZ
         );
 
+        changedBlocks += buildHuntingGround(
+                world,
+                originX,
+                originZ
+        );
+
         VillagerEntity warden = spawnNpc(
                 world,
                 new BlockPos(
@@ -274,6 +285,9 @@ public final class FirstPlayableSliceRuntime {
             adventureWorld.bindings().unbindLocation(
                     WAYSTATION_LOCATION_ID
             );
+            adventureWorld.bindings().unbindLocation(
+                    HUNTING_LOCATION_ID
+            );
         }
 
         WorldRpgPersistentState persistence =
@@ -329,10 +343,17 @@ public final class FirstPlayableSliceRuntime {
                     player,
                     SECOND_QUEST_ID
             );
+            int huntingX = value.originX() + HUNTING_EAST;
+            int huntingZ = value.originZ() + HUNTING_SOUTH;
             summary += " refuge="
                     + value.refugeX() + ","
                     + value.refugeY() + ","
                     + value.refugeZ()
+                    + " hunting="
+                    + huntingX + ","
+                    + surfaceY(player.getServerWorld(), huntingX, huntingZ)
+                    + ","
+                    + huntingZ
                     + " waystation="
                     + value.waystationX() + ","
                     + value.waystationY() + ","
@@ -411,6 +432,18 @@ public final class FirstPlayableSliceRuntime {
                 state.waystationZ(),
                 5,
                 6
+        );
+
+        int huntingX = state.originX() + HUNTING_EAST;
+        int huntingZ = state.originZ() + HUNTING_SOUTH;
+        adventureWorld.bindings().bindLocation(
+                HUNTING_LOCATION_ID,
+                world,
+                huntingX,
+                surfaceY(world, huntingX, huntingZ) + 1,
+                huntingZ,
+                18,
+                8
         );
     }
 
@@ -686,6 +719,64 @@ public final class FirstPlayableSliceRuntime {
                 3
         );
         return changed + 2;
+    }
+
+    private static int buildHuntingGround(
+            ServerWorld world,
+            int originX,
+            int originZ
+    ) {
+        int changed = 0;
+        int huntingX = originX + HUNTING_EAST;
+        int huntingZ = originZ + HUNTING_SOUTH;
+
+        // A cheap but readable side-route: leave the east road near Refuge F,
+        // then bend south into a deliberately rough hunting pocket.
+        for (int south = 1; south <= HUNTING_SOUTH; south++) {
+            int z = originZ + south;
+            for (int eastOffset = -1; eastOffset <= 1; eastOffset++) {
+                int x = huntingX + eastOffset;
+                int y = surfaceY(world, x, z);
+                world.setBlockState(
+                        new BlockPos(x, y, z),
+                        Blocks.COARSE_DIRT.getDefaultState(),
+                        3
+                );
+                changed++;
+            }
+        }
+
+        changed += fillSurface(
+                world,
+                huntingX,
+                huntingZ,
+                7,
+                Blocks.PODZOL
+        );
+
+        for (int[] offset : new int[][]{
+                {-7, -7},
+                {7, -7},
+                {-7, 7},
+                {7, 7}
+        }) {
+            int x = huntingX + offset[0];
+            int z = huntingZ + offset[1];
+            int y = surfaceY(world, x, z);
+            world.setBlockState(
+                    new BlockPos(x, y + 1, z),
+                    Blocks.STRIPPED_SPRUCE_LOG.getDefaultState(),
+                    3
+            );
+            world.setBlockState(
+                    new BlockPos(x, y + 2, z),
+                    Blocks.SOUL_LANTERN.getDefaultState(),
+                    3
+            );
+            changed += 2;
+        }
+
+        return changed;
     }
 
     private static int fillSurface(
