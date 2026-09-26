@@ -36,9 +36,9 @@ class RpgIdArgumentTypeTest {
     }
 
     @Test
-    void rejectsMalformedIdentifierSyntax() {
+    void rejectsIllegalIdentifierCharacters() {
         StringReader reader = new StringReader(
-                "WORLD RPG:not valid"
+                "world_rpg:item/first_province/road#worn"
         );
 
         assertThrows(
