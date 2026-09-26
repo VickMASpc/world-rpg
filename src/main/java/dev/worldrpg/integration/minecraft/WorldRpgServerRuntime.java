@@ -14,6 +14,8 @@ public final class WorldRpgServerRuntime {
             new P3DeveloperRoom(P3_COMBAT);
     private static final AdventureWorldRuntime ADVENTURE_WORLD =
             new AdventureWorldRuntime();
+    private static final AuthoredMobRuntime AUTHORED_MOBS =
+            new AuthoredMobRuntime();
     private static final FirstPlayableSliceRuntime PLAYABLE_SLICE =
             new FirstPlayableSliceRuntime(ADVENTURE_WORLD);
 
@@ -38,6 +40,10 @@ public final class WorldRpgServerRuntime {
         return ADVENTURE_WORLD;
     }
 
+    public static AuthoredMobRuntime authoredMobs() {
+        return AUTHORED_MOBS;
+    }
+
     public static FirstPlayableSliceRuntime playableSlice() {
         return PLAYABLE_SLICE;
     }
@@ -49,11 +55,13 @@ public final class WorldRpgServerRuntime {
         registered = true;
 
         ADVENTURE_WORLD.registerInteraction();
+        AUTHORED_MOBS.registerEvents();
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             P3_COMBAT.start(server);
             P3_ROOM.start(server);
             ADVENTURE_WORLD.start(server);
+            AUTHORED_MOBS.start(server);
             PLAYABLE_SLICE.start(server);
         });
 
@@ -64,6 +72,7 @@ public final class WorldRpgServerRuntime {
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             PLAYABLE_SLICE.stop();
+            AUTHORED_MOBS.stop();
             ADVENTURE_WORLD.stop();
             P3_ROOM.stop();
             P3_COMBAT.stop();
