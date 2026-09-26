@@ -163,6 +163,40 @@ public final class AdventureWorldRuntime {
         );
     }
 
+    public void onMobDefeated(
+            ServerPlayerEntity player,
+            RpgId mobId
+    ) {
+        Objects.requireNonNull(player, "player");
+        Objects.requireNonNull(mobId, "mobId");
+
+        var results = questEvents.onMobDefeated(
+                player,
+                mobId
+        );
+        for (var result : results) {
+            player.sendMessage(
+                    Text.literal(
+                            "Objective complete ["
+                                    + result.quest().title()
+                                    + "]: "
+                                    + humanize(result.objectiveKey())
+                    ),
+                    false
+            );
+            if (result.kind()
+                    == AdventureQuestEventRouter.EventKind
+                    .OBJECTIVE_COMPLETED_READY) {
+                player.sendMessage(
+                        Text.literal(
+                                "Quest ready to turn in."
+                        ),
+                        false
+                );
+            }
+        }
+    }
+
     public String statusSummary() {
         return "adventure world runtime | npcBindings="
                 + bindings.npcBindingCount()
