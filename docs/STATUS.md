@@ -187,39 +187,78 @@ Evidence and acceptance procedure:
 
 Do not describe the first province as production-ready questing yet. The reusable adventure path is now physically proven in live play, but player UI, richer dialogue/presentation, broader objective families, authored world production and full reload durability still need continued work.
 
-## Golden Ashwood Wolf production iteration
+## Cycle 1 — First real combat expedition candidate
 
-Era 3 production-factory work has now moved beyond the adventure-only strand.
+Cycle 1 is now implemented as an integrated physical candidate rather than a set of disconnected proofs.
 
-The active branch contains the first authored enemy/loot package seed:
+The active branch now contains a production combat path that is separate from the P3 developer harness:
 
-- restored editable source master: `assets-source/creatures/ashwood_wolf.bbmodel`;
-- authored mob registry/domain;
-- authored loot-table registry/domain;
-- cross-reference validation from mob -> loot table -> RPG item;
-- developer golden mob definition `world_rpg:dev/golden/mob/ashwood_wolf`;
-- guaranteed prototype drop `Ashwood Fang` plus copper;
-- persistent physical entity UUID -> authored mob ID binding;
-- a server-side death event that resolves authored loot into the persistent RPG bag;
-- a developer spawn surface at `/worldrpg golden ashwood spawn`;
-- an automated PersistentState round-trip test covering arbitrary world-binding and player quest/inventory payload survival.
+- authored ability damage/healing can resolve through the P4 production combat resolver;
+- players and authored enemies receive server-owned RPG combat actors, resources, stats, cooldowns and cast controllers;
+- player RPG health/focus and authored target RPG health are exposed through an authoritative combat-state packet;
+- normal player combat input now includes G / Field Strike rather than requiring P3 F-key proof controls;
+- the first combat HUD shows player RPG health/focus, crosshair target RPG health, action feedback and authored loot notices;
+- authored enemy vanilla attack damage is zero and authored enemies reject ordinary vanilla damage, so normal Cycle 1 damage is routed through World RPG combat authority;
+- canonical RPG defeat bridges back into Minecraft death only after World RPG health reaches defeat.
 
-The physical runtime intentionally uses `minecraft:wolf` as a temporary render/entity shell.
+The Ashwood family is now a real authored world population rather than a command-spawn golden fixture:
 
-This is a deliberate conservative boundary. The current iteration does **not** claim:
+- production Ashwood Wolf, level 3;
+- production Ashwood Stalker, level 4;
+- authored bite and engage/howl abilities;
+- authored aggro, assist, attack-range and leash values;
+- semantic spawn groups tied to Ashwood Verge;
+- target population of three Wolves plus one Stalker while the hunting ground is active near a player;
+- delayed authored respawn scheduling;
+- runtime-owned pursuit and pack assistance;
+- production Ashwood Fang / Ashwood Pelt / copper loot with no dev/golden item leakage.
 
-- the Blockbench source is rendered in Minecraft yet;
-- source -> GeckoLib/runtime model export is proven;
-- authored animation mapping is proven;
-- VFX/SFX is present;
-- combat damage has fully moved from the vanilla entity damage path into production World RPG combat authority;
-- spawn ecology/world-source placement is complete.
+The adventure/content path has also expanded:
 
-Those are the next golden-package integration problems, not hidden accomplishments.
+- new semantic location: Ashwood Verge;
+- a physical graybox side route around +128 X / +32 Z from the disposable slice origin;
+- new generic defeat-mob quest objective type;
+- third quest: Pressure in the Ashwood;
+- ordered route: visit Ashwood Verge -> defeat the Ashwood Stalker -> report to Refuge Scout;
+- generic quest-offer routing now prefers the nearest unmet prerequisite instead of exposing a deeper locked quest first.
 
-Acceptance procedure:
+Creature presentation is no longer a vanilla-wolf placeholder.
 
-- `docs/16-implementation/GOLDEN_ASHWOOD_WOLF_ITERATION.md`
+The active runtime registers a dedicated world_rpg:ashwood_wolf entity and a GeckoLib 4.6.1 renderer. The runtime geometry, texture and animation data are exported from the existing editable master:
+
+- assets-source/creatures/ashwood_wolf.bbmodel
+
+That canonical Blockbench source contains 92 modeled pieces, a hierarchical articulated rig, an embedded 128x128 texture and five authored animations:
+
+- idle;
+- walk;
+- sniff;
+- howl;
+- bite.
+
+The GeckoLib runtime export carries all 92 cubes across 22 bones and the source animation set. Authored engage/bite combat events trigger the corresponding server-synced action animations.
+
+Automated evidence now includes:
+
+- the full packaged combat-expedition content graph;
+- three quests, two production mobs and two spawn groups;
+- validation that the Ashwood defeat objective references the Stalker;
+- validation that production Wolf loot uses production item IDs rather than dev/golden item IDs;
+- CI compilation of the production combat bridge, spawn ecology, HUD/networking, custom GeckoLib entity/renderer and canonical source export.
+
+The physical gate is:
+
+- docs/16-implementation/COMBAT_EXPEDITION_ACCEPTANCE.md
+
+Cycle 1 is **implemented but not yet physically accepted**. It must not be described as a completed gameplay milestone until the in-client expedition rows pass.
+
+Explicitly provisional after this cycle:
+
+- player combat health/focus/cooldown state is session runtime state rather than persistent character combat state;
+- spawn-group respawn countdowns are in-memory schedules and restart after server reload;
+- target presentation is crosshair-based rather than a sticky MMO target-selection system;
+- the +128/+32 hunting route is acceptance graybox scale, not final First Province geography;
+- broader action bars, classes/ability loadouts, VFX/audio and production-scale enemy families remain future work.
 
 ## P3 physical evidence state
 
@@ -264,19 +303,11 @@ The operating contract is now:
 
 Every normal "proceed development" cycle must make meaningful integrated progress in runtime architecture, authored content, player-facing UI/presentation, world integration and physical acceptance.
 
-The immediate next cycle is **Cycle 1 — First real combat expedition**.
+The current integrated candidate is **Cycle 1 — First real combat expedition**.
 
-That cycle includes, as one connected package:
+Its implementation package now exists across combat authority, spawn ecology, Ashwood family content, custom creature presentation, first-pass combat HUD/input, authored loot/quest hooks and the physical hunting-ground route.
 
-- production World RPG combat authority for authored enemies;
-- real enemy AI/spawn/leash integration;
-- Ashwood Wolf family/content and custom presentation;
-- first real combat HUD/action surfaces;
-- authored loot/progression/quest hooks;
-- a physical expedition/spawn area;
-- persistent end-to-end Minecraft acceptance.
-
-Custom Ashwood Wolf rendering is explicitly a subtask inside this cycle, not the cycle itself.
+The remaining Cycle 1 work is physical end-to-end acceptance and defect repair against that evidence. Custom Ashwood Wolf rendering is one proven implementation subpath inside the cycle, not a substitute for the full gameplay gate.
 
 ## Work now authorized
 
