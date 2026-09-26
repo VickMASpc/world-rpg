@@ -17,13 +17,20 @@ import dev.worldrpg.combat.math.WorldRpgRatingDraft;
 import dev.worldrpg.combat.math.CombatMathStats;
 import dev.worldrpg.combat.resolution.CombatMagnitudeRequest;
 import dev.worldrpg.combat.resolution.CombatResolutionGateway;
+import dev.worldrpg.combat.resource.ResourceMaximumPolicy;
+import dev.worldrpg.combat.stat.ModifierSource;
 import dev.worldrpg.combat.stat.StatKey;
+import dev.worldrpg.combat.stat.StatModifierOperation;
+import dev.worldrpg.content.adventure.AdventureContentDomains;
 import dev.worldrpg.content.combat.P3CombatContentRuntime;
+import dev.worldrpg.content.fabric.WorldRpgContentRuntime;
 import dev.worldrpg.content.enemy.MobContentDefinition;
 import dev.worldrpg.integration.minecraft.MinecraftCombatActorBindings;
 import dev.worldrpg.integration.minecraft.MinecraftEntityResolver;
 import dev.worldrpg.integration.minecraft.MinecraftTargetObservationProvider;
 import dev.worldrpg.integration.minecraft.WorldRpgServerRuntime;
+import dev.worldrpg.player.PlayerCharacterState;
+import dev.worldrpg.player.fabric.MinecraftCharacterRuntime;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
@@ -49,6 +56,9 @@ public final class ProductionCombatRuntime
     private final Map<UUID, ProductionCombatState> states =
             new LinkedHashMap<>();
     private final Map<CombatActorId, Integer> levels =
+            new LinkedHashMap<>();
+    private final Map<UUID, List<ModifierSource>>
+            equipmentSourcesByPlayer =
             new LinkedHashMap<>();
 
     private MinecraftServer server;
@@ -78,6 +88,7 @@ public final class ProductionCombatRuntime
     public void stop() {
         states.clear();
         levels.clear();
+        equipmentSourcesByPlayer.clear();
         bindings.clear();
         resolver = null;
         server = null;
@@ -116,6 +127,25 @@ public final class ProductionCombatRuntime
                 }
             }
         }
+    }
+
+    public ProductionCombatState refreshPlayer(
+            ServerPlayerEntity player
+    ) {
+        requireStarted();
+        Objects.requireNonNull(player, "player");
+
+        ProductionCombatState state =
+                playerState(player);
+        PlayerCharacterState character =
+                MinecraftCharacterRuntime.load(player);
+
+        applyCharacterState(
+                player,
+                state,
+                character
+        );
+        return state;
     }
 
     public ProductionCombatState registerAuthoredMob(
@@ -307,34 +337,123 @@ public final class ProductionCombatRuntime
             ServerPlayerEntity player
     ) {
         CombatActor actor = bindings.bind(player);
+        PlayerCharacterState character =
+                MinecraftCharacterRuntime.load(player);
+        double maximumHealth =
+                WorldRpgCombatProfile.playerMaximumHealth(
+                        character.level()
+                );
+
         actor.resources().add(
                 WorldRpgCombatProfile.HEALTH,
-                WorldRpgCombatProfile.PLAYER_MAX_HEALTH,
-                WorldRpgCombatProfile.PLAYER_MAX_HEALTH
+                maximumHealth,
+                maximumHealth
         );
         actor.resources().add(
                 WorldRpgCombatProfile.FOCUS,
                 WorldRpgCombatProfile.PLAYER_MAX_FOCUS,
                 WorldRpgCombatProfile.PLAYER_MAX_FOCUS
         );
-        actor.stats().setBase(
-                LEVEL,
-                1.0
-        );
-        actor.stats().setBase(
-                CombatMathStats.ATTACK_POWER,
-                WorldRpgCombatProfile.PLAYER_ATTACK_POWER
-        );
-        actor.stats().setBase(
-                CombatMathStats.ARMOR,
-                WorldRpgDefenseDraft.referenceArmor(1)
-        );
 
-        return createState(
+        ProductionCombatState state = createState(
                 player,
                 actor,
-                1,
-                WorldRpgCombatProfile.PLAYER_MAX_HEALTH
+                character.level(),
+                maximumHealth
+        );
+        applyCharacterState(
+                player,
+                state,
+                character
+        );
+        return state;
+    }
+
+    private void applyCharacterState(
+            ServerPlayerEntity player,
+            ProductionCombatState state,
+            PlayerCharacterState character
+    ) {
+        int level = character.level();
+        double maximumHealth =
+                WorldRpgCombatProfile.playerMaximumHealth(level);
+
+        state.actor().stats().setBase(
+                LEVEL,
+                level
+        );
+        state.actor().stats().setBase(
+                CombatMathStats.ATTACK_POWER,
+                WorldRpgCombatProfile.playerAttackPower(level)
+        );
+        state.actor().stats().setBase(
+                CombatMathStats.ARMOR,
+                WorldRpgDefenseDraft.referenceArmor(level)
+        );
+
+        state.actor().resources()
+                .require(WorldRpgCombatProfile.HEALTH)
+                .setMaximum(
+                        maximumHealth,
+                        ResourceMaximumPolicy.PRESERVE_RATIO
+                );
+
+        List<ModifierSource> previous =
+                equipmentSourcesByPlayer.remove(
+                        player.getUuid()
+                );
+        if (previous != null) {
+            previous.forEach(source ->
+                    state.actor().stats()
+                            .removeModifiersFrom(source)
+            );
+        }
+
+        List<ModifierSource> applied =
+                new ArrayList<>();
+
+        character.equippedItems().forEach((slot, itemId) -> {
+            var item =
+                    WorldRpgContentRuntime.publisher()
+                            .active()
+                            .require(
+                                    AdventureContentDomains.ITEMS
+                            )
+                            .find(itemId);
+            if (item.isEmpty()) {
+                return;
+            }
+
+            var equipment =
+                    item.orElseThrow().equipmentSpec();
+            if (equipment.isEmpty()
+                    || equipment.orElseThrow().slot() != slot) {
+                return;
+            }
+
+            ModifierSource source =
+                    ModifierSource.staticSource(itemId);
+            for (var stat :
+                    equipment.orElseThrow().stats()) {
+                state.actor().stats().addModifier(
+                        stat.stat(),
+                        source,
+                        StatModifierOperation.ADD,
+                        stat.amount(),
+                        100
+                );
+            }
+            applied.add(source);
+        });
+
+        equipmentSourcesByPlayer.put(
+                player.getUuid(),
+                List.copyOf(applied)
+        );
+        levels.put(state.actor().id(), level);
+        state.updateCharacter(
+                level,
+                maximumHealth
         );
     }
 
@@ -546,6 +665,7 @@ public final class ProductionCombatRuntime
         if (removed != null) {
             levels.remove(removed.actor().id());
         }
+        equipmentSourcesByPlayer.remove(entityUuid);
         bindings.unbind(entityUuid);
     }
 
