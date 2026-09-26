@@ -75,6 +75,9 @@ final class EnemyContentDecoders {
         Optional<Integer> level = requiredInt(
                 root, "level", document, report
         );
+        Optional<Long> experienceReward = requiredLong(
+                root, "experience_reward", document, report
+        );
         Optional<Double> maximumHealth = requiredDouble(
                 root, "maximum_health", document, report
         );
@@ -111,6 +114,7 @@ final class EnemyContentDecoders {
 
         if (displayName.isEmpty()
                 || level.isEmpty()
+                || experienceReward.isEmpty()
                 || maximumHealth.isEmpty()
                 || attackDamage.isEmpty()
                 || movementSpeed.isEmpty()
@@ -131,6 +135,7 @@ final class EnemyContentDecoders {
                             document.header().id(),
                             displayName.get(),
                             level.get(),
+                            experienceReward.get(),
                             maximumHealth.get(),
                             attackDamage.get(),
                             movementSpeed.get(),
