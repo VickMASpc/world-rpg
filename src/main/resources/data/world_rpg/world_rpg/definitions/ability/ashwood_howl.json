@@ -1,0 +1,6 @@
+{
+  "schema":1,"registry":"world_rpg:registry/abilities","id":"world_rpg:ability/first_province/ashwood_howl",
+  "cast_kind":"instant","cast_duration_ticks":0,"cooldown_ticks":240,"global_cooldown_ticks":0,"movement_policy":"allow",
+  "costs":[],"conditions":[{"type":"require_self"}],
+  "effects":[{"type":"apply_aura","recipient":"source","aura":"world_rpg:aura/first_province/ashwood_pack_fury"}]
+}
