@@ -35,7 +35,7 @@ class WorldRpgContentDomainsTest {
 
         assertTrue(result.published());
         assertFalse(result.report().hasErrors());
-        assertEquals(8, publisher.active().registryCount());
+        assertEquals(9, publisher.active().registryCount());
         assertTrue(
                 publisher.active()
                         .require(AdventureContentDomains.QUESTS)
