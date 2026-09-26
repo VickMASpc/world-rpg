@@ -336,11 +336,34 @@ The branch now contains:
 - deterministic developer XP/item grant commands for physical acceptance;
 - persistence/unit coverage for progression and equipment state.
 
-Packet 1 is implemented and automated-test green through the current candidate, but remains open until the physical acceptance suite passes:
+Packet 1 is physically accepted. Evidence:
 
-- `docs/16-implementation/CYCLE2_PACKET1_ACCEPTANCE.md`
+- `docs/16-implementation/CYCLE2_PACKET1_PHYSICAL_EVIDENCE_2026-09-26.md`
 
-After Packet 1 acceptance, Packet 2 replaces the command proof surfaces with real character/bag/equipment UI.
+The planned Packet 2 character/bag/equipment UI remains required for Cycle 2, but it is **paused** while the project returns to the constitutionally higher-priority first-province topology proof.
+
+## World-first reconvergence now active
+
+The project re-read the original ideation and constitution after Cycle 2 Packet 1 and identified sequencing drift: recent work was increasingly choosing the next subsystem because it was the next convenient dependency.
+
+The immediate correction is not a rollback. Existing combat, quest, character, equipment, persistence and rendering work remains valid infrastructure.
+
+The active development target is now **P4-G G9 — first-province physical topology proof**.
+
+The branch now includes an executable topology harness:
+
+- persistent Superflat graybox origin;
+- kilometer-scale A/B/C/D/E/F/G/H graph;
+- safe road, dangerous shortcut, learned shortcut, detours and outward route;
+- persistent journey measurements;
+- elapsed time + actual horizontal distance;
+- route-efficiency ratio;
+- suspicious movement-jump detection;
+- first/known journey modes;
+- persisted history;
+- executable runbook: `docs/09-world-travel/FIRST_PROVINCE_TOPOLOGY_PHYSICAL_RUNBOOK.md`.
+
+Cycle 2 Packet 2 UI work is paused until this world evidence is reconciled.
 
 ## Work now authorized
 
@@ -363,7 +386,7 @@ Unless directly required by the reconvergence or production-factory proof:
 - mass class/ability/item content;
 - mass quest/NPC/profession content;
 - final terrain production;
-- final polished UI/VFX production beyond the active Cycle 2 character/inventory surfaces.
+- final polished UI/VFX production; Cycle 2 Packet 2 character/inventory UI is specifically paused until topology evidence is reconciled.
 
 ## Why
 
