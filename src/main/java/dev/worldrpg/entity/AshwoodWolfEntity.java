@@ -33,7 +33,7 @@ public final class AshwoodWolfEntity
     private static final RawAnimation ATTACK =
             RawAnimation.begin()
                     .then(
-                            "attack",
+                            "bite",
                             Animation.LoopType.PLAY_ONCE
                     );
     private static final RawAnimation HOWL =
