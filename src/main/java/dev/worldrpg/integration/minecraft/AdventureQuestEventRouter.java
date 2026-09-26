@@ -124,6 +124,15 @@ public final class AdventureQuestEventRouter {
                         null
                 );
             }
+            if (result
+                    == MinecraftQuestRuntime.AcceptResult
+                    .PREREQUISITES_INCOMPLETE) {
+                return new EventResult(
+                        EventKind.QUEST_LOCKED,
+                        definition,
+                        null
+                );
+            }
         }
 
         return EventResult.none();
@@ -207,6 +216,7 @@ public final class AdventureQuestEventRouter {
     public enum EventKind {
         NONE,
         QUEST_ACCEPTED,
+        QUEST_LOCKED,
         OBJECTIVE_COMPLETED,
         OBJECTIVE_COMPLETED_READY,
         QUEST_TURNED_IN
