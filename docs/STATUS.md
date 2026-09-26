@@ -187,6 +187,40 @@ Evidence and acceptance procedure:
 
 Do not describe the first province as production-ready questing yet. The reusable adventure path is now physically proven in live play, but player UI, richer dialogue/presentation, broader objective families, authored world production and full reload durability still need continued work.
 
+## Golden Ashwood Wolf production iteration
+
+Era 3 production-factory work has now moved beyond the adventure-only strand.
+
+The active branch contains the first authored enemy/loot package seed:
+
+- restored editable source master: `assets-source/creatures/ashwood_wolf.bbmodel`;
+- authored mob registry/domain;
+- authored loot-table registry/domain;
+- cross-reference validation from mob -> loot table -> RPG item;
+- developer golden mob definition `world_rpg:dev/golden/mob/ashwood_wolf`;
+- guaranteed prototype drop `Ashwood Fang` plus copper;
+- persistent physical entity UUID -> authored mob ID binding;
+- a server-side death event that resolves authored loot into the persistent RPG bag;
+- a developer spawn surface at `/worldrpg golden ashwood spawn`;
+- an automated PersistentState round-trip test covering arbitrary world-binding and player quest/inventory payload survival.
+
+The physical runtime intentionally uses `minecraft:wolf` as a temporary render/entity shell.
+
+This is a deliberate conservative boundary. The current iteration does **not** claim:
+
+- the Blockbench source is rendered in Minecraft yet;
+- source -> GeckoLib/runtime model export is proven;
+- authored animation mapping is proven;
+- VFX/SFX is present;
+- combat damage has fully moved from the vanilla entity damage path into production World RPG combat authority;
+- spawn ecology/world-source placement is complete.
+
+Those are the next golden-package integration problems, not hidden accomplishments.
+
+Acceptance procedure:
+
+- `docs/16-implementation/GOLDEN_ASHWOOD_WOLF_ITERATION.md`
+
 ## P3 physical evidence state
 
 The hardened Minecraft proof harness is implemented and the exact pre-test candidate
