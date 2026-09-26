@@ -33,6 +33,7 @@ class PackagedCombatExpeditionContentTest {
             "data/world_rpg/world_rpg/definitions/item/roadside_provisions.json",
             "data/world_rpg/world_rpg/definitions/item/ashwood_fang.json",
             "data/world_rpg/world_rpg/definitions/item/ashwood_pelt.json",
+            "data/world_rpg/world_rpg/definitions/item/ashwood_carved_charm.json",
             "data/world_rpg/world_rpg/definitions/aura/ashwood_pack_fury.json",
             "data/world_rpg/world_rpg/definitions/ability/field_strike.json",
             "data/world_rpg/world_rpg/definitions/ability/ashwood_bite.json",
@@ -118,6 +119,33 @@ class PackagedCombatExpeditionContentTest {
                         entry.item().id().toString().contains("/dev/")
                 )
         );
+
+        var cloak = publisher.active()
+                .require(AdventureContentDomains.ITEMS)
+                .require(RpgId.parse(
+                        "world_rpg:item/first_province/road_worn_cloak"
+                ));
+        assertTrue(cloak.equipmentSpec().isPresent());
+        assertEquals(
+                dev.worldrpg.player.EquipmentSlot.BACK,
+                cloak.equipmentSpec().orElseThrow().slot()
+        );
+
+        var charm = publisher.active()
+                .require(AdventureContentDomains.ITEMS)
+                .require(RpgId.parse(
+                        "world_rpg:item/first_province/ashwood_carved_charm"
+                ));
+        assertEquals(
+                dev.worldrpg.player.EquipmentSlot.NECK,
+                charm.equipmentSpec().orElseThrow().slot()
+        );
+        assertEquals(2, charm.requiredLevel());
+
+        var stalker = mobs.require(RpgId.parse(
+                "world_rpg:mob/first_province/ashwood_stalker"
+        ));
+        assertEquals(48L, stalker.experienceReward());
     }
 
     private static ContentSource source(String path) {
