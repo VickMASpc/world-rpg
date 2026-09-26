@@ -21,6 +21,8 @@ public final class WorldRpgServerRuntime {
             new ProductionCombatRuntime();
     private static final FirstPlayableSliceRuntime PLAYABLE_SLICE =
             new FirstPlayableSliceRuntime(ADVENTURE_WORLD);
+    private static final ProvinceTopologyRuntime PROVINCE_TOPOLOGY =
+            new ProvinceTopologyRuntime();
 
     private static boolean registered;
 
@@ -55,6 +57,10 @@ public final class WorldRpgServerRuntime {
         return PLAYABLE_SLICE;
     }
 
+    public static ProvinceTopologyRuntime provinceTopology() {
+        return PROVINCE_TOPOLOGY;
+    }
+
     public static void registerLifecycle() {
         if (registered) {
             return;
@@ -71,6 +77,7 @@ public final class WorldRpgServerRuntime {
             PRODUCTION_COMBAT.start(server);
             AUTHORED_MOBS.start(server);
             PLAYABLE_SLICE.start(server);
+            PROVINCE_TOPOLOGY.start(server);
         });
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
@@ -81,6 +88,7 @@ public final class WorldRpgServerRuntime {
         });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            PROVINCE_TOPOLOGY.stop();
             PLAYABLE_SLICE.stop();
             AUTHORED_MOBS.stop();
             PRODUCTION_COMBAT.stop();
