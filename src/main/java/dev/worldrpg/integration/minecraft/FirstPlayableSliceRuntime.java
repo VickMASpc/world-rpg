@@ -1,14 +1,10 @@
 package dev.worldrpg.integration.minecraft;
 
 import dev.worldrpg.api.id.RpgId;
-import dev.worldrpg.content.adventure.AdventureContentDomains;
-import dev.worldrpg.content.adventure.ItemContentDefinition;
 import dev.worldrpg.content.adventure.QuestContentDefinition;
 import dev.worldrpg.content.adventure.QuestObjectiveSpec;
-import dev.worldrpg.content.fabric.WorldRpgContentRuntime;
 import dev.worldrpg.persistence.fabric.WorldRpgPersistentState;
 import dev.worldrpg.quest.fabric.MinecraftQuestRuntime;
-import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -20,8 +16,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
@@ -31,25 +25,33 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * First end-to-end World RPG playable slice.
- *
- * <p>The command layer only creates the disposable physical scene. Quest
- * acceptance, visit progression, reporting and turn-in happen through real
- * movement and entity interaction.</p>
+ * Disposable physical fixture for the first adventure-runtime production
+ * slice. Quest progression itself is owned by {@link AdventureWorldRuntime}.
  */
 public final class FirstPlayableSliceRuntime {
-    public static final RpgId QUEST_ID = RpgId.parse(
+    public static final RpgId FIRST_QUEST_ID = RpgId.parse(
             "world_rpg:quest/first_province/east_road_disappearances"
     );
+    public static final RpgId SECOND_QUEST_ID = RpgId.parse(
+            "world_rpg:quest/first_province/waystation_silence"
+    );
+
     public static final RpgId WARDEN_ID = RpgId.parse(
             "world_rpg:npc/first_province/road_warden"
     );
+    public static final RpgId SCOUT_ID = RpgId.parse(
+            "world_rpg:npc/first_province/refuge_scout"
+    );
+
     public static final RpgId CHECKPOINT_LOCATION_ID = RpgId.parse(
             "world_rpg:location/first_province/east_road_checkpoint"
     );
-
-    public static final String INSPECT_ROUTE = "inspect_route";
-    public static final String REPORT_TO_WARDEN = "report_to_warden";
+    public static final RpgId REFUGE_LOCATION_ID = RpgId.parse(
+            "world_rpg:location/first_province/east_road_refuge"
+    );
+    public static final RpgId WAYSTATION_LOCATION_ID = RpgId.parse(
+            "world_rpg:location/first_province/collapsed_waystation"
+    );
 
     private static final String WORLD_KEY = "first_playable_slice";
     private static final String ORIGIN_X = "origin_x";
@@ -58,75 +60,38 @@ public final class FirstPlayableSliceRuntime {
     private static final String CHECKPOINT_X = "checkpoint_x";
     private static final String CHECKPOINT_Y = "checkpoint_y";
     private static final String CHECKPOINT_Z = "checkpoint_z";
+    private static final String REFUGE_X = "refuge_x";
+    private static final String REFUGE_Y = "refuge_y";
+    private static final String REFUGE_Z = "refuge_z";
+    private static final String WAYSTATION_X = "waystation_x";
+    private static final String WAYSTATION_Y = "waystation_y";
+    private static final String WAYSTATION_Z = "waystation_z";
     private static final String WARDEN_UUID = "warden_uuid";
+    private static final String SCOUT_UUID = "scout_uuid";
 
     private static final int CHECKPOINT_EAST = 48;
-    private static final int CHECKPOINT_RADIUS = 5;
-    private static final int TICK_INTERVAL = 10;
-    private static final int INTERACTION_DEBOUNCE_TICKS = 4;
+    private static final int REFUGE_EAST = 104;
+    private static final int WAYSTATION_EAST = 160;
 
+    private final AdventureWorldRuntime adventureWorld;
     private MinecraftServer server;
-    private int ticks;
-    private boolean interactionRegistered;
-    private final java.util.Map<UUID, Integer> lastInteractionTickByPlayer =
-            new java.util.HashMap<>();
 
-    public void registerInteraction() {
-        if (interactionRegistered) {
-            return;
-        }
-        interactionRegistered = true;
-
-        UseEntityCallback.EVENT.register(
-                (player, world, hand, entity, hitResult) -> {
-                    if (!(player instanceof ServerPlayerEntity serverPlayer)) {
-                        return ActionResult.PASS;
-                    }
-                    if (hand != Hand.MAIN_HAND) {
-                        return ActionResult.PASS;
-                    }
-                    return interact(serverPlayer, entity)
-                            ? ActionResult.SUCCESS
-                            : ActionResult.PASS;
-                }
+    public FirstPlayableSliceRuntime(
+            AdventureWorldRuntime adventureWorld
+    ) {
+        this.adventureWorld = Objects.requireNonNull(
+                adventureWorld,
+                "adventureWorld"
         );
     }
 
     public void start(MinecraftServer server) {
         this.server = Objects.requireNonNull(server, "server");
-        ticks = 0;
-        lastInteractionTickByPlayer.clear();
+        restoreBindings();
     }
 
     public void stop() {
         server = null;
-        ticks = 0;
-        lastInteractionTickByPlayer.clear();
-    }
-
-    public void tick(MinecraftServer server) {
-        if (this.server != server) {
-            return;
-        }
-        ticks++;
-        if (ticks % TICK_INTERVAL != 0) {
-            return;
-        }
-
-        Optional<SliceState> state = loadState();
-        if (state.isEmpty()) {
-            return;
-        }
-
-        for (ServerPlayerEntity player
-                : server.getPlayerManager().getPlayerList()) {
-            if (!player.getServerWorld()
-                    .getRegistryKey()
-                    .equals(World.OVERWORLD)) {
-                continue;
-            }
-            maybeCompleteCheckpointVisit(player, state.orElseThrow());
-        }
     }
 
     public BuildResult build(ServerPlayerEntity player) {
@@ -146,7 +111,20 @@ public final class FirstPlayableSliceRuntime {
             );
         }
 
-        QuestContentDefinition definition = requireContentContract();
+        QuestContentDefinition first = requireQuestContract(
+                FIRST_QUEST_ID,
+                WARDEN_ID,
+                CHECKPOINT_LOCATION_ID,
+                "inspect_route",
+                "report_to_warden"
+        );
+        QuestContentDefinition second = requireQuestContract(
+                SECOND_QUEST_ID,
+                SCOUT_ID,
+                WAYSTATION_LOCATION_ID,
+                "inspect_waystation",
+                "report_to_scout"
+        );
 
         ServerWorld world = player.getServerWorld();
         BlockPos playerPos = player.getBlockPos();
@@ -154,34 +132,77 @@ public final class FirstPlayableSliceRuntime {
         int originZ = playerPos.getZ();
         int originY = surfaceY(world, originX, originZ);
 
-        int changedBlocks = buildHomePost(world, originX, originZ);
-        changedBlocks += buildRoad(world, originX, originZ);
+        int changedBlocks = buildHomePost(
+                world,
+                originX,
+                originZ
+        );
+        changedBlocks += buildRoad(
+                world,
+                originX,
+                originZ
+        );
 
         int checkpointX = originX + CHECKPOINT_EAST;
         int checkpointZ = originZ;
-        int checkpointY = surfaceY(world, checkpointX, checkpointZ);
+        int checkpointY = surfaceY(
+                world,
+                checkpointX,
+                checkpointZ
+        );
         changedBlocks += buildCheckpoint(
                 world,
                 checkpointX,
                 checkpointZ
         );
 
-        VillagerEntity warden = EntityType.VILLAGER.spawn(
+        int refugeX = originX + REFUGE_EAST;
+        int refugeZ = originZ;
+        int refugeY = surfaceY(world, refugeX, refugeZ);
+        changedBlocks += buildRefuge(
                 world,
-                new BlockPos(originX, originY + 1, originZ - 2),
-                SpawnReason.COMMAND
+                refugeX,
+                refugeZ
         );
-        if (warden == null) {
-            throw new IllegalStateException(
-                    "failed to spawn the Road Warden"
-            );
-        }
 
-        warden.setAiDisabled(true);
-        warden.setPersistent();
-        warden.setInvulnerable(true);
-        warden.setCustomName(Text.literal("Road Warden"));
-        warden.setCustomNameVisible(true);
+        int waystationX = originX + WAYSTATION_EAST;
+        int waystationZ = originZ;
+        int waystationY = surfaceY(
+                world,
+                waystationX,
+                waystationZ
+        );
+        changedBlocks += buildWaystation(
+                world,
+                waystationX,
+                waystationZ
+        );
+
+        VillagerEntity warden = spawnNpc(
+                world,
+                new BlockPos(
+                        originX,
+                        originY + 1,
+                        originZ - 2
+                ),
+                "Road Warden"
+        );
+
+        VillagerEntity scout;
+        try {
+            scout = spawnNpc(
+                    world,
+                    new BlockPos(
+                            refugeX,
+                            refugeY + 1,
+                            refugeZ - 2
+                    ),
+                    "Refuge Scout"
+            );
+        } catch (RuntimeException exception) {
+            warden.discard();
+            throw exception;
+        }
 
         SliceState state = new SliceState(
                 originX,
@@ -190,14 +211,24 @@ public final class FirstPlayableSliceRuntime {
                 checkpointX,
                 checkpointY,
                 checkpointZ,
-                warden.getUuid()
+                refugeX,
+                refugeY,
+                refugeZ,
+                waystationX,
+                waystationY,
+                waystationZ,
+                warden.getUuid(),
+                scout.getUuid(),
+                true
         );
         saveState(state);
+        bind(state, world);
 
         return new BuildResult(
                 state,
                 changedBlocks,
-                definition.title()
+                first.title(),
+                second.title()
         );
     }
 
@@ -212,18 +243,38 @@ public final class FirstPlayableSliceRuntime {
         SliceState value = state.orElseThrow();
         ServerWorld overworld = server.getWorld(World.OVERWORLD);
         if (overworld != null) {
-            // The fixture owns this chunk; load it so reset cannot strand
-            // an unloaded persistent Warden after removing the slice anchor.
             overworld.getChunk(
                     value.originX() >> 4,
                     value.originZ() >> 4
             );
+            if (value.expanded()) {
+                overworld.getChunk(
+                        value.refugeX() >> 4,
+                        value.refugeZ() >> 4
+                );
+            }
         }
 
-        MinecraftEntityResolver.findLiving(
-                server,
+        removeEntity(value.wardenUuid());
+        adventureWorld.bindings().unbindNpc(
                 value.wardenUuid()
-        ).ifPresent(Entity::discard);
+        );
+        adventureWorld.bindings().unbindLocation(
+                CHECKPOINT_LOCATION_ID
+        );
+
+        if (value.expanded()) {
+            removeEntity(value.scoutUuid());
+            adventureWorld.bindings().unbindNpc(
+                    value.scoutUuid()
+            );
+            adventureWorld.bindings().unbindLocation(
+                    REFUGE_LOCATION_ID
+            );
+            adventureWorld.bindings().unbindLocation(
+                    WAYSTATION_LOCATION_ID
+            );
+        }
 
         WorldRpgPersistentState persistence =
                 WorldRpgPersistentState.get(server);
@@ -248,347 +299,211 @@ public final class FirstPlayableSliceRuntime {
                 value.wardenUuid()
         ).isPresent();
 
-        var quest = MinecraftQuestRuntime.view(player, QUEST_ID);
-        var inventory = MinecraftQuestRuntime.loadInventory(player);
-
-        return "first playable slice | origin="
-                + value.originX() + "," + value.originY() + "," + value.originZ()
-                + " checkpoint="
-                + value.checkpointX() + "," + value.checkpointY() + "," + value.checkpointZ()
-                + " wardenAvailable=" + wardenAvailable
-                + " quest=" + quest.state()
-                + " objectives=" + quest.completedObjectives()
-                + "/" + quest.totalObjectives()
-                + " copper=" + inventory.copper()
-                + " items=" + inventory.totalItemCount();
-    }
-
-    private boolean interact(
-            ServerPlayerEntity player,
-            Entity entity
-    ) {
-        if (server == null) {
-            return false;
-        }
-
-        Optional<SliceState> state = loadState();
-        if (state.isEmpty()
-                || !state.orElseThrow().wardenUuid().equals(entity.getUuid())) {
-            return false;
-        }
-
-        Integer previousTick = lastInteractionTickByPlayer.get(
-                player.getUuid()
-        );
-        if (previousTick != null
-                && ticks - previousTick < INTERACTION_DEBOUNCE_TICKS) {
-            return true;
-        }
-        lastInteractionTickByPlayer.put(player.getUuid(), ticks);
-
-        QuestContentDefinition definition;
-        try {
-            definition = requireContentContract();
-        } catch (IllegalStateException exception) {
-            player.sendMessage(
-                    Text.literal(
-                            "World RPG playable slice is unavailable: "
-                                    + exception.getMessage()
-                    ),
-                    false
-            );
-            return true;
-        }
-
-        var view = MinecraftQuestRuntime.view(player, QUEST_ID);
-
-        switch (view.state()) {
-            case NOT_ACTIVE -> acceptFromWarden(player, definition);
-            case ACTIVE -> continueConversation(player);
-            case READY_TO_TURN_IN -> turnInToWarden(player, definition);
-            case COMPLETED -> player.sendMessage(
-                    Text.literal(
-                            "Road Warden: The east road is still watched. "
-                                    + "What you found bought us time."
-                    ),
-                    false
-            );
-            case UNRESOLVED_DEFINITION -> player.sendMessage(
-                    Text.literal(
-                            "Road Warden cannot resolve the quest definition. "
-                                    + "Check /worldrpg content status."
-                    ),
-                    false
-            );
-        }
-
-        return true;
-    }
-
-    private void acceptFromWarden(
-            ServerPlayerEntity player,
-            QuestContentDefinition definition
-    ) {
-        var result = MinecraftQuestRuntime.accept(player, QUEST_ID);
-        if (result != MinecraftQuestRuntime.AcceptResult.ACCEPTED) {
-            player.sendMessage(
-                    Text.literal(
-                            "Road Warden interaction failed to accept quest: "
-                                    + result
-                    ),
-                    false
-            );
-            return;
-        }
-
-        player.sendMessage(
-                Text.literal(
-                        "Road Warden: Three travelers vanished on the east road. "
-                                + "Follow the worn track, inspect the abandoned checkpoint, "
-                                + "then come straight back to me."
-                ),
-                false
-        );
-        player.sendMessage(
-                Text.literal("Quest accepted: " + definition.title()),
-                false
-        );
-        player.sendMessage(
-                Text.literal(
-                        "Objective: follow the dirt road east and inspect the checkpoint."
-                ),
-                false
-        );
-    }
-
-    private void continueConversation(ServerPlayerEntity player) {
-        var progress = MinecraftQuestRuntime.load(player)
-                .find(QUEST_ID)
-                .orElseThrow(() -> new IllegalStateException(
-                        "active quest view has no quest progress"
-                ));
-
-        if (!progress.isObjectiveComplete(INSPECT_ROUTE)) {
-            player.sendMessage(
-                    Text.literal(
-                            "Road Warden: The checkpoint is east of here. "
-                                    + "Stay on the road and look around the old signal fire."
-                    ),
-                    false
-            );
-            return;
-        }
-
-        if (!progress.isObjectiveComplete(REPORT_TO_WARDEN)) {
-            var result = MinecraftQuestRuntime.completeObjective(
-                    player,
-                    QUEST_ID,
-                    REPORT_TO_WARDEN
-            );
-
-            player.sendMessage(
-                    Text.literal(
-                            "Road Warden: Empty bedrolls, a dead signal fire, "
-                                    + "and tracks leaving the road... that is enough. "
-                                    + "I'll send word to the next refuge."
-                    ),
-                    false
-            );
-            player.sendMessage(
-                    Text.literal(
-                            "Objective complete: report your findings to the Road Warden."
-                    ),
-                    false
-            );
-
-            if (result == MinecraftQuestRuntime.AdvanceResult.READY_TO_TURN_IN) {
-                player.sendMessage(
-                        Text.literal(
-                                "Quest ready to turn in. Speak to the Road Warden again."
-                        ),
-                        false
-                );
-            }
-            return;
-        }
-
-        player.sendMessage(
-                Text.literal(
-                        "Road Warden: I have your report. Speak to me again for your pay."
-                ),
-                false
-        );
-    }
-
-    private void turnInToWarden(
-            ServerPlayerEntity player,
-            QuestContentDefinition definition
-    ) {
-        var result = MinecraftQuestRuntime.turnIn(player, QUEST_ID);
-        if (result != MinecraftQuestRuntime.TurnInResult.TURNED_IN) {
-            player.sendMessage(
-                    Text.literal(
-                            "Quest turn-in failed: " + result
-                    ),
-                    false
-            );
-            return;
-        }
-
-        player.sendMessage(
-                Text.literal(
-                        "Road Warden: Take this. The road has already cost enough people."
-                ),
-                false
-        );
-        player.sendMessage(
-                Text.literal(
-                        "Quest complete: " + definition.title()
-                ),
-                false
-        );
-        player.sendMessage(
-                Text.literal(
-                        "Reward: " + rewardSummary(definition)
-                ),
-                false
-        );
-
-        var inventory = MinecraftQuestRuntime.loadInventory(player);
-        player.sendMessage(
-                Text.literal(
-                        "RPG inventory: copper=" + inventory.copper()
-                                + " totalItems=" + inventory.totalItemCount()
-                ),
-                false
-        );
-    }
-
-    private void maybeCompleteCheckpointVisit(
-            ServerPlayerEntity player,
-            SliceState state
-    ) {
-        BlockPos pos = player.getBlockPos();
-        long dx = (long) pos.getX() - state.checkpointX();
-        long dy = (long) pos.getY() - (state.checkpointY() + 1L);
-        long dz = (long) pos.getZ() - state.checkpointZ();
-
-        if (Math.abs(dy) > 6
-                || dx * dx + dz * dz
-                > (long) CHECKPOINT_RADIUS * CHECKPOINT_RADIUS) {
-            return;
-        }
-
-        var view = MinecraftQuestRuntime.view(player, QUEST_ID);
-        if (view.state() != MinecraftQuestRuntime.QuestState.ACTIVE) {
-            return;
-        }
-
-        var progress = MinecraftQuestRuntime.load(player)
-                .find(QUEST_ID)
-                .orElse(null);
-        if (progress == null
-                || progress.isObjectiveComplete(INSPECT_ROUTE)) {
-            return;
-        }
-
-        var result = MinecraftQuestRuntime.completeObjective(
+        var first = MinecraftQuestRuntime.view(
                 player,
-                QUEST_ID,
-                INSPECT_ROUTE
+                FIRST_QUEST_ID
         );
-        if (result != MinecraftQuestRuntime.AdvanceResult.ADVANCED
-                && result != MinecraftQuestRuntime.AdvanceResult.READY_TO_TURN_IN) {
+        var inventory = MinecraftQuestRuntime.loadInventory(player);
+
+        String summary = "first playable slice | origin="
+                + value.originX() + ","
+                + value.originY() + ","
+                + value.originZ()
+                + " checkpoint="
+                + value.checkpointX() + ","
+                + value.checkpointY() + ","
+                + value.checkpointZ()
+                + " wardenAvailable="
+                + wardenAvailable
+                + " quest1=" + first.state()
+                + " objectives1="
+                + first.completedObjectives()
+                + "/" + first.totalObjectives();
+
+        if (value.expanded()) {
+            boolean scoutAvailable = MinecraftEntityResolver.findLiving(
+                    server,
+                    value.scoutUuid()
+            ).isPresent();
+            var second = MinecraftQuestRuntime.view(
+                    player,
+                    SECOND_QUEST_ID
+            );
+            summary += " refuge="
+                    + value.refugeX() + ","
+                    + value.refugeY() + ","
+                    + value.refugeZ()
+                    + " waystation="
+                    + value.waystationX() + ","
+                    + value.waystationY() + ","
+                    + value.waystationZ()
+                    + " scoutAvailable="
+                    + scoutAvailable
+                    + " quest2=" + second.state()
+                    + " objectives2="
+                    + second.completedObjectives()
+                    + "/" + second.totalObjectives();
+        } else {
+            summary += " legacyFixture=true";
+        }
+
+        return summary
+                + " copper=" + inventory.copper()
+                + " items=" + inventory.totalItemCount()
+                + " | "
+                + adventureWorld.statusSummary();
+    }
+
+    private void restoreBindings() {
+        Optional<SliceState> state = loadState();
+        if (state.isEmpty()) {
             return;
         }
 
-        player.sendMessage(
-                Text.literal(
-                        "You inspect the abandoned checkpoint: cold ashes, "
-                                + "discarded bedrolls, and tracks cutting away from the road."
-                ),
-                false
+        ServerWorld overworld = server.getWorld(World.OVERWORLD);
+        if (overworld == null) {
+            return;
+        }
+
+        bind(state.orElseThrow(), overworld);
+    }
+
+    private void bind(
+            SliceState state,
+            ServerWorld world
+    ) {
+        adventureWorld.bindings().bindNpc(
+                state.wardenUuid(),
+                WARDEN_ID
         );
-        player.sendMessage(
-                Text.literal(
-                        "Objective complete: inspect the east-road checkpoint."
-                ),
-                false
+        adventureWorld.bindings().bindLocation(
+                CHECKPOINT_LOCATION_ID,
+                world,
+                state.checkpointX(),
+                state.checkpointY() + 1,
+                state.checkpointZ(),
+                5,
+                6
         );
-        player.sendMessage(
-                Text.literal(
-                        "New objective: return to the Road Warden and report what you found."
-                ),
-                false
+
+        if (!state.expanded()) {
+            return;
+        }
+
+        adventureWorld.bindings().bindNpc(
+                state.scoutUuid(),
+                SCOUT_ID
+        );
+        adventureWorld.bindings().bindLocation(
+                REFUGE_LOCATION_ID,
+                world,
+                state.refugeX(),
+                state.refugeY() + 1,
+                state.refugeZ(),
+                6,
+                6
+        );
+        adventureWorld.bindings().bindLocation(
+                WAYSTATION_LOCATION_ID,
+                world,
+                state.waystationX(),
+                state.waystationY() + 1,
+                state.waystationZ(),
+                5,
+                6
         );
     }
 
-    private QuestContentDefinition requireContentContract() {
-        QuestContentDefinition definition = MinecraftQuestRuntime.definition(
-                QUEST_ID
-        ).orElseThrow(() -> new IllegalStateException(
-                "quest definition is not loaded: " + QUEST_ID
-        ));
+    private QuestContentDefinition requireQuestContract(
+            RpgId questId,
+            RpgId npcId,
+            RpgId locationId,
+            String visitKey,
+            String speakKey
+    ) {
+        QuestContentDefinition definition =
+                MinecraftQuestRuntime.definition(
+                        questId
+                ).orElseThrow(() -> new IllegalStateException(
+                        "quest definition is not loaded: "
+                                + questId
+                ));
 
-        if (!definition.starter().id().equals(WARDEN_ID)
-                || !definition.turnIn().id().equals(WARDEN_ID)) {
+        if (!definition.starter().id().equals(npcId)
+                || !definition.turnIn().id().equals(npcId)) {
             throw new IllegalStateException(
-                    "quest starter/turn-in no longer matches the physical Road Warden"
+                    questId
+                            + " starter/turn-in does not match "
+                            + npcId
             );
         }
 
-        QuestObjectiveSpec inspect = definition.objectives()
-                .stream()
-                .filter(objective -> objective.key().equals(INSPECT_ROUTE))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException(
-                        "quest is missing objective " + INSPECT_ROUTE
-                ));
-
-        if (!(inspect instanceof QuestObjectiveSpec.VisitLocation visit)
-                || !visit.location().id().equals(CHECKPOINT_LOCATION_ID)) {
+        if (definition.objectives().size() != 2) {
             throw new IllegalStateException(
-                    "inspect_route no longer targets "
-                            + CHECKPOINT_LOCATION_ID
+                    questId
+                            + " physical fixture expects exactly two objectives"
             );
         }
 
-        QuestObjectiveSpec report = definition.objectives()
-                .stream()
-                .filter(objective -> objective.key().equals(REPORT_TO_WARDEN))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException(
-                        "quest is missing objective " + REPORT_TO_WARDEN
-                ));
-
-        if (!(report instanceof QuestObjectiveSpec.SpeakToNpc speak)
-                || !speak.npc().id().equals(WARDEN_ID)) {
+        QuestObjectiveSpec first =
+                definition.objectives().get(0);
+        if (!(first instanceof QuestObjectiveSpec.VisitLocation visit)
+                || !visit.key().equals(visitKey)
+                || !visit.location().id().equals(locationId)) {
             throw new IllegalStateException(
-                    "report_to_warden no longer targets " + WARDEN_ID
+                    questId
+                            + " first objective no longer matches physical location "
+                            + locationId
+            );
+        }
+
+        QuestObjectiveSpec second =
+                definition.objectives().get(1);
+        if (!(second instanceof QuestObjectiveSpec.SpeakToNpc speak)
+                || !speak.key().equals(speakKey)
+                || !speak.npc().id().equals(npcId)) {
+            throw new IllegalStateException(
+                    questId
+                            + " second objective no longer matches NPC "
+                            + npcId
             );
         }
 
         return definition;
     }
 
-    private static String rewardSummary(
-            QuestContentDefinition definition
+    private static VillagerEntity spawnNpc(
+            ServerWorld world,
+            BlockPos position,
+            String name
     ) {
-        String items = definition.itemRewards()
-                .stream()
-                .map(reward -> {
-                    String name = WorldRpgContentRuntime.publisher()
-                            .active()
-                            .require(AdventureContentDomains.ITEMS)
-                            .find(reward.item().id())
-                            .map(ItemContentDefinition::displayName)
-                            .orElse(reward.item().id().toString());
-                    return name + " x" + reward.quantity();
-                })
-                .reduce((left, right) -> left + ", " + right)
-                .orElse("no item reward");
+        VillagerEntity npc = EntityType.VILLAGER.spawn(
+                world,
+                position,
+                SpawnReason.COMMAND
+        );
+        if (npc == null) {
+            throw new IllegalStateException(
+                    "failed to spawn " + name
+            );
+        }
 
-        return items + ", " + definition.copperReward() + " copper";
+        npc.setAiDisabled(true);
+        npc.setPersistent();
+        npc.setInvulnerable(true);
+        npc.setCustomName(Text.literal(name));
+        npc.setCustomNameVisible(true);
+        return npc;
+    }
+
+    private void removeEntity(UUID uuid) {
+        if (uuid == null) {
+            return;
+        }
+        MinecraftEntityResolver.findLiving(
+                server,
+                uuid
+        ).ifPresent(Entity::discard);
     }
 
     private static int buildHomePost(
@@ -596,29 +511,30 @@ public final class FirstPlayableSliceRuntime {
             int originX,
             int originZ
     ) {
-        int changed = 0;
-        for (int east = -3; east <= 3; east++) {
-            for (int south = -3; south <= 3; south++) {
-                int x = originX + east;
-                int z = originZ + south;
-                int y = surfaceY(world, x, z);
-                world.setBlockState(
-                        new BlockPos(x, y, z),
-                        Blocks.COARSE_DIRT.getDefaultState(),
-                        3
-                );
-                changed++;
-            }
-        }
+        int changed = fillSurface(
+                world,
+                originX,
+                originZ,
+                3,
+                Blocks.COARSE_DIRT
+        );
 
         int y = surfaceY(world, originX - 2, originZ);
         world.setBlockState(
-                new BlockPos(originX - 2, y + 1, originZ),
+                new BlockPos(
+                        originX - 2,
+                        y + 1,
+                        originZ
+                ),
                 Blocks.OAK_FENCE.getDefaultState(),
                 3
         );
         world.setBlockState(
-                new BlockPos(originX - 2, y + 2, originZ),
+                new BlockPos(
+                        originX - 2,
+                        y + 2,
+                        originZ
+                ),
                 Blocks.LANTERN.getDefaultState(),
                 3
         );
@@ -631,7 +547,9 @@ public final class FirstPlayableSliceRuntime {
             int originZ
     ) {
         int changed = 0;
-        for (int east = 4; east <= CHECKPOINT_EAST; east++) {
+        for (int east = 4;
+             east <= WAYSTATION_EAST;
+             east++) {
             for (int south = -1; south <= 1; south++) {
                 int x = originX + east;
                 int z = originZ + south;
@@ -649,47 +567,151 @@ public final class FirstPlayableSliceRuntime {
 
     private static int buildCheckpoint(
             ServerWorld world,
-            int checkpointX,
-            int checkpointZ
+            int x,
+            int z
     ) {
-        int changed = 0;
-        for (int east = -3; east <= 3; east++) {
-            for (int south = -3; south <= 3; south++) {
-                int x = checkpointX + east;
-                int z = checkpointZ + south;
-                int y = surfaceY(world, x, z);
-                world.setBlockState(
-                        new BlockPos(x, y, z),
-                        Blocks.GRAVEL.getDefaultState(),
-                        3
-                );
-                changed++;
-            }
-        }
+        int changed = fillSurface(
+                world,
+                x,
+                z,
+                3,
+                Blocks.GRAVEL
+        );
 
-        int centerY = surfaceY(world, checkpointX, checkpointZ);
+        int centerY = surfaceY(world, x, z);
         for (int height = 1; height <= 3; height++) {
             world.setBlockState(
                     new BlockPos(
-                            checkpointX,
+                            x,
                             centerY + height,
-                            checkpointZ
+                            z
                     ),
-                    Blocks.MOSSY_COBBLESTONE.getDefaultState(),
+                    Blocks.MOSSY_COBBLESTONE
+                            .getDefaultState(),
                     3
             );
             changed++;
         }
 
-        int fireX = checkpointX + 2;
-        int fireZ = checkpointZ + 1;
-        int fireY = surfaceY(world, fireX, fireZ);
+        int fireY = surfaceY(world, x + 2, z + 1);
         world.setBlockState(
-                new BlockPos(fireX, fireY + 1, fireZ),
+                new BlockPos(
+                        x + 2,
+                        fireY + 1,
+                        z + 1
+                ),
                 Blocks.CAMPFIRE.getDefaultState(),
                 3
         );
         return changed + 1;
+    }
+
+    private static int buildRefuge(
+            ServerWorld world,
+            int x,
+            int z
+    ) {
+        int changed = fillSurface(
+                world,
+                x,
+                z,
+                4,
+                Blocks.STONE_BRICKS
+        );
+
+        for (int offset : new int[]{-3, 3}) {
+            int y = surfaceY(world, x, z + offset);
+            world.setBlockState(
+                    new BlockPos(x, y + 1, z + offset),
+                    Blocks.OAK_FENCE.getDefaultState(),
+                    3
+            );
+            world.setBlockState(
+                    new BlockPos(x, y + 2, z + offset),
+                    Blocks.LANTERN.getDefaultState(),
+                    3
+            );
+            changed += 2;
+        }
+
+        int barrelY = surfaceY(world, x + 2, z + 2);
+        world.setBlockState(
+                new BlockPos(x + 2, barrelY + 1, z + 2),
+                Blocks.BARREL.getDefaultState(),
+                3
+        );
+        return changed + 1;
+    }
+
+    private static int buildWaystation(
+            ServerWorld world,
+            int x,
+            int z
+    ) {
+        int changed = fillSurface(
+                world,
+                x,
+                z,
+                4,
+                Blocks.COARSE_DIRT
+        );
+
+        int y = surfaceY(world, x, z);
+        for (int height = 1; height <= 4; height++) {
+            world.setBlockState(
+                    new BlockPos(
+                            x,
+                            y + height,
+                            z
+                    ),
+                    height == 4
+                            ? Blocks.CRACKED_STONE_BRICKS
+                            .getDefaultState()
+                            : Blocks.MOSSY_STONE_BRICKS
+                            .getDefaultState(),
+                    3
+            );
+            changed++;
+        }
+
+        int rubbleY = surfaceY(world, x + 2, z);
+        world.setBlockState(
+                new BlockPos(x + 2, rubbleY + 1, z),
+                Blocks.MOSSY_COBBLESTONE.getDefaultState(),
+                3
+        );
+        world.setBlockState(
+                new BlockPos(x - 2, rubbleY + 1, z + 1),
+                Blocks.COBBLESTONE.getDefaultState(),
+                3
+        );
+        return changed + 2;
+    }
+
+    private static int fillSurface(
+            ServerWorld world,
+            int centerX,
+            int centerZ,
+            int radius,
+            net.minecraft.block.Block block
+    ) {
+        int changed = 0;
+        for (int east = -radius; east <= radius; east++) {
+            for (int south = -radius;
+                 south <= radius;
+                 south++) {
+                int x = centerX + east;
+                int z = centerZ + south;
+                int y = surfaceY(world, x, z);
+                world.setBlockState(
+                        new BlockPos(x, y, z),
+                        block.getDefaultState(),
+                        3
+                );
+                changed++;
+            }
+        }
+        return changed;
     }
 
     private static int surfaceY(
@@ -709,26 +731,27 @@ public final class FirstPlayableSliceRuntime {
 
         NbtCompound worldData =
                 WorldRpgPersistentState.get(server).readWorldData();
-        if (!worldData.contains(WORLD_KEY, NbtElement.COMPOUND_TYPE)) {
+        if (!worldData.contains(
+                WORLD_KEY,
+                NbtElement.COMPOUND_TYPE
+        )) {
             return Optional.empty();
         }
 
         NbtCompound slice = worldData.getCompound(WORLD_KEY);
-        if (!slice.contains(WARDEN_UUID, NbtElement.STRING_TYPE)) {
-            throw new IllegalStateException(
-                    "persisted playable-slice state is missing warden UUID"
-            );
-        }
+        UUID wardenUuid = readUuid(
+                slice,
+                WARDEN_UUID,
+                true
+        );
 
-        final UUID wardenUuid;
-        try {
-            wardenUuid = UUID.fromString(slice.getString(WARDEN_UUID));
-        } catch (IllegalArgumentException exception) {
-            throw new IllegalStateException(
-                    "persisted playable-slice warden UUID is invalid",
-                    exception
-            );
-        }
+        boolean expanded = slice.contains(
+                SCOUT_UUID,
+                NbtElement.STRING_TYPE
+        );
+        UUID scoutUuid = expanded
+                ? readUuid(slice, SCOUT_UUID, true)
+                : null;
 
         return Optional.of(new SliceState(
                 slice.getInt(ORIGIN_X),
@@ -737,8 +760,47 @@ public final class FirstPlayableSliceRuntime {
                 slice.getInt(CHECKPOINT_X),
                 slice.getInt(CHECKPOINT_Y),
                 slice.getInt(CHECKPOINT_Z),
-                wardenUuid
+                expanded ? slice.getInt(REFUGE_X) : 0,
+                expanded ? slice.getInt(REFUGE_Y) : 0,
+                expanded ? slice.getInt(REFUGE_Z) : 0,
+                expanded ? slice.getInt(WAYSTATION_X) : 0,
+                expanded ? slice.getInt(WAYSTATION_Y) : 0,
+                expanded ? slice.getInt(WAYSTATION_Z) : 0,
+                wardenUuid,
+                scoutUuid,
+                expanded
         ));
+    }
+
+    private static UUID readUuid(
+            NbtCompound compound,
+            String key,
+            boolean required
+    ) {
+        if (!compound.contains(
+                key,
+                NbtElement.STRING_TYPE
+        )) {
+            if (!required) {
+                return null;
+            }
+            throw new IllegalStateException(
+                    "persisted playable-slice state is missing "
+                            + key
+            );
+        }
+
+        try {
+            return UUID.fromString(
+                    compound.getString(key)
+            );
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalStateException(
+                    "persisted playable-slice UUID is invalid: "
+                            + key,
+                    exception
+            );
+        }
     }
 
     private void saveState(SliceState state) {
@@ -753,7 +815,32 @@ public final class FirstPlayableSliceRuntime {
         slice.putInt(CHECKPOINT_X, state.checkpointX());
         slice.putInt(CHECKPOINT_Y, state.checkpointY());
         slice.putInt(CHECKPOINT_Z, state.checkpointZ());
-        slice.putString(WARDEN_UUID, state.wardenUuid().toString());
+        slice.putString(
+                WARDEN_UUID,
+                state.wardenUuid().toString()
+        );
+
+        if (state.expanded()) {
+            slice.putInt(REFUGE_X, state.refugeX());
+            slice.putInt(REFUGE_Y, state.refugeY());
+            slice.putInt(REFUGE_Z, state.refugeZ());
+            slice.putInt(
+                    WAYSTATION_X,
+                    state.waystationX()
+            );
+            slice.putInt(
+                    WAYSTATION_Y,
+                    state.waystationY()
+            );
+            slice.putInt(
+                    WAYSTATION_Z,
+                    state.waystationZ()
+            );
+            slice.putString(
+                    SCOUT_UUID,
+                    state.scoutUuid().toString()
+            );
+        }
 
         worldData.put(WORLD_KEY, slice);
         persistence.writeWorldData(worldData);
@@ -774,24 +861,48 @@ public final class FirstPlayableSliceRuntime {
             int checkpointX,
             int checkpointY,
             int checkpointZ,
-            UUID wardenUuid
+            int refugeX,
+            int refugeY,
+            int refugeZ,
+            int waystationX,
+            int waystationY,
+            int waystationZ,
+            UUID wardenUuid,
+            UUID scoutUuid,
+            boolean expanded
     ) {
     }
 
     public record BuildResult(
             SliceState state,
             int changedBlocks,
-            String questTitle
+            String firstQuestTitle,
+            String secondQuestTitle
     ) {
         public String summary() {
-            return "first playable slice built | quest="
-                    + questTitle
+            return "adventure slice built | quest1="
+                    + firstQuestTitle
+                    + " quest2="
+                    + secondQuestTitle
                     + " origin="
-                    + state.originX() + "," + state.originY() + "," + state.originZ()
+                    + state.originX() + ","
+                    + state.originY() + ","
+                    + state.originZ()
                     + " checkpoint="
-                    + state.checkpointX() + "," + state.checkpointY() + "," + state.checkpointZ()
-                    + " changedBlocks=" + changedBlocks
-                    + " | right-click the Road Warden to begin";
+                    + state.checkpointX() + ","
+                    + state.checkpointY() + ","
+                    + state.checkpointZ()
+                    + " refuge="
+                    + state.refugeX() + ","
+                    + state.refugeY() + ","
+                    + state.refugeZ()
+                    + " waystation="
+                    + state.waystationX() + ","
+                    + state.waystationY() + ","
+                    + state.waystationZ()
+                    + " changedBlocks="
+                    + changedBlocks
+                    + " | Road Warden and Refuge Scout are driven by the generic adventure runtime";
         }
     }
 }
