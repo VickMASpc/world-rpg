@@ -1,6 +1,6 @@
 # Era 3 — production factory bootstrap
 
-Status: PLANNED — IMPLEMENTATION BLOCKED UNTIL CURRENT PHYSICAL RECONVERGENCE EVIDENCE IS SUFFICIENT
+Status: ACTIVE CONSERVATIVE BOOTSTRAP — ADVENTURE ROUTING PROVEN; GOLDEN ENEMY/LOOT STRAND STARTED
 
 This document defines the next major engineering era after the current P3/P4-G physical proof.
 
@@ -19,6 +19,34 @@ The accepted repository boundaries remain:
 - `src/main/java/` / `src/client/java/` — runtime code, not content volume.
 
 Do not create a second parallel content architecture.
+
+---
+
+## Current implementation checkpoint — 2026-09-26
+
+The generic adventure-routing path is physically proven and the first golden enemy/loot seed is now implemented.
+
+Current proven/implemented pieces:
+
+- authored item/NPC/location/quest graph and physical adventure routing;
+- authored mob and loot-table domains;
+- persistent physical mob bindings;
+- physical authored enemy spawning through a temporary vanilla entity shell;
+- authored death -> loot -> persistent RPG bag path;
+- editable Ashwood Wolf source master restored to the active branch.
+
+Still explicitly unproven for the golden package:
+
+- custom model export/runtime rendering;
+- animation runtime mapping;
+- VFX/SFX event mapping;
+- production combat-authority integration for the enemy;
+- semantic spawn/world-source pipeline;
+- reusable non-chat UI for the golden item/quest/combat flow;
+- complete save/reload physical acceptance;
+- full revision/throughput test.
+
+P3 physical evidence and province-topology proof remain parallel open work. They do not justify returning to broad speculative framework expansion.
 
 ---
 
