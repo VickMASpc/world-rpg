@@ -254,6 +254,30 @@ They do not yet define final classes, enemies, dungeon roles or encounter design
 
 Likewise, current infrastructure does not imply that the production-heavy dimensions are close to complete. The complete map, actor/model/animation library, VFX/audio library, UI system, large item/economy corpus, professions, authored quests/dialogue, NPC/mob populations and regional content waves remain major future work.
 
+## Development cadence correction
+
+The project no longer treats narrow subsystem completions as development-cycle milestones.
+
+The operating contract is now:
+
+- `docs/16-implementation/DEVELOPMENT_CYCLE_CONTRACT.md`
+
+Every normal "proceed development" cycle must make meaningful integrated progress in runtime architecture, authored content, player-facing UI/presentation, world integration and physical acceptance.
+
+The immediate next cycle is **Cycle 1 — First real combat expedition**.
+
+That cycle includes, as one connected package:
+
+- production World RPG combat authority for authored enemies;
+- real enemy AI/spawn/leash integration;
+- Ashwood Wolf family/content and custom presentation;
+- first real combat HUD/action surfaces;
+- authored loot/progression/quest hooks;
+- a physical expedition/spawn area;
+- persistent end-to-end Minecraft acceptance.
+
+Custom Ashwood Wolf rendering is explicitly a subtask inside this cycle, not the cycle itself.
+
 ## Work now authorized
 
 - finish the P3 physical evidence matrix without weakening failed expectations;
