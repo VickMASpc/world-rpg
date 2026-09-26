@@ -91,6 +91,29 @@ public final class RpgBagCommands {
 
                     ItemContentDefinition item =
                             definition.orElseThrow();
+                    String equipment = item.equipmentSpec()
+                            .map(spec -> {
+                                String stats = spec.stats()
+                                        .stream()
+                                        .map(stat ->
+                                                stat.stat()
+                                                        + " "
+                                                        + (stat.amount() >= 0.0
+                                                        ? "+"
+                                                        : "")
+                                                        + stat.amount()
+                                        )
+                                        .reduce((left, right) ->
+                                                left + ", " + right
+                                        )
+                                        .orElse("");
+                                return " | "
+                                        + spec.slot()
+                                        + " | "
+                                        + stats;
+                            })
+                            .orElse("");
+
                     player.sendMessage(
                             Text.literal(
                                     item.displayName()
@@ -98,6 +121,7 @@ public final class RpgBagCommands {
                                             + entry.getValue()
                                             + " | "
                                             + item.category()
+                                            + equipment
                                             + " | requires level "
                                             + item.requiredLevel()
                                             + " | vendor "
