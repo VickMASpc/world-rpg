@@ -109,6 +109,21 @@ The harness has been audited and hardened; `P3_PHYSICAL_EVIDENCE_RUNBOOK.md` is 
 - [ ] validate representative local, settlement, regional and expedition travel times in the disposable graybox;
 - [ ] validate through physical traversal that geography creates decisions before investing in final world art.
 
+Implementation status:
+
+- the kilometer-scale A/B/C/D/E/F/G/H Superflat graybox builder is executable;
+- its origin is now persisted per test world;
+- journey definitions encode the local/refuge/regional/learned-return/outward relationships;
+- measurement commands enforce physical start/end proximity;
+- active runs record elapsed server time and actual horizontal distance traveled;
+- teleport-sized movement discontinuities are flagged rather than silently accepted;
+- latest first/known measurements persist in world data;
+- the learned G -> A return can compare itself with the recorded first A -> G journey;
+- layout regression tests protect the intended scale and the safe/shortcut distance relationships;
+- the physical procedure is `docs/09-world-travel/FIRST_PROVINCE_TOPOLOGY_PHYSICAL_RUNBOOK.md`.
+
+This instrumentation makes G9 executable. It does **not** satisfy the two remaining physical rows. They remain open until the routes are actually walked and the resulting timing/decision/memory evidence is recorded.
+
 ## Exit condition
 
 P4-G exits only when the team can answer, from repository documents rather than memory:
