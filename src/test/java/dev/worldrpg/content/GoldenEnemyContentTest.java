@@ -18,6 +18,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GoldenEnemyContentTest {
     private static final List<String> RESOURCES = List.of(
+            "data/world_rpg/world_rpg/definitions/aura/ashwood_pack_fury.json",
+            "data/world_rpg/world_rpg/definitions/ability/ashwood_bite.json",
+            "data/world_rpg/world_rpg/definitions/ability/ashwood_howl.json",
             "data/world_rpg/world_rpg/definitions/item/golden_ashwood_fang.json",
             "data/world_rpg/world_rpg/definitions/loot/golden_ashwood_wolf.json",
             "data/world_rpg/world_rpg/definitions/mob/golden_ashwood_wolf.json"
