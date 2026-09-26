@@ -31,8 +31,67 @@ public final class WorldRpgCommands {
                         CommandManager.literal("worldrpg")
                                 .requires(source -> source.hasPermissionLevel(2))
                                 .then(p3Commands())
+                                .then(combatCommands())
                                 .then(provinceCommands())
                 )
+        );
+    }
+
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<
+            net.minecraft.server.command.ServerCommandSource
+            > combatCommands() {
+        return CommandManager.literal("combat")
+                .then(
+                        CommandManager.literal("status")
+                                .executes(context -> {
+                                    ServerPlayerEntity player =
+                                            context.getSource()
+                                                    .getPlayerOrThrow();
+
+                                    var snapshot =
+                                            WorldRpgServerRuntime
+                                                    .productionCombat()
+                                                    .snapshot(player);
+
+                                    String active = snapshot.activeAbilityId()
+                                            == null
+                                            ? "none"
+                                            : snapshot.activeAbilityId()
+                                            .toString();
+
+                                    context.getSource().sendFeedback(
+                                            () -> Text.literal(
+                                                    "World RPG combat | hp="
+                                                            + format(snapshot.health())
+                                                            + "/"
+                                                            + format(snapshot.maximumHealth())
+                                                            + " focus="
+                                                            + format(snapshot.focus())
+                                                            + "/"
+                                                            + format(snapshot.maximumFocus())
+                                                            + " cast="
+                                                            + active
+                                                            + " | "
+                                                            + WorldRpgServerRuntime
+                                                            .authoredMobs()
+                                                            .statusSummary()
+                                                            + " | "
+                                                            + WorldRpgServerRuntime
+                                                            .adventureWorld()
+                                                            .statusSummary()
+                                            ),
+                                            false
+                                    );
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                );
+    }
+
+    private static String format(double value) {
+        return String.format(
+                java.util.Locale.ROOT,
+                "%.1f",
+                value
         );
     }
 
