@@ -47,6 +47,8 @@ public final class AuthoredMobRuntime {
             new LinkedHashMap<>();
     private final Map<UUID, UUID> lastTargetByMob =
             new LinkedHashMap<>();
+    private final Map<RpgId, String> lastPopulationError =
+            new LinkedHashMap<>();
 
     private MinecraftServer server;
     private boolean eventsRegistered;
@@ -69,6 +71,7 @@ public final class AuthoredMobRuntime {
         );
         nextRespawnTick.clear();
         lastTargetByMob.clear();
+        lastPopulationError.clear();
         bindings.start(server);
     }
 
@@ -76,6 +79,7 @@ public final class AuthoredMobRuntime {
         bindings.stop();
         nextRespawnTick.clear();
         lastTargetByMob.clear();
+        lastPopulationError.clear();
         server = null;
     }
 
@@ -110,7 +114,7 @@ public final class AuthoredMobRuntime {
                 world,
                 definition,
                 position,
-                player,
+                null,
                 null
         );
     }
@@ -149,6 +153,124 @@ public final class AuthoredMobRuntime {
                 + bindings.size()
                 + " spawnGrouped="
                 + grouped;
+    }
+
+    public java.util.List<String> ecologyStatus(
+            ServerPlayerEntity viewer
+    ) {
+        requireStarted();
+        Objects.requireNonNull(viewer, "viewer");
+
+        java.util.List<String> lines =
+                new java.util.ArrayList<>();
+        long tick = server.getTicks();
+
+        for (SpawnGroupContentDefinition group :
+                spawnGroups().values().stream()
+                        .sorted(Comparator.comparing(
+                                value -> value.id().toString()
+                        ))
+                        .toList()) {
+            Optional<AdventureWorldBindings.LocationBinding>
+                    location =
+                    WorldRpgServerRuntime.adventureWorld()
+                            .bindings()
+                            .locationBinding(
+                                    group.location().id()
+                            );
+
+            if (location.isEmpty()) {
+                lines.add(
+                        group.id()
+                                + " | locationBound=false"
+                );
+                continue;
+            }
+
+            var binding = location.orElseThrow();
+            ServerWorld world = findWorld(binding.dimension());
+            if (world == null) {
+                lines.add(
+                        group.id()
+                                + " | locationBound=true worldLoaded=false"
+                );
+                continue;
+            }
+
+            double centerX = center(
+                    binding.minX(),
+                    binding.maxX()
+            );
+            double centerY = center(
+                    binding.minY(),
+                    binding.maxY()
+            );
+            double centerZ = center(
+                    binding.minZ(),
+                    binding.maxZ()
+            );
+
+            int alive = 0;
+            for (var entry :
+                    bindings.spawnGroupBindings().entrySet()) {
+                if (!entry.getValue().equals(group.id())) {
+                    continue;
+                }
+                Optional<LivingEntity> entity =
+                        MinecraftEntityResolver.findLiving(
+                                server,
+                                entry.getKey()
+                        );
+                if (entity.isPresent()
+                        && entity.orElseThrow().isAlive()) {
+                    alive++;
+                }
+            }
+
+            boolean viewerInActivationRange =
+                    viewer.getServerWorld() == world
+                            && !viewer.isSpectator()
+                            && viewer.isAlive()
+                            && viewer.squaredDistanceTo(
+                            centerX,
+                            centerY,
+                            centerZ
+                    ) <= Math.pow(
+                            group.leashRadius() + 40.0,
+                            2.0
+                    );
+
+            long next = nextRespawnTick.getOrDefault(
+                    group.id(),
+                    0L
+            );
+            long remaining = Math.max(0L, next - tick);
+            String error = lastPopulationError.get(group.id());
+
+            lines.add(
+                    group.id()
+                            + " | locationBound=true"
+                            + " viewerInRange="
+                            + viewerInActivationRange
+                            + " viewerMode="
+                            + (viewer.isSpectator()
+                            ? "spectator"
+                            : viewer.isCreative()
+                            ? "creative"
+                            : "survival")
+                            + " alive="
+                            + alive
+                            + "/"
+                            + group.targetPopulation()
+                            + " respawnInTicks="
+                            + remaining
+                            + (error == null
+                            ? ""
+                            : " lastError=" + error)
+            );
+        }
+
+        return java.util.List.copyOf(lines);
     }
 
     private void maintainSpawnGroups(long tick) {
@@ -192,7 +314,7 @@ public final class AuthoredMobRuntime {
             );
 
             ServerPlayerEntity nearby =
-                    nearestPlayer(
+                    nearestPopulationObserver(
                             world,
                             centerX,
                             centerY,
@@ -243,6 +365,7 @@ public final class AuthoredMobRuntime {
             }
 
             int deficit = group.targetPopulation() - alive;
+            boolean spawnedAny = false;
             for (int i = 0; i < deficit; i++) {
                 BlockPos spawnPos = randomSpawnPosition(
                         world,
@@ -250,19 +373,35 @@ public final class AuthoredMobRuntime {
                         centerZ,
                         group.spawnRadius()
                 );
-                spawnAt(
-                        world,
-                        requireMob(group.mob().id()),
-                        spawnPos,
-                        nearby,
-                        group.id()
-                );
+                try {
+                    spawnAt(
+                            world,
+                            requireMob(group.mob().id()),
+                            spawnPos,
+                            null,
+                            group.id()
+                    );
+                    spawnedAny = true;
+                    lastPopulationError.remove(group.id());
+                } catch (RuntimeException exception) {
+                    lastPopulationError.put(
+                            group.id(),
+                            exception.getClass().getSimpleName()
+                                    + ": "
+                                    + (exception.getMessage() == null
+                                    ? "<no message>"
+                                    : exception.getMessage())
+                    );
+                    break;
+                }
             }
 
-            nextRespawnTick.put(
-                    group.id(),
-                    tick + group.respawnTicks()
-            );
+            if (spawnedAny) {
+                nextRespawnTick.put(
+                        group.id(),
+                        tick + group.respawnTicks()
+                );
+            }
         }
     }
 
@@ -301,7 +440,7 @@ public final class AuthoredMobRuntime {
                 continue;
             }
 
-            ServerPlayerEntity target = nearestPlayer(
+            ServerPlayerEntity target = nearestAggroTarget(
                     (ServerWorld) mob.getWorld(),
                     mob.getX(),
                     mob.getY(),
@@ -572,7 +711,7 @@ public final class AuthoredMobRuntime {
 
         if (living instanceof MobEntity mob) {
             mob.setPersistent();
-            if (initialTarget != null
+            if (isAggroTarget(initialTarget, world)
                     && initialTarget.squaredDistanceTo(mob)
                     <= definition.aggroRange()
                     * definition.aggroRange()) {
@@ -765,12 +904,47 @@ public final class AuthoredMobRuntime {
         return null;
     }
 
-    private ServerPlayerEntity nearestPlayer(
+    private ServerPlayerEntity nearestPopulationObserver(
             ServerWorld world,
             double x,
             double y,
             double z,
             double range
+    ) {
+        return nearestPlayer(
+                world,
+                x,
+                y,
+                z,
+                range,
+                false
+        );
+    }
+
+    private ServerPlayerEntity nearestAggroTarget(
+            ServerWorld world,
+            double x,
+            double y,
+            double z,
+            double range
+    ) {
+        return nearestPlayer(
+                world,
+                x,
+                y,
+                z,
+                range,
+                true
+        );
+    }
+
+    private ServerPlayerEntity nearestPlayer(
+            ServerWorld world,
+            double x,
+            double y,
+            double z,
+            double range,
+            boolean requireAggroTarget
     ) {
         ServerPlayerEntity best = null;
         double bestDistance = range * range;
@@ -780,8 +954,9 @@ public final class AuthoredMobRuntime {
                         .getPlayerList()) {
             if (player.getServerWorld() != world
                     || player.isSpectator()
-                    || player.isCreative()
-                    || !player.isAlive()) {
+                    || !player.isAlive()
+                    || (requireAggroTarget
+                    && player.isCreative())) {
                 continue;
             }
 
@@ -797,6 +972,17 @@ public final class AuthoredMobRuntime {
             }
         }
         return best;
+    }
+
+    private static boolean isAggroTarget(
+            ServerPlayerEntity player,
+            ServerWorld world
+    ) {
+        return player != null
+                && player.getServerWorld() == world
+                && player.isAlive()
+                && !player.isSpectator()
+                && !player.isCreative();
     }
 
     private static double center(
