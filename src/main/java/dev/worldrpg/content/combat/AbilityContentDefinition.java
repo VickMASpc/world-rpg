@@ -16,6 +16,7 @@ import dev.worldrpg.combat.condition.Condition;
 import dev.worldrpg.combat.condition.Conditions;
 import dev.worldrpg.combat.effect.CombatEffect;
 import dev.worldrpg.combat.effect.EffectSequence;
+import dev.worldrpg.combat.resolution.CombatResolutionGateway;
 
 import java.util.List;
 import java.util.Map;
@@ -79,7 +80,8 @@ public record AbilityContentDefinition(
     }
 
     public AbilityDefinition compile(
-            Map<RpgId, AuraDefinition> compiledAuras
+            Map<RpgId, AuraDefinition> compiledAuras,
+            CombatResolutionGateway resolutionGateway
     ) {
         List<Condition<AbilityContext>> compiledConditions =
                 conditions.stream()
@@ -88,7 +90,11 @@ public record AbilityContentDefinition(
 
         List<CombatEffect> compiledEffects =
                 effects.stream()
-                        .map(effect -> effect.compile(compiledAuras))
+                        .map(effect -> effect.compile(
+                                id,
+                                compiledAuras,
+                                resolutionGateway
+                        ))
                         .toList();
 
         return new AbilityDefinition(
@@ -102,6 +108,15 @@ public record AbilityContentDefinition(
                 Conditions.all(compiledConditions),
                 new EffectSequence(compiledEffects),
                 movementPolicy
+        );
+    }
+
+    public AbilityDefinition compile(
+            Map<RpgId, AuraDefinition> compiledAuras
+    ) {
+        return compile(
+                compiledAuras,
+                request -> java.util.List.of()
         );
     }
 }

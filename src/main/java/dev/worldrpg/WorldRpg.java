@@ -24,6 +24,9 @@ public final class WorldRpg implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        P3CombatContentRuntime.configureResolutionGateway(
+                WorldRpgServerRuntime.productionCombat()
+        );
         P3CombatContentRuntime.register();
         WorldRpgContentRuntime.initialize(
                 WorldRpgContentDomains.catalog()
