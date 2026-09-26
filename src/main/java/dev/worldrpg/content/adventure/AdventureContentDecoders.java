@@ -8,6 +8,8 @@ import dev.worldrpg.api.reference.RequiredDefinitionRef;
 import dev.worldrpg.api.validation.ValidationReport;
 import dev.worldrpg.content.decode.DecodedJsonDocument;
 import dev.worldrpg.content.enemy.EnemyContentDomains;
+import dev.worldrpg.combat.stat.StatKey;
+import dev.worldrpg.player.EquipmentSlot;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -107,6 +109,24 @@ final class AdventureContentDecoders {
             return Optional.empty();
         }
 
+        EquipmentSpec equipment = null;
+        if (category.get() == ItemContentDefinition.Category.EQUIPMENT) {
+            Optional<EquipmentSpec> decoded =
+                    equipmentSpec(root, document, report);
+            if (decoded.isEmpty()) {
+                return Optional.empty();
+            }
+            equipment = decoded.orElseThrow();
+        } else if (root.has("equipment")) {
+            report.error(
+                    "adventure.item.equipment.non_equipment",
+                    "Only equipment-category items may define an equipment object",
+                    document.source().sourceRef(),
+                    document.header().id()
+            );
+            return Optional.empty();
+        }
+
         try {
             return Optional.of(new ItemContentDefinition(
                     document.header().id(),
@@ -114,10 +134,103 @@ final class AdventureContentDecoders {
                     category.get(),
                     requiredLevel.get(),
                     vendorValue.get(),
-                    tags.get()
+                    tags.get(),
+                    equipment
             ));
         } catch (IllegalArgumentException exception) {
             return invalid("adventure.item.invalid", exception, document, report);
+        }
+    }
+
+    private static Optional<EquipmentSpec> equipmentSpec(
+            JsonObject root,
+            DecodedJsonDocument document,
+            ValidationReport report
+    ) {
+        JsonElement element = root.get("equipment");
+        if (element == null || !element.isJsonObject()) {
+            report.error(
+                    "adventure.item.equipment.object",
+                    "Equipment-category items require an 'equipment' object",
+                    document.source().sourceRef(),
+                    document.header().id()
+            );
+            return Optional.empty();
+        }
+
+        JsonObject object = element.getAsJsonObject();
+        Optional<EquipmentSlot> slot = requiredEnum(
+                object,
+                "slot",
+                EquipmentSlot.class,
+                document,
+                report
+        );
+        if (slot.isEmpty()) {
+            return Optional.empty();
+        }
+
+        JsonElement statsElement = object.get("stats");
+        if (statsElement == null || !statsElement.isJsonArray()) {
+            report.error(
+                    "adventure.item.equipment.stats",
+                    "Equipment field 'stats' must be an array",
+                    document.source().sourceRef(),
+                    document.header().id()
+            );
+            return Optional.empty();
+        }
+
+        List<EquipmentStatSpec> stats = new ArrayList<>();
+        JsonArray statsArray = statsElement.getAsJsonArray();
+        for (int i = 0; i < statsArray.size(); i++) {
+            if (!statsArray.get(i).isJsonObject()) {
+                report.error(
+                        "adventure.item.equipment.stat.object",
+                        "Equipment stat[" + i + "] must be an object",
+                        document.source().sourceRef(),
+                        document.header().id()
+                );
+                return Optional.empty();
+            }
+
+            JsonObject statObject = statsArray.get(i).getAsJsonObject();
+            Optional<RpgId> stat = requiredId(
+                    statObject,
+                    "stat",
+                    document,
+                    report
+            );
+            Optional<Double> amount = requiredDouble(
+                    statObject,
+                    "amount",
+                    document,
+                    report
+            );
+            if (stat.isEmpty() || amount.isEmpty()) {
+                return Optional.empty();
+            }
+
+            stats.add(new EquipmentStatSpec(
+                    new StatKey(stat.get()),
+                    amount.get()
+            ));
+        }
+
+        try {
+            return Optional.of(
+                    new EquipmentSpec(
+                            slot.orElseThrow(),
+                            stats
+                    )
+            );
+        } catch (IllegalArgumentException exception) {
+            return invalid(
+                    "adventure.item.equipment.invalid",
+                    exception,
+                    document,
+                    report
+            );
         }
     }
 
@@ -511,6 +624,35 @@ final class AdventureContentDecoders {
             report.error(
                     "adventure.field.integer",
                     "Field '" + field + "' must be an exact integer",
+                    document.source().sourceRef(),
+                    document.header().id()
+            );
+            return Optional.empty();
+        }
+    }
+
+    private static Optional<Double> requiredDouble(
+            JsonObject object,
+            String field,
+            DecodedJsonDocument document,
+            ValidationReport report
+    ) {
+        JsonElement element = object.get(field);
+        try {
+            if (element == null
+                    || !element.isJsonPrimitive()
+                    || !element.getAsJsonPrimitive().isNumber()) {
+                throw new NumberFormatException();
+            }
+            double value = element.getAsDouble();
+            if (!Double.isFinite(value)) {
+                throw new NumberFormatException();
+            }
+            return Optional.of(value);
+        } catch (RuntimeException exception) {
+            report.error(
+                    "adventure.field.number",
+                    "Field '" + field + "' must be a finite number",
                     document.source().sourceRef(),
                     document.header().id()
             );
