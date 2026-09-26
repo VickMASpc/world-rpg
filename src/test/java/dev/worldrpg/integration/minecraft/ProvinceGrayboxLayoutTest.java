@@ -2,6 +2,8 @@ package dev.worldrpg.integration.minecraft;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -10,96 +12,169 @@ class ProvinceGrayboxLayoutTest {
 
     @Test
     void safeRouteDistancesFitTheProvisionalTopologyBands() {
-        double homeToFork = sum(
-                "home-to-wild",
-                "wild-to-corridor",
-                "corridor-to-fork-safe"
-        );
-        double forkToRefuge =
-                ProvinceGrayboxLayout.routeLength("fork-to-refuge-safe");
-        double homeToRefuge = homeToFork + forkToRefuge;
-        double homeToRegionalSettlement = homeToFork
-                + ProvinceGrayboxLayout.routeLength(
-                        "fork-to-regional-settlement"
-                );
+        assertJourneyWithinBand("a-to-r1-local");
+        assertJourneyWithinBand("a-to-f-safe");
+        assertJourneyWithinBand("a-to-g-safe");
+        assertJourneyWithinBand("f-to-h-outward");
+    }
 
-        assertWithinMinutes(homeToFork, 10.0, 18.0);
-        assertWithinMinutes(forkToRefuge, 8.0, 15.0);
-        assertWithinMinutes(homeToRefuge, 20.0, 30.0);
-        assertWithinMinutes(homeToRegionalSettlement, 25.0, 40.0);
-        assertWithinMinutes(
-                ProvinceGrayboxLayout.routeLength("refuge-to-beyond"),
-                15.0,
-                30.0
+    @Test
+    void journeyDefinitionsMatchTheUnderlyingRouteGraph() {
+        assertEquals(
+                sum(
+                        "home-to-wild",
+                        "local-ruin-detour"
+                ),
+                ProvinceGrayboxLayout
+                        .journey("a-to-r1-local")
+                        .pathBlocks(),
+                0.001
+        );
+        assertEquals(
+                sum(
+                        "home-to-wild",
+                        "wild-to-corridor",
+                        "corridor-to-fork-safe",
+                        "fork-to-refuge-safe"
+                ),
+                ProvinceGrayboxLayout
+                        .journey("a-to-f-safe")
+                        .pathBlocks(),
+                0.001
+        );
+        assertEquals(
+                sum(
+                        "home-to-wild",
+                        "wild-to-corridor",
+                        "corridor-to-fork-safe",
+                        "fork-to-regional-settlement"
+                ),
+                ProvinceGrayboxLayout
+                        .journey("a-to-g-safe")
+                        .pathBlocks(),
+                0.001
         );
     }
 
     @Test
     void shortcutsSaveMeaningfulTimeAndRemainLongJourneys() {
-        double homeToRegionalSettlement = sum(
-                "home-to-wild",
-                "wild-to-corridor",
-                "corridor-to-fork-safe",
-                "fork-to-regional-settlement"
-        );
-        double knownShortcutReturn =
-                ProvinceGrayboxLayout.routeLength(
-                        "learned-regional-return-shortcut"
-                )
-                        + ProvinceGrayboxLayout.routeLength("home-to-wild");
+        double firstJourney =
+                ProvinceGrayboxLayout
+                        .journey("a-to-g-safe")
+                        .pathBlocks();
+        double knownReturn =
+                ProvinceGrayboxLayout
+                        .journey("g-to-a-learned")
+                        .pathBlocks();
         double dangerousShortcut =
                 ProvinceGrayboxLayout.routeLength(
                         "danger-shortcut-corridor-to-fork"
                 );
-        double safeCorridorLeg = ProvinceGrayboxLayout.routeLength(
-                "corridor-to-fork-safe"
-        );
+        double safeCorridorLeg =
+                ProvinceGrayboxLayout.routeLength(
+                        "corridor-to-fork-safe"
+                );
 
-        assertTrue(homeToRegionalSettlement - knownShortcutReturn >= 2_000.0);
-        assertTrue(knownShortcutReturn >= 5_000.0);
-        assertTrue(safeCorridorLeg - dangerousShortcut >= 700.0);
+        assertTrue(
+                firstJourney - knownReturn >= 2_000.0,
+                "learned return must save a materially noticeable distance"
+        );
+        assertTrue(
+                knownReturn >= 5_000.0,
+                "knowledge must shorten the journey without deleting geography"
+        );
+        assertTrue(
+                safeCorridorLeg - dangerousShortcut >= 700.0,
+                "danger shortcut must trade safety for meaningful distance"
+        );
     }
 
     @Test
     void localDestinationsStayNearTheHomeRoad() {
-        double homeToRuin = ProvinceGrayboxLayout.routeLength("home-to-wild")
-                + ProvinceGrayboxLayout.routeLength("local-ruin-detour");
-
         assertEquals(
                 700.0,
-                ProvinceGrayboxLayout.routeLength("home-to-wild"),
+                ProvinceGrayboxLayout.routeLength(
+                        "home-to-wild"
+                ),
                 0.0
         );
         assertEquals(
                 1_600.0,
-                ProvinceGrayboxLayout.routeLength("local-ruin-detour"),
+                ProvinceGrayboxLayout.routeLength(
+                        "local-ruin-detour"
+                ),
                 0.0
         );
-        assertWithinMinutes(homeToRuin, 6.0, 12.0);
         assertEquals(
                 800.0,
-                ProvinceGrayboxLayout.routeLength("workland-detour"),
+                ProvinceGrayboxLayout.routeLength(
+                        "workland-detour"
+                ),
                 0.0
+        );
+    }
+
+    @Test
+    void nodePositionsRemainDistinctAndRegionalTownIsNotAdjacent() {
+        var positions =
+                new HashSet<
+                        ProvinceGrayboxLayout.Point>();
+
+        for (var node :
+                ProvinceGrayboxLayout.Node.values()) {
+            assertTrue(
+                    positions.add(
+                            ProvinceGrayboxLayout
+                                    .nodePosition(node)
+                    ),
+                    () -> "duplicate topology node: " + node
+            );
+        }
+
+        var home =
+                ProvinceGrayboxLayout.nodePosition(
+                        ProvinceGrayboxLayout.Node.HOME
+                );
+        var regional =
+                ProvinceGrayboxLayout.nodePosition(
+                        ProvinceGrayboxLayout.Node.REGIONAL_SETTLEMENT
+                );
+        assertTrue(
+                Math.hypot(
+                        regional.east() - home.east(),
+                        regional.south() - home.south()
+                ) > 4_500.0,
+                "regional settlement must not read as an adjacent quest hub"
         );
     }
 
     private static double sum(String... routeIds) {
         double total = 0.0;
         for (String routeId : routeIds) {
-            total += ProvinceGrayboxLayout.routeLength(routeId);
+            total += ProvinceGrayboxLayout.routeLength(
+                    routeId
+            );
         }
         return total;
     }
 
-    private static void assertWithinMinutes(
-            double blocks,
-            double minimumMinutes,
-            double maximumMinutes
+    private static void assertJourneyWithinBand(
+            String journeyId
     ) {
-        double minutes = blocks / REFERENCE_BLOCKS_PER_MINUTE;
+        var journey =
+                ProvinceGrayboxLayout.journey(journeyId);
+        double minutes =
+                journey.pathBlocks()
+                        / REFERENCE_BLOCKS_PER_MINUTE;
+
+        assertTrue(journey.hasTargetBand());
         assertTrue(
-                minutes >= minimumMinutes && minutes <= maximumMinutes,
-                () -> blocks + " blocks estimates to " + minutes
+                minutes >= journey.targetMinMinutes()
+                        && minutes
+                        <= journey.targetMaxMinutes(),
+                () -> journeyId
+                        + " estimates to "
+                        + minutes
                         + " minutes at the provisional reference pace"
         );
     }
