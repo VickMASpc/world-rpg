@@ -1,7 +1,7 @@
 {
   "schema":1,"registry":"world_rpg:registry/loot_tables","id":"world_rpg:loot/first_province/ashwood_stalker",
   "entries":[
-    {"item":"world_rpg:dev/golden/item/ashwood_fang","minimum_quantity":1,"maximum_quantity":1,"chance":1.0},
+    {"item":"world_rpg:item/first_province/ashwood_fang","minimum_quantity":1,"maximum_quantity":1,"chance":1.0},
     {"item":"world_rpg:item/first_province/ashwood_pelt","minimum_quantity":1,"maximum_quantity":2,"chance":1.0}
   ],
   "minimum_copper":8,"maximum_copper":14
