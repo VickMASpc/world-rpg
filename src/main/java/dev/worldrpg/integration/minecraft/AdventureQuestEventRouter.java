@@ -98,7 +98,10 @@ public final class AdventureQuestEventRouter {
             }
         }
 
-        // Finally offer one deterministic not-yet-started quest.
+        // Finally offer one deterministic not-yet-started quest. A locked
+        // future quest must not suppress another quest that is currently
+        // eligible from the same NPC.
+        EventResult lockedCandidate = null;
         for (QuestContentDefinition definition : definitions) {
             if (!definition.starter().id().equals(npcId)) {
                 continue;
@@ -126,8 +129,9 @@ public final class AdventureQuestEventRouter {
             }
             if (result
                     == MinecraftQuestRuntime.AcceptResult
-                    .PREREQUISITES_INCOMPLETE) {
-                return new EventResult(
+                    .PREREQUISITES_INCOMPLETE
+                    && lockedCandidate == null) {
+                lockedCandidate = new EventResult(
                         EventKind.QUEST_LOCKED,
                         definition,
                         null
@@ -135,7 +139,59 @@ public final class AdventureQuestEventRouter {
             }
         }
 
-        return EventResult.none();
+        return lockedCandidate == null
+                ? EventResult.none()
+                : lockedCandidate;
+    }
+
+    public List<EventResult> onMobDefeated(
+            ServerPlayerEntity player,
+            RpgId mobId
+    ) {
+        List<EventResult> results = new ArrayList<>();
+        PlayerQuestLog log = MinecraftQuestRuntime.load(player);
+
+        for (QuestContentDefinition definition : definitions()) {
+            Optional<QuestProgress> progress =
+                    log.find(definition.id());
+            if (progress.isEmpty()) {
+                continue;
+            }
+
+            Optional<QuestObjectiveSpec> current =
+                    QuestObjectiveSequence.firstIncomplete(
+                            definition,
+                            progress.orElseThrow()
+                    );
+
+            if (current.isEmpty()
+                    || !(current.orElseThrow()
+                    instanceof QuestObjectiveSpec.DefeatMob defeat)
+                    || !defeat.mob().id().equals(mobId)) {
+                continue;
+            }
+
+            var advance = MinecraftQuestRuntime.completeObjective(
+                    player,
+                    definition.id(),
+                    defeat.key()
+            );
+            if (advance == MinecraftQuestRuntime.AdvanceResult.ADVANCED
+                    || advance
+                    == MinecraftQuestRuntime.AdvanceResult.READY_TO_TURN_IN) {
+                results.add(new EventResult(
+                        advance
+                                == MinecraftQuestRuntime.AdvanceResult
+                                .READY_TO_TURN_IN
+                                ? EventKind.OBJECTIVE_COMPLETED_READY
+                                : EventKind.OBJECTIVE_COMPLETED,
+                        definition,
+                        defeat.key()
+                ));
+            }
+        }
+
+        return List.copyOf(results);
     }
 
     public List<EventResult> onLocationEntered(

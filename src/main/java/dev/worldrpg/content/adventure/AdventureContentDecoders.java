@@ -7,6 +7,7 @@ import dev.worldrpg.api.id.RpgId;
 import dev.worldrpg.api.reference.RequiredDefinitionRef;
 import dev.worldrpg.api.validation.ValidationReport;
 import dev.worldrpg.content.decode.DecodedJsonDocument;
+import dev.worldrpg.content.enemy.EnemyContentDomains;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -254,6 +255,22 @@ final class AdventureContentDecoders {
                             new RequiredDefinitionRef<>(
                                     AdventureContentDomains.NPCS,
                                     npc.get()
+                            )
+                    ));
+                }
+                case "defeat_mob" -> {
+                    Optional<RpgId> mob = requiredId(
+                            object,
+                            "mob",
+                            document,
+                            report
+                    );
+                    if (mob.isEmpty()) return Optional.empty();
+                    result.add(new QuestObjectiveSpec.DefeatMob(
+                            key.get(),
+                            new RequiredDefinitionRef<>(
+                                    EnemyContentDomains.MOBS,
+                                    mob.get()
                             )
                     ));
                 }

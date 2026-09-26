@@ -5,9 +5,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.worldrpg.api.id.RpgId;
 import dev.worldrpg.api.reference.RequiredDefinitionRef;
-import dev.worldrpg.content.adventure.AdventureContentDomains;
-import dev.worldrpg.content.decode.DecodedJsonDocument;
 import dev.worldrpg.api.validation.ValidationReport;
+import dev.worldrpg.content.adventure.AdventureContentDomains;
+import dev.worldrpg.content.combat.CombatContentDomains;
+import dev.worldrpg.content.decode.DecodedJsonDocument;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -69,52 +70,43 @@ final class EnemyContentDecoders {
     ) {
         JsonObject root = document.root();
         Optional<String> displayName = requiredString(
-                root,
-                "display_name",
-                document,
-                report
+                root, "display_name", document, report
         );
         Optional<Integer> level = requiredInt(
-                root,
-                "level",
-                document,
-                report
+                root, "level", document, report
         );
         Optional<Double> maximumHealth = requiredDouble(
-                root,
-                "maximum_health",
-                document,
-                report
+                root, "maximum_health", document, report
         );
         Optional<Double> attackDamage = requiredDouble(
-                root,
-                "attack_damage",
-                document,
-                report
+                root, "attack_damage", document, report
         );
         Optional<Double> movementSpeed = requiredDouble(
-                root,
-                "movement_speed",
-                document,
-                report
+                root, "movement_speed", document, report
+        );
+        Optional<Double> aggroRange = requiredDouble(
+                root, "aggro_range", document, report
+        );
+        Optional<Double> assistRange = requiredDouble(
+                root, "assist_range", document, report
+        );
+        Optional<Double> attackRange = requiredDouble(
+                root, "attack_range", document, report
         );
         Optional<RpgId> minecraftEntityType = requiredId(
-                root,
-                "minecraft_entity_type",
-                document,
-                report
+                root, "minecraft_entity_type", document, report
         );
         Optional<RpgId> lootTable = requiredId(
-                root,
-                "loot_table",
-                document,
-                report
+                root, "loot_table", document, report
+        );
+        Optional<RpgId> primaryAbility = requiredId(
+                root, "primary_ability", document, report
+        );
+        Optional<RpgId> engageAbility = requiredId(
+                root, "engage_ability", document, report
         );
         Optional<String> sourceAsset = requiredString(
-                root,
-                "source_asset",
-                document,
-                report
+                root, "source_asset", document, report
         );
 
         if (displayName.isEmpty()
@@ -122,8 +114,13 @@ final class EnemyContentDecoders {
                 || maximumHealth.isEmpty()
                 || attackDamage.isEmpty()
                 || movementSpeed.isEmpty()
+                || aggroRange.isEmpty()
+                || assistRange.isEmpty()
+                || attackRange.isEmpty()
                 || minecraftEntityType.isEmpty()
                 || lootTable.isEmpty()
+                || primaryAbility.isEmpty()
+                || engageAbility.isEmpty()
                 || sourceAsset.isEmpty()) {
             return Optional.empty();
         }
@@ -137,10 +134,21 @@ final class EnemyContentDecoders {
                             maximumHealth.get(),
                             attackDamage.get(),
                             movementSpeed.get(),
+                            aggroRange.get(),
+                            assistRange.get(),
+                            attackRange.get(),
                             minecraftEntityType.get(),
                             new RequiredDefinitionRef<>(
                                     EnemyContentDomains.LOOT_TABLES,
                                     lootTable.get()
+                            ),
+                            new RequiredDefinitionRef<>(
+                                    CombatContentDomains.ABILITIES,
+                                    primaryAbility.get()
+                            ),
+                            new RequiredDefinitionRef<>(
+                                    CombatContentDomains.ABILITIES,
+                                    engageAbility.get()
                             ),
                             sourceAsset.get()
                     )
@@ -148,6 +156,67 @@ final class EnemyContentDecoders {
         } catch (IllegalArgumentException exception) {
             return invalid(
                     "enemy.mob.invalid",
+                    exception,
+                    document,
+                    report
+            );
+        }
+    }
+
+    static Optional<SpawnGroupContentDefinition> decodeSpawnGroup(
+            DecodedJsonDocument document,
+            ValidationReport report
+    ) {
+        JsonObject root = document.root();
+        Optional<RpgId> location = requiredId(
+                root, "location", document, report
+        );
+        Optional<RpgId> mob = requiredId(
+                root, "mob", document, report
+        );
+        Optional<Integer> targetPopulation = requiredInt(
+                root, "target_population", document, report
+        );
+        Optional<Long> respawnTicks = requiredLong(
+                root, "respawn_ticks", document, report
+        );
+        Optional<Double> spawnRadius = requiredDouble(
+                root, "spawn_radius", document, report
+        );
+        Optional<Double> leashRadius = requiredDouble(
+                root, "leash_radius", document, report
+        );
+
+        if (location.isEmpty()
+                || mob.isEmpty()
+                || targetPopulation.isEmpty()
+                || respawnTicks.isEmpty()
+                || spawnRadius.isEmpty()
+                || leashRadius.isEmpty()) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(
+                    new SpawnGroupContentDefinition(
+                            document.header().id(),
+                            new RequiredDefinitionRef<>(
+                                    AdventureContentDomains.WORLD_LOCATIONS,
+                                    location.get()
+                            ),
+                            new RequiredDefinitionRef<>(
+                                    EnemyContentDomains.MOBS,
+                                    mob.get()
+                            ),
+                            targetPopulation.get(),
+                            respawnTicks.get(),
+                            spawnRadius.get(),
+                            leashRadius.get()
+                    )
+            );
+        } catch (IllegalArgumentException exception) {
+            return invalid(
+                    "enemy.spawn_group.invalid",
                     exception,
                     document,
                     report
@@ -173,6 +242,7 @@ final class EnemyContentDecoders {
 
         JsonArray array = element.getAsJsonArray();
         List<LootEntrySpec> result = new ArrayList<>();
+
         for (int i = 0; i < array.size(); i++) {
             if (!array.get(i).isJsonObject()) {
                 report.error(
@@ -186,29 +256,18 @@ final class EnemyContentDecoders {
 
             JsonObject value = array.get(i).getAsJsonObject();
             Optional<RpgId> item = requiredId(
-                    value,
-                    "item",
-                    document,
-                    report
+                    value, "item", document, report
             );
             Optional<Integer> minimum = requiredInt(
-                    value,
-                    "minimum_quantity",
-                    document,
-                    report
+                    value, "minimum_quantity", document, report
             );
             Optional<Integer> maximum = requiredInt(
-                    value,
-                    "maximum_quantity",
-                    document,
-                    report
+                    value, "maximum_quantity", document, report
             );
             Optional<Double> chance = requiredDouble(
-                    value,
-                    "chance",
-                    document,
-                    report
+                    value, "chance", document, report
             );
+
             if (item.isEmpty()
                     || minimum.isEmpty()
                     || maximum.isEmpty()
@@ -269,10 +328,7 @@ final class EnemyContentDecoders {
             ValidationReport report
     ) {
         Optional<String> text = requiredString(
-                root,
-                field,
-                document,
-                report
+                root, field, document, report
         );
         if (text.isEmpty()) {
             return Optional.empty();

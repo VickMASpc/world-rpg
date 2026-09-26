@@ -7,6 +7,8 @@ import dev.worldrpg.api.reference.RequiredDefinitionRef;
 import dev.worldrpg.api.registry.RegistrySnapshot;
 import dev.worldrpg.api.validation.SourceRef;
 import dev.worldrpg.api.validation.ValidationReport;
+import dev.worldrpg.content.combat.AbilityContentDefinition;
+import dev.worldrpg.content.combat.CombatContentDomains;
 
 import java.util.Objects;
 
@@ -17,8 +19,13 @@ public record MobContentDefinition(
         double maximumHealth,
         double attackDamage,
         double movementSpeed,
+        double aggroRange,
+        double assistRange,
+        double attackRange,
         RpgId minecraftEntityType,
         RequiredDefinitionRef<LootTableContentDefinition> lootTable,
+        RequiredDefinitionRef<AbilityContentDefinition> primaryAbility,
+        RequiredDefinitionRef<AbilityContentDefinition> engageAbility,
         String sourceAsset
 ) implements RpgDefinition {
     public MobContentDefinition {
@@ -27,22 +34,15 @@ public record MobContentDefinition(
         if (level < 1) {
             throw new IllegalArgumentException("level must be >= 1");
         }
-        if (!Double.isFinite(maximumHealth)
-                || maximumHealth <= 0.0) {
+        requirePositive(maximumHealth, "maximumHealth");
+        requireNonNegative(attackDamage, "attackDamage");
+        requirePositive(movementSpeed, "movementSpeed");
+        requirePositive(aggroRange, "aggroRange");
+        requireNonNegative(assistRange, "assistRange");
+        requirePositive(attackRange, "attackRange");
+        if (attackRange > aggroRange) {
             throw new IllegalArgumentException(
-                    "maximumHealth must be finite and > 0"
-            );
-        }
-        if (!Double.isFinite(attackDamage)
-                || attackDamage < 0.0) {
-            throw new IllegalArgumentException(
-                    "attackDamage must be finite and >= 0"
-            );
-        }
-        if (!Double.isFinite(movementSpeed)
-                || movementSpeed <= 0.0) {
-            throw new IllegalArgumentException(
-                    "movementSpeed must be finite and > 0"
+                    "attackRange must be <= aggroRange"
             );
         }
         Objects.requireNonNull(
@@ -50,6 +50,8 @@ public record MobContentDefinition(
                 "minecraftEntityType"
         );
         Objects.requireNonNull(lootTable, "lootTable");
+        Objects.requireNonNull(primaryAbility, "primaryAbility");
+        Objects.requireNonNull(engageAbility, "engageAbility");
         sourceAsset = requireText(sourceAsset, "sourceAsset");
     }
 
@@ -64,6 +66,48 @@ public record MobContentDefinition(
                 report,
                 source
         );
+        ReferenceResolver.resolve(
+                primaryAbility,
+                snapshot,
+                report,
+                source
+        );
+        ReferenceResolver.resolve(
+                engageAbility,
+                snapshot,
+                report,
+                source
+        );
+    }
+
+    public static RequiredDefinitionRef<AbilityContentDefinition>
+    abilityRef(RpgId id) {
+        return new RequiredDefinitionRef<>(
+                CombatContentDomains.ABILITIES,
+                id
+        );
+    }
+
+    private static void requirePositive(
+            double value,
+            String field
+    ) {
+        if (!Double.isFinite(value) || value <= 0.0) {
+            throw new IllegalArgumentException(
+                    field + " must be finite and > 0"
+            );
+        }
+    }
+
+    private static void requireNonNegative(
+            double value,
+            String field
+    ) {
+        if (!Double.isFinite(value) || value < 0.0) {
+            throw new IllegalArgumentException(
+                    field + " must be finite and >= 0"
+            );
+        }
     }
 
     private static String requireText(

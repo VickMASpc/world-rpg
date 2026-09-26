@@ -21,6 +21,12 @@ public final class EnemyContentDomains {
                     MobContentDefinition.class
             );
 
+    public static final RegistryKey<SpawnGroupContentDefinition> SPAWN_GROUPS =
+            new RegistryKey<>(
+                    RpgId.parse("world_rpg:registry/spawn_groups"),
+                    SpawnGroupContentDefinition.class
+            );
+
     private EnemyContentDomains() {
     }
 
@@ -41,14 +47,29 @@ public final class EnemyContentDomains {
                 (definition, snapshot, source, report) -> {
                 }
         ));
+        builder.add(new DefinitionDomainHandler<>(
+                domain(SPAWN_GROUPS, ReloadSafety.RESTART),
+                EnemyContentDecoders::decodeSpawnGroup,
+                SpawnGroupContentDefinition::resolveReferences,
+                (definition, snapshot, source, report) -> {
+                }
+        ));
     }
 
     private static <T extends dev.worldrpg.api.data.RpgDefinition>
     DefinitionDomain<T> domain(RegistryKey<T> key) {
+        return domain(key, ReloadSafety.SAFE);
+    }
+
+    private static <T extends dev.worldrpg.api.data.RpgDefinition>
+    DefinitionDomain<T> domain(
+            RegistryKey<T> key,
+            ReloadSafety reloadSafety
+    ) {
         return new DefinitionDomain<>(
                 key,
                 new SchemaVersion(1),
-                ReloadSafety.SAFE
+                reloadSafety
         );
     }
 }
