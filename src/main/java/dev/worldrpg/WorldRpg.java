@@ -1,6 +1,7 @@
 package dev.worldrpg;
 
 import dev.worldrpg.command.RpgBagCommands;
+import dev.worldrpg.command.RpgCharacterCommands;
 import dev.worldrpg.command.RpgJournalCommands;
 import dev.worldrpg.command.WorldRpgGoldenCommands;
 import dev.worldrpg.command.WorldRpgCommands;
@@ -44,6 +45,7 @@ public final class WorldRpg implements ModInitializer {
         WorldRpgSliceCommands.register();
         RpgJournalCommands.register();
         RpgBagCommands.register();
+        RpgCharacterCommands.register();
         WorldRpgGoldenCommands.register();
         WorldRpgCommands.register();
 
