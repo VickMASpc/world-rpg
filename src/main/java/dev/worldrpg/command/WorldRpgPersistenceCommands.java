@@ -83,6 +83,18 @@ public final class WorldRpgPersistenceCommands {
                                 .executes(context -> clearRef(
                                         context.getSource().getPlayerOrThrow()
                                 ))
+                )
+                .then(
+                        CommandManager.literal("resetplayer")
+                                .then(
+                                        CommandManager.literal("confirm")
+                                                .executes(context ->
+                                                        resetPlayer(
+                                                                context.getSource()
+                                                                        .getPlayerOrThrow()
+                                                        )
+                                                )
+                                )
                 );
     }
 
@@ -188,6 +200,26 @@ public final class WorldRpgPersistenceCommands {
                                 + pointer.definitionId()
                                 + " resolved="
                                 + resolved
+                ),
+                false
+        );
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int resetPlayer(ServerPlayerEntity player) {
+        WorldRpgPersistentState state =
+                WorldRpgPersistentState.get(player.getServer());
+
+        boolean removed = state.removePlayerData(
+                player.getUuid()
+        );
+
+        player.sendMessage(
+                Text.literal(
+                        removed
+                                ? "World RPG player state reset. Quest history, RPG inventory, and developer player data were cleared."
+                                : "World RPG player state was already empty."
                 ),
                 false
         );
