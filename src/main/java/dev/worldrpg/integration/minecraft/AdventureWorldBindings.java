@@ -150,6 +150,20 @@ public final class AdventureWorldBindings {
         return Set.copyOf(result);
     }
 
+    public Optional<LocationBinding> locationBinding(
+            RpgId locationId
+    ) {
+        requireStarted();
+        return Optional.ofNullable(
+                locations.get(
+                        Objects.requireNonNull(
+                                locationId,
+                                "locationId"
+                        )
+                )
+        );
+    }
+
     public int npcBindingCount() {
         return npcByEntity.size();
     }
