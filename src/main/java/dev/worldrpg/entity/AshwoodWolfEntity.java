@@ -36,6 +36,12 @@ public final class AshwoodWolfEntity
                             "attack",
                             Animation.LoopType.PLAY_ONCE
                     );
+    private static final RawAnimation HOWL =
+            RawAnimation.begin()
+                    .then(
+                            "howl",
+                            Animation.LoopType.PLAY_ONCE
+                    );
 
     private final AnimatableInstanceCache animationCache =
             GeckoLibUtil.createInstanceCache(this);
@@ -65,14 +71,22 @@ public final class AshwoodWolfEntity
                         this::locomotion
                 )
         );
+        controllers.add(
+                new AnimationController<>(
+                        this,
+                        "action",
+                        0,
+                        state -> PlayState.STOP
+                )
+                        .triggerableAnim("attack", ATTACK)
+                        .triggerableAnim("howl", HOWL)
+        );
     }
 
     private PlayState locomotion(
             AnimationState<AshwoodWolfEntity> state
     ) {
-        if (getHandSwingProgress(1.0F) > 0.01F) {
-            state.getController().setAnimation(ATTACK);
-        } else if (state.isMoving()) {
+        if (state.isMoving()) {
             state.getController().setAnimation(WALK);
         } else {
             state.getController().setAnimation(IDLE);
