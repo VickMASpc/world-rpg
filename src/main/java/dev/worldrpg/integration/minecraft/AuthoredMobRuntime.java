@@ -336,9 +336,22 @@ public final class AuthoredMobRuntime {
                 );
             }
 
-            if (mob.squaredDistanceTo(target)
-                    <= definition.attackRange()
-                    * definition.attackRange()
+            double attackRangeSquared =
+                    definition.attackRange()
+                            * definition.attackRange();
+            double targetDistanceSquared =
+                    mob.squaredDistanceTo(target);
+
+            if (targetDistanceSquared > attackRangeSquared) {
+                mob.getNavigation().startMovingTo(
+                        target,
+                        1.15
+                );
+            } else {
+                mob.getNavigation().stop();
+            }
+
+            if (targetDistanceSquared <= attackRangeSquared
                     && mob.canSee(target)) {
                 var response =
                         WorldRpgServerRuntime
