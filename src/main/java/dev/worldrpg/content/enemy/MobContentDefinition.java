@@ -16,6 +16,7 @@ public record MobContentDefinition(
         RpgId id,
         String displayName,
         int level,
+        long experienceReward,
         double maximumHealth,
         double attackDamage,
         double movementSpeed,
@@ -33,6 +34,11 @@ public record MobContentDefinition(
         displayName = requireText(displayName, "displayName");
         if (level < 1) {
             throw new IllegalArgumentException("level must be >= 1");
+        }
+        if (experienceReward < 0L) {
+            throw new IllegalArgumentException(
+                    "experienceReward must be >= 0"
+            );
         }
         requirePositive(maximumHealth, "maximumHealth");
         requireNonNegative(attackDamage, "attackDamage");
@@ -53,6 +59,41 @@ public record MobContentDefinition(
         Objects.requireNonNull(primaryAbility, "primaryAbility");
         Objects.requireNonNull(engageAbility, "engageAbility");
         sourceAsset = requireText(sourceAsset, "sourceAsset");
+    }
+
+    public MobContentDefinition(
+            RpgId id,
+            String displayName,
+            int level,
+            double maximumHealth,
+            double attackDamage,
+            double movementSpeed,
+            double aggroRange,
+            double assistRange,
+            double attackRange,
+            RpgId minecraftEntityType,
+            RequiredDefinitionRef<LootTableContentDefinition> lootTable,
+            RequiredDefinitionRef<AbilityContentDefinition> primaryAbility,
+            RequiredDefinitionRef<AbilityContentDefinition> engageAbility,
+            String sourceAsset
+    ) {
+        this(
+                id,
+                displayName,
+                level,
+                0L,
+                maximumHealth,
+                attackDamage,
+                movementSpeed,
+                aggroRange,
+                assistRange,
+                attackRange,
+                minecraftEntityType,
+                lootTable,
+                primaryAbility,
+                engageAbility,
+                sourceAsset
+        );
     }
 
     public void resolveReferences(
