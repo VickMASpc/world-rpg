@@ -10,6 +10,7 @@ import dev.worldrpg.content.enemy.SpawnGroupContentDefinition;
 import dev.worldrpg.content.fabric.WorldRpgContentRuntime;
 import dev.worldrpg.entity.AshwoodWolfEntity;
 import dev.worldrpg.network.WorldRpgNetworking;
+import dev.worldrpg.player.fabric.MinecraftCharacterRuntime;
 import dev.worldrpg.player.fabric.MinecraftRpgInventoryRuntime;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.minecraft.entity.Entity;
@@ -823,6 +824,16 @@ public final class AuthoredMobRuntime {
                 copper
         );
 
+        var progression =
+                MinecraftCharacterRuntime.grantExperience(
+                        player,
+                        mob.experienceReward()
+                );
+        if (progression.leveledUp()) {
+            WorldRpgServerRuntime.productionCombat()
+                    .refreshPlayer(player);
+        }
+
         WorldRpgServerRuntime.adventureWorld()
                 .onMobDefeated(
                         player,
@@ -832,7 +843,14 @@ public final class AuthoredMobRuntime {
         String lootMessage =
                 mob.displayName()
                         + ": "
-                        + lootSummary(items, copper);
+                        + lootSummary(items, copper)
+                        + " | +"
+                        + progression.appliedExperience()
+                        + " XP"
+                        + (progression.leveledUp()
+                        ? " | LEVEL "
+                        + progression.endingLevel()
+                        : "");
         WorldRpgNetworking.sendLootNotice(
                 player,
                 lootMessage
