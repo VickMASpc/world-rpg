@@ -24,12 +24,7 @@ jobs:
           gradle-version: "8.14.3"
 
       - name: Verify canonical Ashwood export
-        run: |
-          gradle exportAshwoodWolfAssets --stacktrace
-          git diff --exit-code -- \
-            src/main/resources/assets/world_rpg/geo/ashwood_wolf.geo.json \
-            src/main/resources/assets/world_rpg/animations/ashwood_wolf.animation.json \
-            src/main/resources/assets/world_rpg/textures/entity/ashwood_wolf.png
+        run: gradle verifyAshwoodWolfAssets --stacktrace
 
       - name: Build
         run: gradle build --stacktrace
