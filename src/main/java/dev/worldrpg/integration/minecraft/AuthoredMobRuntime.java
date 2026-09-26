@@ -8,6 +8,7 @@ import dev.worldrpg.content.enemy.LootTableContentDefinition;
 import dev.worldrpg.content.enemy.MobContentDefinition;
 import dev.worldrpg.content.enemy.SpawnGroupContentDefinition;
 import dev.worldrpg.content.fabric.WorldRpgContentRuntime;
+import dev.worldrpg.entity.AshwoodWolfEntity;
 import dev.worldrpg.network.WorldRpgNetworking;
 import dev.worldrpg.player.fabric.MinecraftRpgInventoryRuntime;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
@@ -322,12 +323,20 @@ public final class AuthoredMobRuntime {
             mob.setTarget(target);
 
             if (!target.getUuid().equals(previous)) {
-                WorldRpgServerRuntime.productionCombat()
-                        .activateMob(
-                                mob,
-                                definition.engageAbility().id(),
-                                mob
-                        );
+                var engage =
+                        WorldRpgServerRuntime.productionCombat()
+                                .activateMob(
+                                        mob,
+                                        definition.engageAbility().id(),
+                                        mob
+                                );
+                if (engage.accepted()
+                        && mob instanceof AshwoodWolfEntity ashwood) {
+                    ashwood.triggerAnim(
+                            "action",
+                            "howl"
+                    );
+                }
                 assistPack(
                         mob,
                         target,
@@ -363,6 +372,12 @@ public final class AuthoredMobRuntime {
                                 );
                 if (response.accepted()) {
                     mob.swingHand(Hand.MAIN_HAND);
+                    if (mob instanceof AshwoodWolfEntity ashwood) {
+                        ashwood.triggerAnim(
+                                "action",
+                                "attack"
+                        );
+                    }
                 }
             }
         }
@@ -462,10 +477,28 @@ public final class AuthoredMobRuntime {
             if (ally.squaredDistanceTo(source)
                     <= assistRange * assistRange) {
                 ally.setTarget(target);
-                lastTargetByMob.put(
+                UUID previous = lastTargetByMob.put(
                         ally.getUuid(),
                         target.getUuid()
                 );
+                if (!target.getUuid().equals(previous)) {
+                    MobContentDefinition allyDefinition =
+                            requireMob(entry.getValue());
+                    var engage =
+                            WorldRpgServerRuntime.productionCombat()
+                                    .activateMob(
+                                            ally,
+                                            allyDefinition.engageAbility().id(),
+                                            ally
+                                    );
+                    if (engage.accepted()
+                            && ally instanceof AshwoodWolfEntity ashwood) {
+                        ashwood.triggerAnim(
+                                "action",
+                                "howl"
+                        );
+                    }
+                }
             }
         }
     }
