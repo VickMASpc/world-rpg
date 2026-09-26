@@ -266,7 +266,7 @@ public final class AdventureQuestEventRouter {
                 );
     }
 
-    private static int unresolvedPrerequisiteCount(
+    static int unresolvedPrerequisiteCount(
             QuestContentDefinition definition,
             PlayerQuestLog log,
             List<QuestContentDefinition> definitions,
