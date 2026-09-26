@@ -102,6 +102,7 @@ public final class AdventureQuestEventRouter {
         // future quest must not suppress another quest that is currently
         // eligible from the same NPC.
         EventResult lockedCandidate = null;
+        int lockedCandidateDepth = Integer.MAX_VALUE;
         for (QuestContentDefinition definition : definitions) {
             if (!definition.starter().id().equals(npcId)) {
                 continue;
@@ -129,13 +130,21 @@ public final class AdventureQuestEventRouter {
             }
             if (result
                     == MinecraftQuestRuntime.AcceptResult
-                    .PREREQUISITES_INCOMPLETE
-                    && lockedCandidate == null) {
-                lockedCandidate = new EventResult(
-                        EventKind.QUEST_LOCKED,
+                    .PREREQUISITES_INCOMPLETE) {
+                int depth = unresolvedPrerequisiteCount(
                         definition,
-                        null
+                        log,
+                        definitions,
+                        new java.util.HashSet<>()
                 );
+                if (depth < lockedCandidateDepth) {
+                    lockedCandidateDepth = depth;
+                    lockedCandidate = new EventResult(
+                            EventKind.QUEST_LOCKED,
+                            definition,
+                            null
+                    );
+                }
             }
         }
 
@@ -255,6 +264,47 @@ public final class AdventureQuestEventRouter {
                                 progress
                         )
                 );
+    }
+
+    private static int unresolvedPrerequisiteCount(
+            QuestContentDefinition definition,
+            PlayerQuestLog log,
+            List<QuestContentDefinition> definitions,
+            java.util.Set<RpgId> visiting
+    ) {
+        if (!visiting.add(definition.id())) {
+            return 1_000_000;
+        }
+
+        int count = 0;
+        for (var prerequisite : definition.prerequisites()) {
+            if (log.hasCompleted(prerequisite.id())) {
+                continue;
+            }
+
+            count++;
+            QuestContentDefinition prerequisiteDefinition =
+                    definitions.stream()
+                            .filter(candidate ->
+                                    candidate.id().equals(
+                                            prerequisite.id()
+                                    )
+                            )
+                            .findFirst()
+                            .orElse(null);
+
+            if (prerequisiteDefinition != null) {
+                count += unresolvedPrerequisiteCount(
+                        prerequisiteDefinition,
+                        log,
+                        definitions,
+                        visiting
+                );
+            }
+        }
+
+        visiting.remove(definition.id());
+        return count;
     }
 
     private static List<QuestContentDefinition> definitions() {
