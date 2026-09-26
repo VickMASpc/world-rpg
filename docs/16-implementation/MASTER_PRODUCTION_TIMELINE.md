@@ -4,6 +4,12 @@ Status: ACCEPTED AS SCALE-CORRECTED MASTER TIMELINE
 
 This document is the project-scale timeline.
 
+Day-to-day development cadence is governed by:
+
+- `docs/16-implementation/DEVELOPMENT_CYCLE_CONTRACT.md`
+
+A development cycle must advance runtime architecture, authored content, player-facing UI/presentation, world integration and physical acceptance together. Individual models, schemas, commands, screens, enemies or quests are subtasks inside those cycles, not milestones by themselves.
+
 `PHASE_PLAN.md` remains useful for architectural dependency order, but it is **not** a measure of total project completion. In particular, the old P5/P6/P7 labels compress most of the game's actual production mass into three short lines.
 
 World RPG is not primarily a framework project. It is a 1-100 slow-burn RPG intended to support roughly 350-500 hours for a blind first character, on a large fixed authored world, with persistent geography, long travel, memorable equipment, long-lived quests, classes, professions, settlements, dungeons, enemies and a full presentation layer.
