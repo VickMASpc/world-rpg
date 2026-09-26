@@ -250,7 +250,7 @@ The physical gate is:
 
 - docs/16-implementation/COMBAT_EXPEDITION_ACCEPTANCE.md
 
-Cycle 1 is **implemented but not yet physically accepted**. It must not be described as a completed gameplay milestone until the in-client expedition rows pass.
+Cycle 1 is **physically accepted** as of 2026-09-26. The comprehensive in-client expedition suite passed after repairing DefeatMob journal presentation and separating ecology population observation from combat aggro eligibility. Evidence: `docs/16-implementation/CYCLE1_PHYSICAL_EVIDENCE_2026-09-26.md`.
 
 Explicitly provisional after this cycle:
 
@@ -303,11 +303,11 @@ The operating contract is now:
 
 Every normal "proceed development" cycle must make meaningful integrated progress in runtime architecture, authored content, player-facing UI/presentation, world integration and physical acceptance.
 
-The current integrated candidate is **Cycle 1 — First real combat expedition**.
+The first integrated milestone, **Cycle 1 — First real combat expedition**, is physically accepted. Active development has moved to **Cycle 2 — Character growth and civilization loop**.
 
 Its implementation package now exists across combat authority, spawn ecology, Ashwood family content, custom creature presentation, first-pass combat HUD/input, authored loot/quest hooks and the physical hunting-ground route.
 
-The remaining Cycle 1 work is physical end-to-end acceptance and defect repair against that evidence. Custom Ashwood Wolf rendering is one proven implementation subpath inside the cycle, not a substitute for the full gameplay gate.
+Cycle 1 physical end-to-end acceptance is complete. Cycle 2 now begins with persistent character progression/equipment authority before interactive character/bag/service UI is layered on top.
 
 ## Work now authorized
 
