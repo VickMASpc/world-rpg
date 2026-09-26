@@ -378,6 +378,20 @@ Expected:
 
 ---
 
+# Recorded physical result — 2026-09-26
+
+The live Minecraft run recorded in:
+
+- `docs/16-implementation/ADVENTURE_RUNTIME_PHYSICAL_EVIDENCE_2026-09-26.md`
+
+physically passed A1-A2, B1-B2, C1-C4 and D1-D3.
+
+The explicit full-reload durability rows E1-E3 remain pending.
+
+This means the reusable adventure-routing architecture is accepted as physically proven, while complete persistence-after-relaunch acceptance remains open.
+
+---
+
 # Acceptance matrix
 
 | Gate | Pass condition |
