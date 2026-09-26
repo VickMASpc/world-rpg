@@ -4,6 +4,7 @@ import dev.worldrpg.api.id.RpgId;
 import dev.worldrpg.api.registry.RegistryPublisher;
 import dev.worldrpg.content.adventure.AdventureContentDomains;
 import dev.worldrpg.content.adventure.QuestObjectiveSpec;
+import dev.worldrpg.content.adventure.QuestObjectiveText;
 import dev.worldrpg.content.enemy.EnemyContentDomains;
 import dev.worldrpg.content.load.ContentLoader;
 import dev.worldrpg.content.source.ContentSource;
@@ -90,6 +91,14 @@ class PackagedCombatExpeditionContentTest {
                         "world_rpg:mob/first_province/ashwood_stalker"
                 ),
                 defeat.mob().id()
+        );
+
+        assertEquals(
+                "Defeat Ashwood Stalker",
+                QuestObjectiveText.describe(
+                        defeat,
+                        publisher.active()
+                )
         );
 
         var wolfLoot = publisher.active()
