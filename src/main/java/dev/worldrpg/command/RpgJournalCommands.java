@@ -3,9 +3,7 @@ package dev.worldrpg.command;
 import com.mojang.brigadier.Command;
 import dev.worldrpg.api.id.RpgId;
 import dev.worldrpg.content.adventure.AdventureContentDomains;
-import dev.worldrpg.content.adventure.NpcContentDefinition;
-import dev.worldrpg.content.adventure.QuestObjectiveSpec;
-import dev.worldrpg.content.adventure.WorldLocationContentDefinition;
+import dev.worldrpg.content.adventure.QuestObjectiveText;
 import dev.worldrpg.content.fabric.WorldRpgContentRuntime;
 import dev.worldrpg.integration.minecraft.WorldRpgServerRuntime;
 import dev.worldrpg.quest.fabric.MinecraftQuestRuntime;
@@ -129,33 +127,12 @@ public final class RpgJournalCommands {
     }
 
     private static String describe(
-            QuestObjectiveSpec objective
+            dev.worldrpg.content.adventure.QuestObjectiveSpec objective
     ) {
-        if (objective
-                instanceof QuestObjectiveSpec.VisitLocation visit) {
-            String name = WorldRpgContentRuntime.publisher()
-                    .active()
-                    .require(
-                            AdventureContentDomains.WORLD_LOCATIONS
-                    )
-                    .find(visit.location().id())
-                    .map(
-                            WorldLocationContentDefinition::displayName
-                    )
-                    .orElse(
-                            visit.location().id().toString()
-                    );
-            return "Visit " + name;
-        }
-
-        QuestObjectiveSpec.SpeakToNpc speak =
-                (QuestObjectiveSpec.SpeakToNpc) objective;
-        String name = WorldRpgContentRuntime.publisher()
-                .active()
-                .require(AdventureContentDomains.NPCS)
-                .find(speak.npc().id())
-                .map(NpcContentDefinition::displayName)
-                .orElse(speak.npc().id().toString());
-        return "Speak to " + name;
+        return QuestObjectiveText.describe(
+                objective,
+                WorldRpgContentRuntime.publisher().active()
+        );
     }
+
 }
