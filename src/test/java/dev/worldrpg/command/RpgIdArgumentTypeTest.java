@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class RpgIdArgumentTypeTest {
     @Test
@@ -36,14 +35,18 @@ class RpgIdArgumentTypeTest {
     }
 
     @Test
-    void rejectsIllegalIdentifierCharacters() {
+    void stopsBeforeCharactersOutsideMinecraftIdentifierGrammar()
+            throws CommandSyntaxException {
         StringReader reader = new StringReader(
                 "world_rpg:item/first_province/road#worn"
         );
 
-        assertThrows(
-                CommandSyntaxException.class,
-                () -> RpgIdArgumentType.rpgId().parse(reader)
+        var parsed = RpgIdArgumentType.rpgId().parse(reader);
+
+        assertEquals(
+                "world_rpg:item/first_province/road",
+                parsed.toString()
         );
+        assertEquals('#', reader.peek());
     }
 }
