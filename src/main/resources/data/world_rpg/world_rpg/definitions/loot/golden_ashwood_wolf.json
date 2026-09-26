@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/loot_tables",
+  "id": "world_rpg:dev/golden/loot/ashwood_wolf",
+  "entries": [
+    {
+      "item": "world_rpg:dev/golden/item/ashwood_fang",
+      "minimum_quantity": 1,
+      "maximum_quantity": 1,
+      "chance": 1.0
+    }
+  ],
+  "minimum_copper": 6,
+  "maximum_copper": 6
+}

@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/mobs",
+  "id": "world_rpg:dev/golden/mob/ashwood_wolf",
+  "display_name": "Ashwood Wolf",
+  "level": 3,
+  "maximum_health": 30.0,
+  "attack_damage": 5.0,
+  "movement_speed": 0.30,
+  "minecraft_entity_type": "minecraft:wolf",
+  "loot_table": "world_rpg:dev/golden/loot/ashwood_wolf",
+  "source_asset": "assets-source/creatures/ashwood_wolf.bbmodel"
+}
