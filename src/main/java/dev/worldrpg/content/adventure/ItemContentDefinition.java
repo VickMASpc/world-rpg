@@ -5,6 +5,7 @@ import dev.worldrpg.api.id.RpgId;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public record ItemContentDefinition(
         RpgId id,
@@ -12,7 +13,8 @@ public record ItemContentDefinition(
         Category category,
         int requiredLevel,
         long vendorValueCopper,
-        List<String> tags
+        List<String> tags,
+        EquipmentSpec equipment
 ) implements RpgDefinition {
     public ItemContentDefinition {
         Objects.requireNonNull(id, "id");
@@ -28,6 +30,40 @@ public record ItemContentDefinition(
         for (String tag : tags) {
             requireText(tag, "tag");
         }
+
+        if (category == Category.EQUIPMENT && equipment == null) {
+            throw new IllegalArgumentException(
+                    "equipment-category items require an equipment spec"
+            );
+        }
+        if (category != Category.EQUIPMENT && equipment != null) {
+            throw new IllegalArgumentException(
+                    "only equipment-category items may define equipment stats"
+            );
+        }
+    }
+
+    public ItemContentDefinition(
+            RpgId id,
+            String displayName,
+            Category category,
+            int requiredLevel,
+            long vendorValueCopper,
+            List<String> tags
+    ) {
+        this(
+                id,
+                displayName,
+                category,
+                requiredLevel,
+                vendorValueCopper,
+                tags,
+                null
+        );
+    }
+
+    public Optional<EquipmentSpec> equipmentSpec() {
+        return Optional.ofNullable(equipment);
     }
 
     public enum Category {
