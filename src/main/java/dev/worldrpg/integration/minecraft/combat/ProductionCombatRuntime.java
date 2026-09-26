@@ -174,7 +174,7 @@ public final class ProductionCombatRuntime
         return new ProductionAbilityActivationResponse(
                 result.accepted(),
                 result.castId().isPresent(),
-                result.failures()
+                result.validation().failures()
         );
     }
 
@@ -204,7 +204,7 @@ public final class ProductionCombatRuntime
         return new ProductionAbilityActivationResponse(
                 result.accepted(),
                 result.castId().isPresent(),
-                result.failures()
+                result.validation().failures()
         );
     }
 
