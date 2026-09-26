@@ -300,7 +300,7 @@ public final class AuthoredMobRuntime {
             }
 
             ServerPlayerEntity target = nearestPlayer(
-                    mob.getServerWorld(),
+                    (ServerWorld) mob.getWorld(),
                     mob.getX(),
                     mob.getY(),
                     mob.getZ(),
