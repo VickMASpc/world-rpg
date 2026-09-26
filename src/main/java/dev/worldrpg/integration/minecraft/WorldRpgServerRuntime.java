@@ -85,6 +85,7 @@ public final class WorldRpgServerRuntime {
             PRODUCTION_COMBAT.tick(server);
             AUTHORED_MOBS.tick(server);
             ADVENTURE_WORLD.tick(server);
+            PROVINCE_TOPOLOGY.tick(server);
         });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
