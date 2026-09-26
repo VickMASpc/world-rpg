@@ -41,7 +41,8 @@ public final class MinecraftQuestRuntime {
             ServerPlayerEntity player,
             RpgId questId
     ) {
-        if (definition(questId).isEmpty()) {
+        Optional<QuestContentDefinition> definition = definition(questId);
+        if (definition.isEmpty()) {
             return AcceptResult.UNKNOWN_QUEST;
         }
 
@@ -50,6 +51,15 @@ public final class MinecraftQuestRuntime {
 
         if (log.hasCompleted(questId)) {
             return AcceptResult.ALREADY_COMPLETED;
+        }
+        boolean prerequisitesComplete = definition.orElseThrow()
+                .prerequisites()
+                .stream()
+                .allMatch(prerequisite ->
+                        log.hasCompleted(prerequisite.id())
+                );
+        if (!prerequisitesComplete) {
+            return AcceptResult.PREREQUISITES_INCOMPLETE;
         }
         if (!log.accept(questId)) {
             return AcceptResult.ALREADY_ACTIVE;
@@ -238,6 +248,7 @@ public final class MinecraftQuestRuntime {
         ACCEPTED,
         ALREADY_ACTIVE,
         ALREADY_COMPLETED,
+        PREREQUISITES_INCOMPLETE,
         UNKNOWN_QUEST
     }
 
