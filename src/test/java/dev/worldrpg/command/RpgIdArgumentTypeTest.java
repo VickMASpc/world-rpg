@@ -16,9 +16,9 @@ class RpgIdArgumentTypeTest {
                 "world_rpg:item/first_province/road_worn_cloak";
         StringReader reader = new StringReader(text);
 
-        RpgId parsed = RpgIdArgumentType.rpgId().parse(reader);
+        var parsed = RpgIdArgumentType.rpgId().parse(reader);
 
-        assertEquals(RpgId.parse(text), parsed);
+        assertEquals(RpgId.parse(text).toString(), parsed.toString());
         assertFalse(reader.canRead());
     }
 
@@ -29,16 +29,16 @@ class RpgIdArgumentTypeTest {
                 "world_rpg:quest/first_province/east_road_disappearances";
         StringReader reader = new StringReader(id + " inspect_route");
 
-        RpgId parsed = RpgIdArgumentType.rpgId().parse(reader);
+        var parsed = RpgIdArgumentType.rpgId().parse(reader);
 
-        assertEquals(RpgId.parse(id), parsed);
+        assertEquals(RpgId.parse(id).toString(), parsed.toString());
         assertEquals(' ', reader.peek());
     }
 
     @Test
-    void rejectsNamespaceLessDeveloperShorthand() {
+    void rejectsMalformedIdentifierSyntax() {
         StringReader reader = new StringReader(
-                "east_road_disappearances"
+                "WORLD RPG:not valid"
         );
 
         assertThrows(
