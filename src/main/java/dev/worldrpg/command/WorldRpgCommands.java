@@ -84,6 +84,86 @@ public final class WorldRpgCommands {
                                     );
                                     return Command.SINGLE_SUCCESS;
                                 })
+                )
+                .then(
+                        CommandManager.literal("ecology")
+                                .executes(context -> {
+                                    ServerPlayerEntity player =
+                                            context.getSource()
+                                                    .getPlayerOrThrow();
+
+                                    var lines =
+                                            WorldRpgServerRuntime
+                                                    .authoredMobs()
+                                                    .ecologyStatus(player);
+
+                                    if (lines.isEmpty()) {
+                                        context.getSource().sendFeedback(
+                                                () -> Text.literal(
+                                                        "World RPG ecology: no authored spawn groups are loaded."
+                                                ),
+                                                false
+                                        );
+                                    } else {
+                                        lines.forEach(line ->
+                                                context.getSource()
+                                                        .sendFeedback(
+                                                                () -> Text.literal(line),
+                                                                false
+                                                        )
+                                        );
+                                    }
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                )
+                .then(
+                        CommandManager.literal("spawn")
+                                .then(
+                                        CommandManager.argument(
+                                                "mob",
+                                                RpgIdArgumentType.rpgId()
+                                        ).executes(context -> {
+                                            ServerPlayerEntity player =
+                                                    context.getSource()
+                                                            .getPlayerOrThrow();
+                                            RpgId mobId =
+                                                    RpgIdArgumentType.getRpgId(
+                                                            context,
+                                                            "mob"
+                                                    );
+                                            try {
+                                                var result =
+                                                        WorldRpgServerRuntime
+                                                                .authoredMobs()
+                                                                .spawn(
+                                                                        player,
+                                                                        mobId,
+                                                                        8
+                                                                );
+                                                context.getSource()
+                                                        .sendFeedback(
+                                                                () -> Text.literal(
+                                                                        result.summary()
+                                                                ),
+                                                                false
+                                                        );
+                                                return Command.SINGLE_SUCCESS;
+                                            } catch (RuntimeException exception) {
+                                                context.getSource().sendError(
+                                                        Text.literal(
+                                                                "Authored mob spawn failed: "
+                                                                        + exception.getClass()
+                                                                        .getSimpleName()
+                                                                        + ": "
+                                                                        + (exception.getMessage() == null
+                                                                        ? "<no message>"
+                                                                        : exception.getMessage())
+                                                        )
+                                                );
+                                                return 0;
+                                            }
+                                        })
+                                )
                 );
     }
 
