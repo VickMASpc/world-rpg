@@ -1,5 +1,6 @@
 package dev.worldrpg;
 
+import dev.worldrpg.command.RpgBagCommands;
 import dev.worldrpg.command.RpgJournalCommands;
 import dev.worldrpg.command.WorldRpgCommands;
 import dev.worldrpg.command.WorldRpgContentCommands;
@@ -35,6 +36,7 @@ public final class WorldRpg implements ModInitializer {
         WorldRpgQuestCommands.register();
         WorldRpgSliceCommands.register();
         RpgJournalCommands.register();
+        RpgBagCommands.register();
         WorldRpgCommands.register();
 
         LOGGER.info("World RPG runtime bootstrap initialized.");
