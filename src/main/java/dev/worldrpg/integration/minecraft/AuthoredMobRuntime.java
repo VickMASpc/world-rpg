@@ -8,6 +8,7 @@ import dev.worldrpg.content.enemy.LootTableContentDefinition;
 import dev.worldrpg.content.enemy.MobContentDefinition;
 import dev.worldrpg.content.enemy.SpawnGroupContentDefinition;
 import dev.worldrpg.content.fabric.WorldRpgContentRuntime;
+import dev.worldrpg.network.WorldRpgNetworking;
 import dev.worldrpg.player.fabric.MinecraftRpgInventoryRuntime;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.minecraft.entity.Entity;
@@ -643,13 +644,13 @@ public final class AuthoredMobRuntime {
                         mob.id()
                 );
 
-        player.sendMessage(
-                Text.literal(
-                        mob.displayName()
-                                + " defeated. RPG loot: "
-                                + lootSummary(items, copper)
-                ),
-                false
+        String lootMessage =
+                mob.displayName()
+                        + ": "
+                        + lootSummary(items, copper);
+        WorldRpgNetworking.sendLootNotice(
+                player,
+                lootMessage
         );
     }
 
