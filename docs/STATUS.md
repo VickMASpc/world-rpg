@@ -161,11 +161,31 @@ The active branch now introduces a reusable physical adventure path:
 
 The second quest exists specifically as an architecture proof: its progression uses the same NPC/location event router as the first quest rather than a second quest-specific Java state machine.
 
-Physical acceptance procedure:
+A manual Minecraft run on 2026-09-26 physically proved the core generic adventure-runtime path:
+
+- full RPG IDs parse correctly in the developer quest/inventory commands;
+- one Warden click now produces one interaction rather than the previously duplicated callback;
+- the expanded fixture built with 2 NPC bindings and 3 location bindings;
+- the Refuge Scout accepted the second quest through the generic NPC router;
+- entering Collapsed Waystation advanced the authored visit objective through the generic location router;
+- report and turn-in required separate physical interactions for both Warden and Scout;
+- `waystation_silence` remained locked through partial Warden progress and unlocked only after actual Warden quest completion;
+- the second quest then completed through the same generic location/NPC machinery and granted its authored reward.
+
+This is enough to mark the **generic adventure-routing architecture proof as physically passed**.
+
+The explicit full-reload durability rows remain open:
+
+- E1 quest/reward persistence after a complete world reload;
+- E2 physical NPC/location binding persistence after reload;
+- E3 post-reload single-fire interaction and reward idempotence.
+
+Evidence and acceptance procedure:
 
 - `docs/16-implementation/ADVENTURE_RUNTIME_ACCEPTANCE.md`
+- `docs/16-implementation/ADVENTURE_RUNTIME_PHYSICAL_EVIDENCE_2026-09-26.md`
 
-Until that matrix passes, describe this as the **generic adventure-runtime expansion candidate**, not as production-ready first-province questing.
+Do not describe the first province as production-ready questing yet. The reusable adventure path is now physically proven in live play, but player UI, richer dialogue/presentation, broader objective families, authored world production and full reload durability still need continued work.
 
 ## P3 physical evidence state
 
