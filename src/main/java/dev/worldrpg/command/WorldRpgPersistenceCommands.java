@@ -7,6 +7,7 @@ import dev.worldrpg.persistence.PersistedDefinitionPointer;
 import dev.worldrpg.persistence.WorldRpgSaveSchema;
 import dev.worldrpg.persistence.fabric.PersistedDefinitionPointerNbtCodec;
 import dev.worldrpg.persistence.fabric.WorldRpgPersistentState;
+import dev.worldrpg.integration.minecraft.WorldRpgServerRuntime;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -215,11 +216,17 @@ public final class WorldRpgPersistenceCommands {
                 player.getUuid()
         );
 
+        // Character persistence is part of the same player record. Refresh
+        // the live combat actor immediately so reset cannot leave stale
+        // level/equipment-derived stats in memory.
+        WorldRpgServerRuntime.productionCombat()
+                .refreshPlayer(player);
+
         player.sendMessage(
                 Text.literal(
                         removed
-                                ? "World RPG player state reset. Quest history, RPG inventory, and developer player data were cleared."
-                                : "World RPG player state was already empty."
+                                ? "World RPG player state reset. Quest history, RPG inventory, character progression/equipment, and developer player data were cleared."
+                                : "World RPG player state was already empty; live character combat state was refreshed."
                 ),
                 false
         );
