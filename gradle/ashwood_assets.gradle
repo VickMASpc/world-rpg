@@ -4,7 +4,9 @@ import groovy.json.JsonSlurper
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
-tasks.register("exportAshwoodWolfAssets") {
+def ashwoodGeneratedRoot = layout.buildDirectory.dir("generated/world-rpg/ashwood").get().asFile
+
+def ashwoodExportTask = tasks.register("exportAshwoodWolfAssets") {
     group = "world rpg"
     description = "Export the canonical Ashwood Wolf Blockbench source to GeckoLib runtime assets."
 
@@ -313,13 +315,13 @@ tasks.register("exportAshwoodWolfAssets") {
         ]
 
         def geometryFile = file(
-                rootDir.toString() + "/src/main/resources/assets/world_rpg/geo/ashwood_wolf.geo.json"
+                new File(ashwoodGeneratedRoot, "geo/ashwood_wolf.geo.json").toString()
         )
         def animationsFile = file(
-                rootDir.toString() + "/src/main/resources/assets/world_rpg/animations/ashwood_wolf.animation.json"
+                new File(ashwoodGeneratedRoot, "animations/ashwood_wolf.animation.json").toString()
         )
         def textureFile = file(
-                rootDir.toString() + "/src/main/resources/assets/world_rpg/textures/entity/ashwood_wolf.png"
+                new File(ashwoodGeneratedRoot, "textures/entity/ashwood_wolf.png").toString()
         )
 
         geometryFile.parentFile.mkdirs()
@@ -359,6 +361,164 @@ tasks.register("exportAshwoodWolfAssets") {
                         + source.elements.size()
                         + " cubes, "
                         + animations.keySet().join(", ")
+        )
+    }
+}
+
+
+def normalizeAshwoodJson
+normalizeAshwoodJson = { value ->
+    if (value instanceof Map) {
+        def normalized =
+                new LinkedHashMap<String, Object>()
+        value.each { key, child ->
+            normalized[key.toString()] =
+                    normalizeAshwoodJson(child)
+        }
+        return normalized
+    }
+
+    if (value instanceof List) {
+        return value.collect { child ->
+            normalizeAshwoodJson(child)
+        }
+    }
+
+    if (value instanceof Number) {
+        BigDecimal decimal =
+                new BigDecimal(value.toString())
+        if (decimal.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO
+        }
+        return decimal.stripTrailingZeros()
+    }
+
+    return value
+}
+
+def ashwoodTrackedRoot = file(
+        rootDir.toString()
+                + "/src/main/resources/assets/world_rpg"
+)
+
+tasks.register("verifyAshwoodWolfAssets") {
+    group = "verification"
+    description =
+            "Run the canonical Ashwood exporter and compare its output semantically with committed runtime assets."
+    dependsOn ashwoodExportTask
+
+    doLast {
+        def generatedGeometry =
+                new File(
+                        ashwoodGeneratedRoot,
+                        "geo/ashwood_wolf.geo.json"
+                )
+        def generatedAnimations =
+                new File(
+                        ashwoodGeneratedRoot,
+                        "animations/ashwood_wolf.animation.json"
+                )
+        def generatedTexture =
+                new File(
+                        ashwoodGeneratedRoot,
+                        "textures/entity/ashwood_wolf.png"
+                )
+
+        def trackedGeometry =
+                new File(
+                        ashwoodTrackedRoot,
+                        "geo/ashwood_wolf.geo.json"
+                )
+        def trackedAnimations =
+                new File(
+                        ashwoodTrackedRoot,
+                        "animations/ashwood_wolf.animation.json"
+                )
+        def trackedTexture =
+                new File(
+                        ashwoodTrackedRoot,
+                        "textures/entity/ashwood_wolf.png"
+                )
+
+        [
+                generatedGeometry,
+                generatedAnimations,
+                generatedTexture,
+                trackedGeometry,
+                trackedAnimations,
+                trackedTexture
+        ].each { asset ->
+            if (!asset.exists()) {
+                throw new GradleException(
+                        "Missing Ashwood asset during verification: "
+                                + asset
+                )
+            }
+        }
+
+        def slurper = new JsonSlurper()
+
+        def compareJson = { generated, tracked, label ->
+            def generatedValue =
+                    normalizeAshwoodJson(
+                            slurper.parse(generated)
+                    )
+            def trackedValue =
+                    normalizeAshwoodJson(
+                            slurper.parse(tracked)
+                    )
+
+            if (generatedValue != trackedValue) {
+                throw new GradleException(
+                        "Ashwood "
+                                + label
+                                + " runtime asset does not semantically match canonical export. "
+                                + "Run syncAshwoodWolfAssets after reviewing the source change."
+                )
+            }
+        }
+
+        compareJson(
+                generatedGeometry,
+                trackedGeometry,
+                "geometry"
+        )
+        compareJson(
+                generatedAnimations,
+                trackedAnimations,
+                "animation"
+        )
+
+        if (!java.util.Arrays.equals(
+                generatedTexture.bytes,
+                trackedTexture.bytes
+        )) {
+            throw new GradleException(
+                    "Ashwood texture runtime asset does not match canonical export. "
+                            + "Run syncAshwoodWolfAssets after reviewing the source change."
+            )
+        }
+
+        logger.lifecycle(
+                "Verified Ashwood Wolf canonical export against committed runtime assets."
+        )
+    }
+}
+
+tasks.register("syncAshwoodWolfAssets") {
+    group = "world rpg"
+    description =
+            "Copy the reviewed canonical Ashwood export into committed runtime resources."
+    dependsOn ashwoodExportTask
+
+    doLast {
+        copy {
+            from ashwoodGeneratedRoot
+            into ashwoodTrackedRoot
+        }
+
+        logger.lifecycle(
+                "Synchronized Ashwood Wolf runtime assets from canonical Blockbench source."
         )
     }
 }
