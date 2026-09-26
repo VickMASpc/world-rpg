@@ -125,6 +125,93 @@ public final class ProvinceGrayboxLayout {
                 ));
     }
 
+    private static final List<Journey> JOURNEYS = List.of(
+            new Journey(
+                    "a-to-r1-local",
+                    Node.HOME,
+                    Node.LOCAL_RUIN,
+                    6.0,
+                    12.0,
+                    routeLength("home-to-wild")
+                            + routeLength("local-ruin-detour"),
+                    "local objective"
+            ),
+            new Journey(
+                    "a-to-f-safe",
+                    Node.HOME,
+                    Node.REFUGE,
+                    20.0,
+                    30.0,
+                    routeLength("home-to-wild")
+                            + routeLength("wild-to-corridor")
+                            + routeLength("corridor-to-fork-safe")
+                            + routeLength("fork-to-refuge-safe"),
+                    "safe first journey to the remote refuge"
+            ),
+            new Journey(
+                    "a-to-g-safe",
+                    Node.HOME,
+                    Node.REGIONAL_SETTLEMENT,
+                    25.0,
+                    40.0,
+                    routeLength("home-to-wild")
+                            + routeLength("wild-to-corridor")
+                            + routeLength("corridor-to-fork-safe")
+                            + routeLength("fork-to-regional-settlement"),
+                    "safe first journey to the regional settlement"
+            ),
+            new Journey(
+                    "g-to-a-learned",
+                    Node.REGIONAL_SETTLEMENT,
+                    Node.HOME,
+                    0.0,
+                    0.0,
+                    routeLength("learned-regional-return-shortcut")
+                            + routeLength("home-to-wild"),
+                    "known return using the learned shortcut; should be meaningfully shorter than a-to-g-safe"
+            ),
+            new Journey(
+                    "f-to-h-outward",
+                    Node.REFUGE,
+                    Node.BEYOND,
+                    15.0,
+                    30.0,
+                    routeLength("refuge-to-beyond"),
+                    "deeper outward leg beyond the refuge"
+            )
+    );
+
+    public static List<Journey> journeys() {
+        return JOURNEYS;
+    }
+
+    public static Journey journey(String id) {
+        Objects.requireNonNull(id, "id");
+        return JOURNEYS.stream()
+                .filter(journey -> journey.id().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Unknown province graybox journey: " + id
+                ));
+    }
+
+    public static Point nodePosition(Node node) {
+        Objects.requireNonNull(node, "node");
+        return switch (node) {
+            case HOME -> HOME;
+            case WILD -> WILD;
+            case CORRIDOR -> CORRIDOR;
+            case FORK -> FORK;
+            case DANGER -> DANGER;
+            case REFUGE -> REFUGE;
+            case REGIONAL_SETTLEMENT -> REGIONAL_SETTLEMENT;
+            case BEYOND -> BEYOND;
+            case WORKLAND -> WORKLAND;
+            case LOCAL_RUIN -> LOCAL_RUIN;
+            case UNFINISHED_SITE -> UNFINISHED_SITE;
+        };
+    }
+
     public static double routeLength(String id) {
         return routeLength(route(id));
     }
@@ -188,6 +275,39 @@ public final class ProvinceGrayboxLayout {
                         "a graybox route must contain at least two points"
                 );
             }
+        }
+    }
+
+    public record Journey(
+            String id,
+            Node start,
+            Node end,
+            double targetMinMinutes,
+            double targetMaxMinutes,
+            double pathBlocks,
+            String intent
+    ) {
+        public Journey {
+            Objects.requireNonNull(id, "id");
+            Objects.requireNonNull(start, "start");
+            Objects.requireNonNull(end, "end");
+            Objects.requireNonNull(intent, "intent");
+            if (!Double.isFinite(pathBlocks) || pathBlocks <= 0.0) {
+                throw new IllegalArgumentException(
+                        "journey pathBlocks must be finite and > 0"
+                );
+            }
+            if (targetMinMinutes < 0.0
+                    || targetMaxMinutes < 0.0
+                    || targetMaxMinutes < targetMinMinutes) {
+                throw new IllegalArgumentException(
+                        "invalid journey target minute band"
+                );
+            }
+        }
+
+        public boolean hasTargetBand() {
+            return targetMaxMinutes > 0.0;
         }
     }
 
