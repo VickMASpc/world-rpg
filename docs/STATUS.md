@@ -112,6 +112,25 @@ The current first-province definitions are intentionally provisional production-
 The developer commands are proof surfaces, not final player UX. NPC interaction, spatial visit detection, journal UI, real bag/equipment surfaces, world placement, dialogue, models, animation, VFX, audio and final reward presentation remain future connected production work.
 
 This advances Era 3 from "entirely future" to **bootstrap begun**, while Era 2 physical evidence and P4-G remain open. It does not mean the project has entered mass content production.
+
+## First playable-slice candidate
+
+The active integration branch now contains the first player-facing end-to-end adventure loop candidate.
+
+The disposable slice connects the existing production graph to physical Minecraft play:
+
+- `/worldrpg slice build confirm` creates only the physical fixture: a Road Warden post, a short east road and an abandoned checkpoint;
+- the Road Warden is a real persistent Minecraft entity representing the authored `world_rpg:npc/first_province/road_warden` definition;
+- right-clicking the Warden accepts the authored `east_road_disappearances` quest without using the developer quest-accept command;
+- entering the physical checkpoint completes the authored `inspect_route` visit-location objective automatically;
+- returning to and interacting with the Warden completes the authored `report_to_warden` speak-to-NPC objective;
+- a separate Warden interaction performs canonical quest turn-in and grants the existing persistent RPG item/currency rewards;
+- the physical slice anchor is stored in World RPG world persistence, while quest history and RPG inventory remain in player persistence;
+- the runtime validates that the authored starter, turn-in NPC and physical visit objective still match the slice contract instead of silently drifting into a parallel hard-coded quest.
+
+The implementation/build candidate is covered by the normal CI build and content-domain tests. **Physical milestone acceptance is still pending the complete manual run** in `docs/16-implementation/FIRST_PLAYABLE_SLICE_TESTING.md`.
+
+Until that physical matrix passes, this should be described as the **first playable-slice candidate**, not proof that the first province or vertical slice is complete.
 \n## P3 physical evidence state
 
 The hardened Minecraft proof harness is implemented and the exact pre-test candidate
