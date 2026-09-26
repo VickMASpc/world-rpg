@@ -163,7 +163,7 @@ public final class FirstPlayableSliceRuntime {
 
         VillagerEntity warden = EntityType.VILLAGER.spawn(
                 world,
-                new BlockPos(originX, originY + 1, originZ),
+                new BlockPos(originX, originY + 1, originZ - 2),
                 SpawnReason.COMMAND
         );
         if (warden == null) {
@@ -204,9 +204,20 @@ public final class FirstPlayableSliceRuntime {
             return false;
         }
 
+        SliceState value = state.orElseThrow();
+        ServerWorld overworld = server.getWorld(World.OVERWORLD);
+        if (overworld != null) {
+            // The fixture owns this chunk; load it so reset cannot strand
+            // an unloaded persistent Warden after removing the slice anchor.
+            overworld.getChunk(
+                    value.originX() >> 4,
+                    value.originZ() >> 4
+            );
+        }
+
         MinecraftEntityResolver.findLiving(
                 server,
-                state.orElseThrow().wardenUuid()
+                value.wardenUuid()
         ).ifPresent(Entity::discard);
 
         WorldRpgPersistentState persistence =
