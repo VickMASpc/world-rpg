@@ -238,6 +238,23 @@ public final class ProductionCombatRuntime
         );
     }
 
+    public CharacterStatsSnapshot characterStats(
+            ServerPlayerEntity player
+    ) {
+        ProductionCombatState state =
+                refreshPlayer(player);
+        return new CharacterStatsSnapshot(
+                state.level(),
+                state.maximumHealth(),
+                state.actor().stats().value(
+                        CombatMathStats.ATTACK_POWER
+                ),
+                state.actor().stats().value(
+                        CombatMathStats.ARMOR
+                )
+        );
+    }
+
     public Optional<CombatSnapshot> snapshotIfCombatant(
             LivingEntity entity
     ) {
@@ -675,6 +692,14 @@ public final class ProductionCombatRuntime
                     "production combat runtime is not started"
             );
         }
+    }
+
+    public record CharacterStatsSnapshot(
+            int level,
+            double maximumHealth,
+            double attackPower,
+            double armor
+    ) {
     }
 
     public record CombatSnapshot(
