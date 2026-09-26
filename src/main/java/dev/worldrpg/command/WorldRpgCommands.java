@@ -2,11 +2,12 @@ package dev.worldrpg.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import dev.worldrpg.api.id.RpgId;
 import dev.worldrpg.debug.P3ProofReport;
 import dev.worldrpg.debug.P3ProofScenario;
 import dev.worldrpg.integration.minecraft.MinecraftTargetProbe;
-import dev.worldrpg.integration.minecraft.ProvinceGrayboxBuilder;
+import dev.worldrpg.integration.minecraft.ProvinceTopologyRuntime;
 import dev.worldrpg.integration.minecraft.WorldRpgServerRuntime;
 import dev.worldrpg.integration.minecraft.p3.P3AbilityActivationRequest;
 import dev.worldrpg.integration.minecraft.p3.P3FixtureDefinitions;
@@ -193,16 +194,102 @@ public final class WorldRpgCommands {
                                                                 )
                                                 )
                                 )
+                                .then(
+                                        CommandManager.literal("status")
+                                                .executes(context ->
+                                                        provinceStatus(
+                                                                context.getSource()
+                                                                        .getPlayerOrThrow()
+                                                        )
+                                                )
+                                )
+                                .then(
+                                        CommandManager.literal("nodes")
+                                                .executes(context ->
+                                                        provinceNodes(
+                                                                context.getSource()
+                                                                        .getPlayerOrThrow()
+                                                        )
+                                                )
+                                )
+                                .then(
+                                        CommandManager.literal("journeys")
+                                                .executes(context ->
+                                                        provinceJourneys(
+                                                                context.getSource()
+                                                                        .getPlayerOrThrow()
+                                                        )
+                                                )
+                                )
+                                .then(
+                                        CommandManager.literal("measure")
+                                                .then(
+                                                        CommandManager.literal("start")
+                                                                .then(
+                                                                        CommandManager.argument(
+                                                                                "journey",
+                                                                                StringArgumentType.word()
+                                                                        ).then(
+                                                                                CommandManager.argument(
+                                                                                        "mode",
+                                                                                        StringArgumentType.word()
+                                                                                ).executes(context ->
+                                                                                        startProvinceMeasurement(
+                                                                                                context.getSource()
+                                                                                                        .getPlayerOrThrow(),
+                                                                                                StringArgumentType.getString(
+                                                                                                        context,
+                                                                                                        "journey"
+                                                                                                ),
+                                                                                                StringArgumentType.getString(
+                                                                                                        context,
+                                                                                                        "mode"
+                                                                                                )
+                                                                                        )
+                                                                                )
+                                                                        )
+                                                                )
+                                                )
+                                                .then(
+                                                        CommandManager.literal("finish")
+                                                                .executes(context ->
+                                                                        finishProvinceMeasurement(
+                                                                                context.getSource()
+                                                                                        .getPlayerOrThrow()
+                                                                        )
+                                                                )
+                                                )
+                                                .then(
+                                                        CommandManager.literal("cancel")
+                                                                .executes(context ->
+                                                                        cancelProvinceMeasurement(
+                                                                                context.getSource()
+                                                                                        .getPlayerOrThrow()
+                                                                        )
+                                                                )
+                                                )
+                                                .then(
+                                                        CommandManager.literal("history")
+                                                                .executes(context ->
+                                                                        provinceMeasurementHistory(
+                                                                                context.getSource()
+                                                                                        .getPlayerOrThrow()
+                                                                        )
+                                                                )
+                                                )
+                                )
                 );
     }
 
     private static int buildProvinceGraybox(ServerPlayerEntity player) {
         try {
-            var result = ProvinceGrayboxBuilder.build(player);
+            var result = WorldRpgServerRuntime
+                    .provinceTopology()
+                    .build(player);
             player.sendMessage(
                     Text.literal(
                             result.summary()
-                                    + " | confirmation accepted; use only in a fresh, dedicated Superflat Overworld; path, river, and landmark surface blocks are replaced"
+                                    + " | persisted topology origin recorded; use only in a fresh, dedicated Superflat Overworld"
                     ),
                     false
             );
@@ -217,6 +304,184 @@ public final class WorldRpgCommands {
             );
             return 0;
         }
+    }
+
+    private static int provinceStatus(ServerPlayerEntity player) {
+        try {
+            player.sendMessage(
+                    Text.literal(
+                            WorldRpgServerRuntime
+                                    .provinceTopology()
+                                    .status(player)
+                    ),
+                    false
+            );
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException exception) {
+            return provinceError(
+                    player,
+                    "status",
+                    exception
+            );
+        }
+    }
+
+    private static int provinceNodes(ServerPlayerEntity player) {
+        try {
+            WorldRpgServerRuntime
+                    .provinceTopology()
+                    .nodeLines(player)
+                    .forEach(line ->
+                            player.sendMessage(
+                                    Text.literal(line),
+                                    false
+                            )
+                    );
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException exception) {
+            return provinceError(
+                    player,
+                    "nodes",
+                    exception
+            );
+        }
+    }
+
+    private static int provinceJourneys(ServerPlayerEntity player) {
+        try {
+            WorldRpgServerRuntime
+                    .provinceTopology()
+                    .journeyLines()
+                    .forEach(line ->
+                            player.sendMessage(
+                                    Text.literal(line),
+                                    false
+                            )
+                    );
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException exception) {
+            return provinceError(
+                    player,
+                    "journeys",
+                    exception
+            );
+        }
+    }
+
+    private static int startProvinceMeasurement(
+            ServerPlayerEntity player,
+            String journeyId,
+            String modeText
+    ) {
+        try {
+            ProvinceTopologyRuntime.MeasurementMode mode =
+                    ProvinceTopologyRuntime.MeasurementMode.parse(
+                            modeText
+                    );
+            var result =
+                    WorldRpgServerRuntime
+                            .provinceTopology()
+                            .startMeasurement(
+                                    player,
+                                    journeyId,
+                                    mode
+                            );
+            player.sendMessage(
+                    Text.literal(result.summary()),
+                    false
+            );
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException exception) {
+            return provinceError(
+                    player,
+                    "measurement start",
+                    exception
+            );
+        }
+    }
+
+    private static int finishProvinceMeasurement(
+            ServerPlayerEntity player
+    ) {
+        try {
+            var result =
+                    WorldRpgServerRuntime
+                            .provinceTopology()
+                            .finishMeasurement(player);
+            player.sendMessage(
+                    Text.literal(result.summary()),
+                    false
+            );
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException exception) {
+            return provinceError(
+                    player,
+                    "measurement finish",
+                    exception
+            );
+        }
+    }
+
+    private static int cancelProvinceMeasurement(
+            ServerPlayerEntity player
+    ) {
+        boolean cancelled =
+                WorldRpgServerRuntime
+                        .provinceTopology()
+                        .cancelMeasurement(player);
+        player.sendMessage(
+                Text.literal(
+                        cancelled
+                                ? "Province topology measurement cancelled."
+                                : "No province topology measurement was active."
+                ),
+                false
+        );
+        return cancelled
+                ? Command.SINGLE_SUCCESS
+                : 0;
+    }
+
+    private static int provinceMeasurementHistory(
+            ServerPlayerEntity player
+    ) {
+        try {
+            WorldRpgServerRuntime
+                    .provinceTopology()
+                    .historyLines()
+                    .forEach(line ->
+                            player.sendMessage(
+                                    Text.literal(line),
+                                    false
+                            )
+                    );
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException exception) {
+            return provinceError(
+                    player,
+                    "measurement history",
+                    exception
+            );
+        }
+    }
+
+    private static int provinceError(
+            ServerPlayerEntity player,
+            String operation,
+            RuntimeException exception
+    ) {
+        player.sendMessage(
+                Text.literal(
+                        "Province topology "
+                                + operation
+                                + " failed: "
+                                + (exception.getMessage() == null
+                                ? exception.getClass().getSimpleName()
+                                : exception.getMessage())
+                ),
+                false
+        );
+        return 0;
     }
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<
