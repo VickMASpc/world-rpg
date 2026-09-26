@@ -140,6 +140,12 @@ final class AdventureContentDecoders {
         );
         Optional<RpgId> starter = requiredId(root, "starter", document, report);
         Optional<RpgId> turnIn = requiredId(root, "turn_in", document, report);
+        Optional<List<RpgId>> prerequisites = idArray(
+                root,
+                "prerequisites",
+                document,
+                report
+        );
         Optional<List<QuestObjectiveSpec>> objectives = objectives(
                 root,
                 document,
@@ -159,6 +165,7 @@ final class AdventureContentDecoders {
                 || minimumLevel.isEmpty()
                 || starter.isEmpty()
                 || turnIn.isEmpty()
+                || prerequisites.isEmpty()
                 || objectives.isEmpty()
                 || itemRewards.isEmpty()
                 || copperReward.isEmpty()) {
@@ -179,6 +186,13 @@ final class AdventureContentDecoders {
                             AdventureContentDomains.NPCS,
                             turnIn.get()
                     ),
+                    prerequisites.get()
+                            .stream()
+                            .map(id -> new RequiredDefinitionRef<>(
+                                    AdventureContentDomains.QUESTS,
+                                    id
+                            ))
+                            .toList(),
                     objectives.get(),
                     itemRewards.get(),
                     copperReward.get()
@@ -305,6 +319,55 @@ final class AdventureContentDecoders {
                         exception.getMessage() == null
                                 ? exception.getClass().getSimpleName()
                                 : exception.getMessage(),
+                        document.source().sourceRef(),
+                        document.header().id()
+                );
+                return Optional.empty();
+            }
+        }
+
+        return Optional.of(List.copyOf(result));
+    }
+
+    private static Optional<List<RpgId>> idArray(
+            JsonObject root,
+            String field,
+            DecodedJsonDocument document,
+            ValidationReport report
+    ) {
+        JsonArray array = arrayOrEmpty(
+                root,
+                field,
+                document,
+                report
+        );
+        if (array == null) return Optional.empty();
+
+        List<RpgId> result = new ArrayList<>();
+        for (int i = 0; i < array.size(); i++) {
+            JsonElement element = array.get(i);
+            if (!element.isJsonPrimitive()
+                    || !element.getAsJsonPrimitive().isString()
+                    || element.getAsString().trim().isEmpty()) {
+                report.error(
+                        "adventure.field.id_array",
+                        "Field '" + field
+                                + "' must contain only RPG ID strings",
+                        document.source().sourceRef(),
+                        document.header().id()
+                );
+                return Optional.empty();
+            }
+
+            try {
+                result.add(RpgId.parse(
+                        element.getAsString().trim()
+                ));
+            } catch (IllegalArgumentException exception) {
+                report.error(
+                        "adventure.field.id_array",
+                        "Field '" + field + "': "
+                                + exception.getMessage(),
                         document.source().sourceRef(),
                         document.header().id()
                 );
