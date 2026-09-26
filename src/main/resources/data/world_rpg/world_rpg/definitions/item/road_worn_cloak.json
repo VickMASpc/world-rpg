@@ -6,6 +6,15 @@
   "category": "equipment",
   "required_level": 1,
   "vendor_value_copper": 85,
+  "equipment": {
+    "slot": "back",
+    "stats": [
+      {
+        "stat": "world_rpg:stat/armor",
+        "amount": 4.0
+      }
+    ]
+  },
   "tags": [
     "cloth",
     "quest_reward",
