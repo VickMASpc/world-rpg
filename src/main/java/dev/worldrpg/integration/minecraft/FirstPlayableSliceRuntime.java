@@ -63,10 +63,13 @@ public final class FirstPlayableSliceRuntime {
     private static final int CHECKPOINT_EAST = 48;
     private static final int CHECKPOINT_RADIUS = 5;
     private static final int TICK_INTERVAL = 10;
+    private static final int INTERACTION_DEBOUNCE_TICKS = 4;
 
     private MinecraftServer server;
     private int ticks;
     private boolean interactionRegistered;
+    private final java.util.Map<UUID, Integer> lastInteractionTickByPlayer =
+            new java.util.HashMap<>();
 
     public void registerInteraction() {
         if (interactionRegistered) {
@@ -92,11 +95,13 @@ public final class FirstPlayableSliceRuntime {
     public void start(MinecraftServer server) {
         this.server = Objects.requireNonNull(server, "server");
         ticks = 0;
+        lastInteractionTickByPlayer.clear();
     }
 
     public void stop() {
         server = null;
         ticks = 0;
+        lastInteractionTickByPlayer.clear();
     }
 
     public void tick(MinecraftServer server) {
@@ -271,6 +276,15 @@ public final class FirstPlayableSliceRuntime {
                 || !state.orElseThrow().wardenUuid().equals(entity.getUuid())) {
             return false;
         }
+
+        Integer previousTick = lastInteractionTickByPlayer.get(
+                player.getUuid()
+        );
+        if (previousTick != null
+                && ticks - previousTick < INTERACTION_DEBOUNCE_TICKS) {
+            return true;
+        }
+        lastInteractionTickByPlayer.put(player.getUuid(), ticks);
 
         QuestContentDefinition definition;
         try {
