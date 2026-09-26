@@ -2,7 +2,7 @@
   "schema":1,"registry":"world_rpg:registry/mobs","id":"world_rpg:mob/first_province/ashwood_wolf",
   "display_name":"Ashwood Wolf","level":3,"maximum_health":42.0,"attack_damage":8.0,"movement_speed":0.30,
   "aggro_range":12.0,"assist_range":8.0,"attack_range":2.6,
-  "minecraft_entity_type":"minecraft:wolf","loot_table":"world_rpg:loot/first_province/ashwood_wolf",
+  "minecraft_entity_type":"world_rpg:ashwood_wolf","loot_table":"world_rpg:loot/first_province/ashwood_wolf",
   "primary_ability":"world_rpg:ability/first_province/ashwood_bite","engage_ability":"world_rpg:ability/first_province/ashwood_howl",
   "source_asset":"assets-source/creatures/ashwood_wolf.bbmodel"
 }
