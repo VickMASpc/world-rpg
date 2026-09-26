@@ -192,7 +192,10 @@ public final class WorldRpgNetworking {
                 ).orElse(null);
 
         CombatStateS2CPayload.ActorState targetState = null;
-        if (target != null) {
+        if (target != null
+                && target.getWorld() == player.getWorld()
+                && player.squaredDistanceTo(target) <= 64.0 * 64.0
+                && player.canSee(target)) {
             targetState = combat.snapshotIfCombatant(target)
                     .map(snapshot ->
                             CombatStateS2CPayload.actor(
