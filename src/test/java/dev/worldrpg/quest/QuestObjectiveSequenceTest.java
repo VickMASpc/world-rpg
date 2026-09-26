@@ -72,6 +72,7 @@ class QuestObjectiveSequenceTest {
                         AdventureContentDomains.NPCS,
                         NPC
                 ),
+                List.of(),
                 List.of(
                         new QuestObjectiveSpec.VisitLocation(
                                 "inspect_route",
