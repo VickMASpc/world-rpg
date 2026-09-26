@@ -39,11 +39,11 @@ public final class ProvinceGrayboxBuilder {
         }
 
         BlockPos origin = player.getBlockPos();
-        int groundY = world.getTopY(
-                Heightmap.Type.WORLD_SURFACE,
+        int groundY = loadedSurfaceY(
+                world,
                 origin.getX(),
                 origin.getZ()
-        ) - 1;
+        );
 
         requireFlatSurface(world, origin, groundY);
 
@@ -96,11 +96,11 @@ public final class ProvinceGrayboxBuilder {
                             from.south()
                                     + (to.south() - from.south()) * fraction
                     );
-                    int surfaceY = world.getTopY(
-                            Heightmap.Type.WORLD_SURFACE,
+                    int surfaceY = loadedSurfaceY(
+                            world,
                             x,
                             z
-                    ) - 1;
+                    );
                     if (surfaceY != groundY) {
                         throw new IllegalStateException(
                                 "the route crosses uneven terrain near "
@@ -289,6 +289,29 @@ public final class ProvinceGrayboxBuilder {
             case LOCAL_RUIN -> Blocks.GREEN_CONCRETE.getDefaultState();
             case UNFINISHED_SITE -> Blocks.MAGENTA_CONCRETE.getDefaultState();
         };
+    }
+
+    private static int loadedSurfaceY(
+            ServerWorld world,
+            int x,
+            int z
+    ) {
+        /*
+         * getTopY() can report the dimension floor for distant, not-yet-loaded
+         * chunks. The topology spans nearly ten thousand blocks, so the
+         * flatness preflight must explicitly load/generate the sampled chunk
+         * before reading its heightmap. Otherwise a perfectly flat Superflat
+         * world is falsely rejected as "uneven" around y=-65.
+         */
+        world.getChunk(
+                Math.floorDiv(x, 16),
+                Math.floorDiv(z, 16)
+        );
+        return world.getTopY(
+                Heightmap.Type.WORLD_SURFACE,
+                x,
+                z
+        ) - 1;
     }
 
     private static BlockPos at(
