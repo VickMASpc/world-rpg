@@ -1,7 +1,6 @@
 package dev.worldrpg.command;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import dev.worldrpg.api.id.RpgId;
 import dev.worldrpg.content.fabric.WorldRpgContentRuntime;
 import dev.worldrpg.persistence.PersistedDefinitionPointer;
@@ -53,19 +52,19 @@ public final class WorldRpgPersistenceCommands {
                                 .then(
                                         CommandManager.argument(
                                                 "registry",
-                                                StringArgumentType.word()
+                                                RpgIdArgumentType.rpgId()
                                         ).then(
                                                 CommandManager.argument(
                                                         "definition",
-                                                        StringArgumentType.word()
+                                                        RpgIdArgumentType.rpgId()
                                                 ).executes(context -> setRef(
                                                         context.getSource()
                                                                 .getPlayerOrThrow(),
-                                                        StringArgumentType.getString(
+                                                        RpgIdArgumentType.getRpgId(
                                                                 context,
                                                                 "registry"
                                                         ),
-                                                        StringArgumentType.getString(
+                                                        RpgIdArgumentType.getRpgId(
                                                                 context,
                                                                 "definition"
                                                         )
@@ -110,23 +109,14 @@ public final class WorldRpgPersistenceCommands {
 
     private static int setRef(
             ServerPlayerEntity player,
-            String registryText,
-            String definitionText
+            RpgId registryId,
+            RpgId definitionId
     ) {
-        final PersistedDefinitionPointer pointer;
-
-        try {
-            pointer = new PersistedDefinitionPointer(
-                    RpgId.parse(registryText),
-                    RpgId.parse(definitionText)
-            );
-        } catch (IllegalArgumentException exception) {
-            player.sendMessage(
-                    Text.literal(exception.getMessage()),
-                    false
-            );
-            return 0;
-        }
+        PersistedDefinitionPointer pointer =
+                new PersistedDefinitionPointer(
+                        registryId,
+                        definitionId
+                );
 
         WorldRpgPersistentState state =
                 WorldRpgPersistentState.get(player.getServer());

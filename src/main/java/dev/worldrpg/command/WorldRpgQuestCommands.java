@@ -40,11 +40,11 @@ public final class WorldRpgQuestCommands {
                                 .then(
                                         CommandManager.argument(
                                                 "quest",
-                                                StringArgumentType.word()
+                                                RpgIdArgumentType.rpgId()
                                         ).executes(context -> accept(
                                                 context.getSource()
                                                         .getPlayerOrThrow(),
-                                                StringArgumentType.getString(
+                                                RpgIdArgumentType.getRpgId(
                                                         context,
                                                         "quest"
                                                 )
@@ -56,7 +56,7 @@ public final class WorldRpgQuestCommands {
                                 .then(
                                         CommandManager.argument(
                                                 "quest",
-                                                StringArgumentType.word()
+                                                RpgIdArgumentType.rpgId()
                                         ).then(
                                                 CommandManager.argument(
                                                         "objective",
@@ -64,7 +64,7 @@ public final class WorldRpgQuestCommands {
                                                 ).executes(context -> advance(
                                                         context.getSource()
                                                                 .getPlayerOrThrow(),
-                                                        StringArgumentType.getString(
+                                                        RpgIdArgumentType.getRpgId(
                                                                 context,
                                                                 "quest"
                                                         ),
@@ -81,11 +81,11 @@ public final class WorldRpgQuestCommands {
                                 .then(
                                         CommandManager.argument(
                                                 "quest",
-                                                StringArgumentType.word()
+                                                RpgIdArgumentType.rpgId()
                                         ).executes(context -> turnIn(
                                                 context.getSource()
                                                         .getPlayerOrThrow(),
-                                                StringArgumentType.getString(
+                                                RpgIdArgumentType.getRpgId(
                                                         context,
                                                         "quest"
                                                 )
@@ -97,11 +97,11 @@ public final class WorldRpgQuestCommands {
                                 .then(
                                         CommandManager.argument(
                                                 "quest",
-                                                StringArgumentType.word()
+                                                RpgIdArgumentType.rpgId()
                                         ).executes(context -> status(
                                                 context.getSource()
                                                         .getPlayerOrThrow(),
-                                                StringArgumentType.getString(
+                                                RpgIdArgumentType.getRpgId(
                                                         context,
                                                         "quest"
                                                 )
@@ -119,11 +119,8 @@ public final class WorldRpgQuestCommands {
 
     private static int accept(
             ServerPlayerEntity player,
-            String questText
+            RpgId questId
     ) {
-        RpgId questId = parseId(player, questText);
-        if (questId == null) return 0;
-
         var result = MinecraftQuestRuntime.accept(player, questId);
         player.sendMessage(
                 Text.literal("Quest " + questId + " | " + result),
@@ -136,12 +133,9 @@ public final class WorldRpgQuestCommands {
 
     private static int advance(
             ServerPlayerEntity player,
-            String questText,
+            RpgId questId,
             String objectiveKey
     ) {
-        RpgId questId = parseId(player, questText);
-        if (questId == null) return 0;
-
         var result = MinecraftQuestRuntime.completeObjective(
                 player,
                 questId,
@@ -164,11 +158,8 @@ public final class WorldRpgQuestCommands {
 
     private static int turnIn(
             ServerPlayerEntity player,
-            String questText
+            RpgId questId
     ) {
-        RpgId questId = parseId(player, questText);
-        if (questId == null) return 0;
-
         var result = MinecraftQuestRuntime.turnIn(player, questId);
         player.sendMessage(
                 Text.literal("Quest " + questId + " | " + result),
@@ -181,11 +172,8 @@ public final class WorldRpgQuestCommands {
 
     private static int status(
             ServerPlayerEntity player,
-            String questText
+            RpgId questId
     ) {
-        RpgId questId = parseId(player, questText);
-        if (questId == null) return 0;
-
         var view = MinecraftQuestRuntime.view(player, questId);
         player.sendMessage(
                 Text.literal(
@@ -233,20 +221,5 @@ public final class WorldRpgQuestCommands {
                 false
         );
         return Command.SINGLE_SUCCESS;
-    }
-
-    private static RpgId parseId(
-            ServerPlayerEntity player,
-            String text
-    ) {
-        try {
-            return RpgId.parse(text);
-        } catch (IllegalArgumentException exception) {
-            player.sendMessage(
-                    Text.literal(exception.getMessage()),
-                    false
-            );
-            return null;
-        }
     }
 }

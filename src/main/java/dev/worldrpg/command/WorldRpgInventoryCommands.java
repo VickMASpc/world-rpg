@@ -1,7 +1,6 @@
 package dev.worldrpg.command;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import dev.worldrpg.api.id.RpgId;
 import dev.worldrpg.quest.fabric.MinecraftQuestRuntime;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -47,11 +46,11 @@ public final class WorldRpgInventoryCommands {
                                 .then(
                                         CommandManager.argument(
                                                 "item",
-                                                StringArgumentType.word()
+                                                RpgIdArgumentType.rpgId()
                                         ).executes(context -> inspect(
                                                 context.getSource()
                                                         .getPlayerOrThrow(),
-                                                StringArgumentType.getString(
+                                                RpgIdArgumentType.getRpgId(
                                                         context,
                                                         "item"
                                                 )
@@ -78,19 +77,8 @@ public final class WorldRpgInventoryCommands {
 
     private static int inspect(
             ServerPlayerEntity player,
-            String itemText
+            RpgId itemId
     ) {
-        final RpgId itemId;
-        try {
-            itemId = RpgId.parse(itemText);
-        } catch (IllegalArgumentException exception) {
-            player.sendMessage(
-                    Text.literal(exception.getMessage()),
-                    false
-            );
-            return 0;
-        }
-
         int quantity = MinecraftQuestRuntime
                 .loadInventory(player)
                 .quantity(itemId);
