@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/auras",
+  "id": "world_rpg:aura/first_province/ashwood_pack_fury",
+  "max_stacks": 1,
+  "duration_ticks": 120,
+  "uniqueness": "per_target",
+  "refresh_policy": "reset_duration",
+  "stat_modifiers": [
+    {"stat":"world_rpg:stat/damage_done_bonus","operation":"add","amount_per_stack":0.25,"priority":10}
+  ]
+}
