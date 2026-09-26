@@ -2,10 +2,14 @@ package dev.worldrpg.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import dev.worldrpg.api.id.RpgId;
 import dev.worldrpg.debug.P3ProofReport;
 import dev.worldrpg.debug.P3ProofScenario;
 import dev.worldrpg.integration.minecraft.MinecraftTargetProbe;
+import dev.worldrpg.integration.minecraft.ProvinceGrayboxBuilder;
 import dev.worldrpg.integration.minecraft.WorldRpgServerRuntime;
+import dev.worldrpg.integration.minecraft.p3.P3AbilityActivationRequest;
+import dev.worldrpg.integration.minecraft.p3.P3FixtureDefinitions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.Entity;
@@ -14,6 +18,8 @@ import net.minecraft.entity.mob.HuskEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+
+import java.util.UUID;
 
 public final class WorldRpgCommands {
     private WorldRpgCommands() {
@@ -25,8 +31,192 @@ public final class WorldRpgCommands {
                         CommandManager.literal("worldrpg")
                                 .requires(source -> source.hasPermissionLevel(2))
                                 .then(p3Commands())
+                                .then(combatCommands())
+                                .then(provinceCommands())
                 )
         );
+    }
+
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<
+            net.minecraft.server.command.ServerCommandSource
+            > combatCommands() {
+        return CommandManager.literal("combat")
+                .then(
+                        CommandManager.literal("status")
+                                .executes(context -> {
+                                    ServerPlayerEntity player =
+                                            context.getSource()
+                                                    .getPlayerOrThrow();
+
+                                    var snapshot =
+                                            WorldRpgServerRuntime
+                                                    .productionCombat()
+                                                    .snapshot(player);
+
+                                    String active = snapshot.activeAbilityId()
+                                            == null
+                                            ? "none"
+                                            : snapshot.activeAbilityId()
+                                            .toString();
+
+                                    context.getSource().sendFeedback(
+                                            () -> Text.literal(
+                                                    "World RPG combat | hp="
+                                                            + format(snapshot.health())
+                                                            + "/"
+                                                            + format(snapshot.maximumHealth())
+                                                            + " focus="
+                                                            + format(snapshot.focus())
+                                                            + "/"
+                                                            + format(snapshot.maximumFocus())
+                                                            + " cast="
+                                                            + active
+                                                            + " | "
+                                                            + WorldRpgServerRuntime
+                                                            .authoredMobs()
+                                                            .statusSummary()
+                                                            + " | "
+                                                            + WorldRpgServerRuntime
+                                                            .adventureWorld()
+                                                            .statusSummary()
+                                            ),
+                                            false
+                                    );
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                )
+                .then(
+                        CommandManager.literal("ecology")
+                                .executes(context -> {
+                                    ServerPlayerEntity player =
+                                            context.getSource()
+                                                    .getPlayerOrThrow();
+
+                                    var lines =
+                                            WorldRpgServerRuntime
+                                                    .authoredMobs()
+                                                    .ecologyStatus(player);
+
+                                    if (lines.isEmpty()) {
+                                        context.getSource().sendFeedback(
+                                                () -> Text.literal(
+                                                        "World RPG ecology: no authored spawn groups are loaded."
+                                                ),
+                                                false
+                                        );
+                                    } else {
+                                        lines.forEach(line ->
+                                                context.getSource()
+                                                        .sendFeedback(
+                                                                () -> Text.literal(line),
+                                                                false
+                                                        )
+                                        );
+                                    }
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                )
+                .then(
+                        CommandManager.literal("spawn")
+                                .then(
+                                        CommandManager.argument(
+                                                "mob",
+                                                RpgIdArgumentType.rpgId()
+                                        ).executes(context -> {
+                                            ServerPlayerEntity player =
+                                                    context.getSource()
+                                                            .getPlayerOrThrow();
+                                            RpgId mobId =
+                                                    RpgIdArgumentType.getRpgId(
+                                                            context,
+                                                            "mob"
+                                                    );
+                                            try {
+                                                var result =
+                                                        WorldRpgServerRuntime
+                                                                .authoredMobs()
+                                                                .spawn(
+                                                                        player,
+                                                                        mobId,
+                                                                        8
+                                                                );
+                                                context.getSource()
+                                                        .sendFeedback(
+                                                                () -> Text.literal(
+                                                                        result.summary()
+                                                                ),
+                                                                false
+                                                        );
+                                                return Command.SINGLE_SUCCESS;
+                                            } catch (RuntimeException exception) {
+                                                context.getSource().sendError(
+                                                        Text.literal(
+                                                                "Authored mob spawn failed: "
+                                                                        + exception.getClass()
+                                                                        .getSimpleName()
+                                                                        + ": "
+                                                                        + (exception.getMessage() == null
+                                                                        ? "<no message>"
+                                                                        : exception.getMessage())
+                                                        )
+                                                );
+                                                return 0;
+                                            }
+                                        })
+                                )
+                );
+    }
+
+    private static String format(double value) {
+        return String.format(
+                java.util.Locale.ROOT,
+                "%.1f",
+                value
+        );
+    }
+
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<
+            net.minecraft.server.command.ServerCommandSource
+            > provinceCommands() {
+        return CommandManager.literal("province")
+                .then(
+                        CommandManager.literal("graybox")
+                                .then(
+                                        CommandManager.literal("build")
+                                                .then(
+                                                        CommandManager.literal("confirm")
+                                                                .executes(context ->
+                                                                        buildProvinceGraybox(
+                                                                                context.getSource()
+                                                                                        .getPlayerOrThrow()
+                                                                        )
+                                                                )
+                                                )
+                                )
+                );
+    }
+
+    private static int buildProvinceGraybox(ServerPlayerEntity player) {
+        try {
+            var result = ProvinceGrayboxBuilder.build(player);
+            player.sendMessage(
+                    Text.literal(
+                            result.summary()
+                                    + " | confirmation accepted; use only in a fresh, dedicated Superflat Overworld; path, river, and landmark surface blocks are replaced"
+                    ),
+                    false
+            );
+            return Command.SINGLE_SUCCESS;
+        } catch (IllegalStateException | IllegalArgumentException exception) {
+            player.sendMessage(
+                    Text.literal(
+                            "Province graybox build failed: "
+                                    + exception.getMessage()
+                    ),
+                    false
+            );
+            return 0;
+        }
     }
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<
@@ -136,6 +326,78 @@ public final class WorldRpgCommands {
                                 )
                 )
                 .then(
+                        CommandManager.literal("move")
+                                .then(
+                                        CommandManager.argument(
+                                                "distance",
+                                                IntegerArgumentType.integer(1, 30)
+                                        ).executes(context ->
+                                                moveRoomTarget(
+                                                        context.getSource()
+                                                                .getPlayerOrThrow(),
+                                                        IntegerArgumentType.getInteger(
+                                                                context,
+                                                                "distance"
+                                                        )
+                                                )
+                                        )
+                                )
+                )
+                .then(
+                        CommandManager.literal("health")
+                                .then(
+                                        CommandManager.argument(
+                                                "value",
+                                                IntegerArgumentType.integer(0, 100)
+                                        ).executes(context ->
+                                                setRoomTargetHealth(
+                                                        context.getSource()
+                                                                .getPlayerOrThrow(),
+                                                        IntegerArgumentType.getInteger(
+                                                                context,
+                                                                "value"
+                                                        )
+                                                )
+                                        )
+                                )
+                )
+                .then(
+                        CommandManager.literal("cast")
+                                .then(
+                                        CommandManager.literal("focus")
+                                                .executes(context ->
+                                                        activateRoomAbility(
+                                                                context.getSource()
+                                                                        .getPlayerOrThrow(),
+                                                                P3FixtureDefinitions.FOCUS,
+                                                                true
+                                                        )
+                                                )
+                                )
+                                .then(
+                                        CommandManager.literal("bolt")
+                                                .executes(context ->
+                                                        activateRoomAbility(
+                                                                context.getSource()
+                                                                        .getPlayerOrThrow(),
+                                                                P3FixtureDefinitions.BOLT,
+                                                                false
+                                                        )
+                                                )
+                                )
+                                .then(
+                                        CommandManager.literal("channel")
+                                                .executes(context ->
+                                                        activateRoomAbility(
+                                                                context.getSource()
+                                                                        .getPlayerOrThrow(),
+                                                                P3FixtureDefinitions.CHANNEL,
+                                                                false
+                                                        )
+                                                )
+                                )
+                )
+                .then(
                         CommandManager.literal("status")
                                 .executes(context -> {
                                     ServerPlayerEntity player =
@@ -206,5 +468,106 @@ public final class WorldRpgCommands {
         );
 
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static int moveRoomTarget(
+            ServerPlayerEntity player,
+            int distance
+    ) {
+        try {
+            LivingEntity target = WorldRpgServerRuntime.p3Room()
+                    .moveTarget(player, distance);
+            player.sendMessage(
+                    Text.literal(
+                            "P3 developer target moved to "
+                                    + distance
+                                    + " blocks ahead without resetting RPG state"
+                                    + " | UUID=" + target.getUuid()
+                    ),
+                    false
+            );
+            return Command.SINGLE_SUCCESS;
+        } catch (IllegalStateException | IllegalArgumentException exception) {
+            player.sendMessage(
+                    Text.literal("P3 room move failed: " + exception.getMessage()),
+                    false
+            );
+            return 0;
+        }
+    }
+
+    private static int setRoomTargetHealth(
+            ServerPlayerEntity player,
+            int value
+    ) {
+        try {
+            double applied = WorldRpgServerRuntime.p3Room()
+                    .setTargetProofHealth(player, value);
+            player.sendMessage(
+                    Text.literal(
+                            "P3 target proof-health set to " + applied
+                                    + " (Minecraft entity health unchanged)"
+                    ),
+                    false
+            );
+            return Command.SINGLE_SUCCESS;
+        } catch (IllegalStateException | IllegalArgumentException exception) {
+            player.sendMessage(
+                    Text.literal("P3 room health failed: " + exception.getMessage()),
+                    false
+            );
+            return 0;
+        }
+    }
+
+    /**
+     * Direct server-side developer activation. This intentionally bypasses the
+     * C2S transport/replay layer and exists only to test server target
+     * conditions that the temporary vanilla crosshair cannot submit (for
+     * example, LOS-blocked or beyond-crosshair targets). F6/F7/F8 remain the
+     * required evidence for the real network path.
+     */
+    private static int activateRoomAbility(
+            ServerPlayerEntity player,
+            RpgId abilityId,
+            boolean selfTarget
+    ) {
+        try {
+            UUID targetUuid = selfTarget
+                    ? player.getUuid()
+                    : WorldRpgServerRuntime.p3Room()
+                            .targetUuid(player)
+                            .orElseThrow(() -> new IllegalStateException(
+                                    "No P3 developer target is active."
+                            ));
+
+            var response = WorldRpgServerRuntime.p3Combat().handle(
+                    player,
+                    new P3AbilityActivationRequest(
+                            0L,
+                            abilityId,
+                            targetUuid
+                    )
+            );
+
+            player.sendMessage(
+                    Text.literal(
+                            "P3 direct room activation "
+                                    + abilityId + ": " + response.summary()
+                                    + " (network path bypassed)"
+                    ),
+                    false
+            );
+            return response.accepted() ? Command.SINGLE_SUCCESS : 0;
+        } catch (IllegalStateException | IllegalArgumentException exception) {
+            player.sendMessage(
+                    Text.literal(
+                            "P3 direct room activation failed: "
+                                    + exception.getMessage()
+                    ),
+                    false
+            );
+            return 0;
+        }
     }
 }

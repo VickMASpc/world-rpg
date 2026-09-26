@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/items",
+  "id": "world_rpg:item/first_province/roadside_provisions",
+  "display_name": "Roadside Provisions",
+  "category": "consumable",
+  "required_level": 1,
+  "vendor_value_copper": 18,
+  "tags": [
+    "food",
+    "travel",
+    "quest_reward",
+    "first_province",
+    "provisional"
+  ]
+}

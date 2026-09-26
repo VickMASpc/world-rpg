@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/items",
+  "id": "world_rpg:item/first_province/road_worn_cloak",
+  "display_name": "Road-Worn Cloak",
+  "category": "equipment",
+  "required_level": 1,
+  "vendor_value_copper": 85,
+  "equipment": {
+    "slot": "back",
+    "stats": [
+      {
+        "stat": "world_rpg:stat/armor",
+        "amount": 4.0
+      }
+    ]
+  },
+  "tags": [
+    "cloth",
+    "quest_reward",
+    "first_province",
+    "provisional"
+  ]
+}

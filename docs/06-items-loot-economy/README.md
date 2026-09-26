@@ -1,11 +1,22 @@
-# Items, loot and economy
+# Items, loot, and economy
 
-Status: DRAFT
+Status: GROUNDED — PRODUCTION BUDGETS STILL DRAFT
 
-Thousands of equipment pieces require a budget/generation framework. Bulk gear should be systematic and deterministic; authored/unique gear uses the same baseline budget so deviations are visible.
+The governing reward/equipment intent now lives in:
 
-Equipment definitions will cover slot, class/type, required level, item level, rarity, stat budget, stats, special effects, durability, binding, vendor value, visuals and restrictions.
+- `docs/00-constitution/REWARD_DOCTRINE.md`
+- `docs/00-constitution/PROGRESSION_DOCTRINE.md`
 
-Loot needs explicit weighted groups, guaranteed drops, rarity/level bands, family/region pools, boss tables, unique restrictions, money, junk and profession materials.
+Core constraints:
 
-Economy modeling must connect acquisition and sinks: training, repair, transport, gear, professions, storage and mounts. Wealth curves must be simulated alongside drop and vendor income.
+- no loot shower;
+- upgrades are memorable rather than constant;
+- good items may remain relevant for roughly 10-20 hours, sometimes longer;
+- unique effects/stat tradeoffs may preserve older gear;
+- money matters through trainers, repairs, consumables/reagents, bags/storage, professions, transport and later major purchases;
+- professions and reputations create geographically grounded long-term rewards;
+- rare creatures/rewards should remain genuinely rare.
+
+Production item budgets, affix families, loot tables, repair costs and economic curves remain future implementation work.
+
+They must preserve gear history and world memory rather than optimize replacement cadence.

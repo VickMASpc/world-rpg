@@ -1,0 +1,5 @@
+{
+  "schema":1,"registry":"world_rpg:registry/world_locations","id":"world_rpg:location/first_province/ashwood_hunting_ground",
+  "display_name":"Ashwood Verge","kind":"wilderness_hunting_ground",
+  "tags":["east_road","ashwood","wilderness","combat","first_province","provisional"]
+}

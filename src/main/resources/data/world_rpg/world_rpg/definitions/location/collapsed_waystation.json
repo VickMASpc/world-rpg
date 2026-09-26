@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/world_locations",
+  "id": "world_rpg:location/first_province/collapsed_waystation",
+  "display_name": "Collapsed Waystation",
+  "kind": "road_waystation",
+  "tags": [
+    "east_road",
+    "investigation",
+    "first_province",
+    "playable_slice",
+    "provisional"
+  ]
+}

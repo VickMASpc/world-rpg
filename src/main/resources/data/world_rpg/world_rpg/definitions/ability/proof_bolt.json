@@ -3,9 +3,9 @@
   "registry": "world_rpg:registry/abilities",
   "id": "world_rpg:ability/proof/bolt",
   "cast_kind": "timed",
-  "cast_duration_ticks": 20,
-  "cooldown_ticks": 10,
-  "global_cooldown_ticks": 5,
+  "cast_duration_ticks": 160,
+  "cooldown_ticks": 220,
+  "global_cooldown_ticks": 20,
   "movement_policy": "interrupt",
   "costs": [
     {"resource": "world_rpg:resource/proof_mana", "amount": 20.0}

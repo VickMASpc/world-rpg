@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/npcs",
+  "id": "world_rpg:npc/first_province/road_warden",
+  "display_name": "Road Warden",
+  "home_location": "world_rpg:location/first_province/home",
+  "roles": [
+    "quest_giver",
+    "road_information",
+    "provisional"
+  ]
+}
