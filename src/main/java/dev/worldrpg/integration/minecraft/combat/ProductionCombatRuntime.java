@@ -208,6 +208,24 @@ public final class ProductionCombatRuntime
         );
     }
 
+    public Optional<CombatSnapshot> snapshotIfCombatant(
+            LivingEntity entity
+    ) {
+        Objects.requireNonNull(entity, "entity");
+
+        if (entity instanceof ServerPlayerEntity) {
+            return Optional.of(snapshot(entity));
+        }
+
+        if (WorldRpgServerRuntime.authoredMobs()
+                .definition(entity.getUuid())
+                .isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(snapshot(entity));
+    }
+
     public CombatSnapshot snapshot(LivingEntity entity) {
         ProductionCombatState state = stateFor(entity);
         var health = state.actor().resources()
