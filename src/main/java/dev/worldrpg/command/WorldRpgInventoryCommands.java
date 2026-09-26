@@ -1,7 +1,11 @@
 package dev.worldrpg.command;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import dev.worldrpg.api.id.RpgId;
+import dev.worldrpg.content.adventure.AdventureContentDomains;
+import dev.worldrpg.content.fabric.WorldRpgContentRuntime;
+import dev.worldrpg.player.fabric.MinecraftRpgInventoryRuntime;
 import dev.worldrpg.quest.fabric.MinecraftQuestRuntime;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.CommandManager;
@@ -56,6 +60,34 @@ public final class WorldRpgInventoryCommands {
                                                 )
                                         ))
                                 )
+                )
+                .then(
+                        CommandManager.literal("grant")
+                                .then(
+                                        CommandManager.argument(
+                                                "item",
+                                                RpgIdArgumentType.rpgId()
+                                        ).then(
+                                                CommandManager.argument(
+                                                        "quantity",
+                                                        IntegerArgumentType.integer(
+                                                                1,
+                                                                999
+                                                        )
+                                                ).executes(context -> grant(
+                                                        context.getSource()
+                                                                .getPlayerOrThrow(),
+                                                        RpgIdArgumentType.getRpgId(
+                                                                context,
+                                                                "item"
+                                                        ),
+                                                        IntegerArgumentType.getInteger(
+                                                                context,
+                                                                "quantity"
+                                                        )
+                                                ))
+                                        )
+                                )
                 );
     }
 
@@ -69,6 +101,45 @@ public final class WorldRpgInventoryCommands {
                                 + inventory.distinctItemCount()
                                 + " totalItems="
                                 + inventory.totalItemCount()
+                ),
+                false
+        );
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int grant(
+            ServerPlayerEntity player,
+            RpgId itemId,
+            int quantity
+    ) {
+        var item = WorldRpgContentRuntime.publisher()
+                .active()
+                .require(AdventureContentDomains.ITEMS)
+                .find(itemId);
+
+        if (item.isEmpty()) {
+            player.sendMessage(
+                    Text.literal(
+                            "Unknown RPG item: " + itemId
+                    ),
+                    false
+            );
+            return 0;
+        }
+
+        MinecraftRpgInventoryRuntime.grant(
+                player,
+                java.util.Map.of(itemId, quantity),
+                0L
+        );
+
+        player.sendMessage(
+                Text.literal(
+                        "Granted "
+                                + item.orElseThrow().displayName()
+                                + " x"
+                                + quantity
+                                + " to the RPG bag."
                 ),
                 false
         );
