@@ -195,6 +195,21 @@ public final class WorldRpgCommands {
                                                 )
                                 )
                                 .then(
+                                        CommandManager.literal("places")
+                                                .then(
+                                                        CommandManager.literal("build")
+                                                                .then(
+                                                                        CommandManager.literal("confirm")
+                                                                                .executes(context ->
+                                                                                        buildProvincePlaces(
+                                                                                                context.getSource()
+                                                                                                        .getPlayerOrThrow()
+                                                                                        )
+                                                                                )
+                                                                )
+                                                )
+                                )
+                                .then(
                                         CommandManager.literal("status")
                                                 .executes(context ->
                                                         provinceStatus(
@@ -303,6 +318,30 @@ public final class WorldRpgCommands {
                     false
             );
             return 0;
+        }
+    }
+
+    private static int buildProvincePlaces(
+            ServerPlayerEntity player
+    ) {
+        try {
+            var result = WorldRpgServerRuntime
+                    .provinceTopology()
+                    .buildReadablePlaces(player);
+            player.sendMessage(
+                    Text.literal(
+                            result.summary()
+                                    + " | this overwrites blocks inside authored graybox place footprints"
+                    ),
+                    false
+            );
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException exception) {
+            return provinceError(
+                    player,
+                    "places build",
+                    exception
+            );
         }
     }
 
