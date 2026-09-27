@@ -1,0 +1,8 @@
+{
+  "schema":1,"registry":"world_rpg:registry/mobs","id":"world_rpg:mob/first_province/ashwood_stalker",
+  "display_name":"Ashwood Stalker","level":4,"experience_reward":48,"maximum_health":58.0,"attack_damage":10.5,"movement_speed":0.32,
+  "aggro_range":15.0,"assist_range":10.0,"attack_range":2.7,
+  "minecraft_entity_type":"world_rpg:ashwood_wolf","loot_table":"world_rpg:loot/first_province/ashwood_stalker",
+  "primary_ability":"world_rpg:ability/first_province/ashwood_bite","engage_ability":"world_rpg:ability/first_province/ashwood_howl",
+  "source_asset":"assets-source/creatures/ashwood_wolf.bbmodel"
+}

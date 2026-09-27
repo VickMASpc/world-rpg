@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/world_locations",
+  "id": "world_rpg:location/first_province/home",
+  "display_name": "Home Settlement (A)",
+  "kind": "settlement",
+  "tags": [
+    "home",
+    "services",
+    "first_province",
+    "provisional"
+  ]
+}

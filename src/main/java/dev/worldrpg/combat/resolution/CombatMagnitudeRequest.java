@@ -9,8 +9,9 @@ import java.util.Objects;
  * Short-lived server-side request handed from generic P3 effects into the P4
  * mathematics layer.
  *
- * <p>The authored base magnitude is an input, not a resolved gameplay result.
- * P4 owns hit/crit/mitigation/scaling/absorb/final-amount decisions.</p>
+ * <p>The authored base magnitude and explicit power terms are inputs, not
+ * resolved gameplay results. P4 owns contact/crit/mitigation/absorb/final
+ * amount decisions.</p>
  */
 public record CombatMagnitudeRequest(
         long gameTick,
@@ -19,6 +20,8 @@ public record CombatMagnitudeRequest(
         CombatActor target,
         RpgId causeId,
         RpgId schoolId,
+        RpgId resolutionProfileId,
+        CombatPowerScaling powerScaling,
         double authoredBaseMagnitude
 ) {
     public CombatMagnitudeRequest {
@@ -33,6 +36,14 @@ public record CombatMagnitudeRequest(
         Objects.requireNonNull(target, "target");
         Objects.requireNonNull(causeId, "causeId");
         Objects.requireNonNull(schoolId, "schoolId");
+        Objects.requireNonNull(
+                resolutionProfileId,
+                "resolutionProfileId"
+        );
+        Objects.requireNonNull(
+                powerScaling,
+                "powerScaling"
+        );
 
         if (!Double.isFinite(authoredBaseMagnitude)
                 || authoredBaseMagnitude < 0.0) {
@@ -40,5 +51,59 @@ public record CombatMagnitudeRequest(
                     "authoredBaseMagnitude must be finite and >= 0"
             );
         }
+    }
+
+    /**
+     * Compatibility constructor for pre-explicit-scaling callers.
+     *
+     * <p>Legacy scaling is isolated behind an explicit compatibility mode.
+     * New production effects should supply CombatPowerScaling directly.</p>
+     */
+    public CombatMagnitudeRequest(
+            long gameTick,
+            CombatMagnitudeKind kind,
+            CombatActor source,
+            CombatActor target,
+            RpgId causeId,
+            RpgId schoolId,
+            RpgId resolutionProfileId,
+            double authoredBaseMagnitude
+    ) {
+        this(
+                gameTick,
+                kind,
+                source,
+                target,
+                causeId,
+                schoolId,
+                resolutionProfileId,
+                CombatPowerScaling.legacyProfile(),
+                authoredBaseMagnitude
+        );
+    }
+
+    /**
+     * Compatibility constructor for pre-profile callers.
+     */
+    public CombatMagnitudeRequest(
+            long gameTick,
+            CombatMagnitudeKind kind,
+            CombatActor source,
+            CombatActor target,
+            RpgId causeId,
+            RpgId schoolId,
+            double authoredBaseMagnitude
+    ) {
+        this(
+                gameTick,
+                kind,
+                source,
+                target,
+                causeId,
+                schoolId,
+                CombatResolutionProfileIds.GUARANTEED,
+                CombatPowerScaling.legacyProfile(),
+                authoredBaseMagnitude
+        );
     }
 }

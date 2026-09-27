@@ -1,6 +1,9 @@
 package dev.worldrpg.client.network;
 
 import dev.worldrpg.WorldRpg;
+import dev.worldrpg.client.combat.CombatHudState;
+import dev.worldrpg.network.combat.CombatStateS2CPayload;
+import dev.worldrpg.network.combat.LootNoticeS2CPayload;
 import dev.worldrpg.network.p3.P3AbilityActivateS2CPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -33,13 +36,44 @@ public final class WorldRpgClientNetworking {
                 })
         );
 
+        ClientPlayNetworking.registerGlobalReceiver(
+                CombatStateS2CPayload.ID,
+                (payload, context) ->
+                        context.client().execute(() -> {
+                            long tick = context.client().world == null
+                                    ? 0L
+                                    : context.client().world.getTime();
+                            CombatHudState.update(
+                                    payload,
+                                    tick
+                            );
+                        })
+        );
+
+        ClientPlayNetworking.registerGlobalReceiver(
+                LootNoticeS2CPayload.ID,
+                (payload, context) ->
+                        context.client().execute(() -> {
+                            long tick = context.client().world == null
+                                    ? 0L
+                                    : context.client().world.getTime();
+                            CombatHudState.loot(
+                                    payload.message(),
+                                    tick
+                            );
+                        })
+        );
+
         ClientPlayConnectionEvents.DISCONNECT.register(
-                (handler, client) ->
-                        P3ClientAbilitySender.resetSequence()
+                (handler, client) -> {
+                    P3ClientAbilitySender.resetSequence();
+                    CombatClientSender.reset();
+                    CombatHudState.clear();
+                }
         );
 
         WorldRpg.LOGGER.info(
-                "World RPG P3 client networking registered."
+                "World RPG client networking registered."
         );
     }
 }

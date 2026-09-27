@@ -23,5 +23,8 @@ jobs:
         with:
           gradle-version: "8.14.3"
 
+      - name: Verify canonical Ashwood export
+        run: gradle verifyAshwoodWolfAssets --stacktrace
+
       - name: Build
         run: gradle build --stacktrace

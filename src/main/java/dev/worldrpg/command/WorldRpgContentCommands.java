@@ -1,7 +1,6 @@
 package dev.worldrpg.command;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import dev.worldrpg.api.id.RpgId;
 import dev.worldrpg.api.registry.DefinitionRegistry;
 import dev.worldrpg.content.fabric.WorldRpgContentRuntime;
@@ -50,19 +49,19 @@ public final class WorldRpgContentCommands {
                                 .then(
                                         CommandManager.argument(
                                                 "registry",
-                                                StringArgumentType.word()
+                                                RpgIdArgumentType.rpgId()
                                         ).then(
                                                 CommandManager.argument(
                                                         "id",
-                                                        StringArgumentType.word()
+                                                        RpgIdArgumentType.rpgId()
                                                 ).executes(context ->
                                                         inspect(
                                                                 context.getSource(),
-                                                                StringArgumentType.getString(
+                                                                RpgIdArgumentType.getRpgId(
                                                                         context,
                                                                         "registry"
                                                                 ),
-                                                                StringArgumentType.getString(
+                                                                RpgIdArgumentType.getRpgId(
                                                                         context,
                                                                         "id"
                                                                 )
@@ -135,22 +134,9 @@ public final class WorldRpgContentCommands {
 
     private static int inspect(
             net.minecraft.server.command.ServerCommandSource source,
-            String registryText,
-            String definitionText
+            RpgId registryId,
+            RpgId definitionId
     ) {
-        final RpgId registryId;
-        final RpgId definitionId;
-
-        try {
-            registryId = RpgId.parse(registryText);
-            definitionId = RpgId.parse(definitionText);
-        } catch (IllegalArgumentException exception) {
-            source.sendError(
-                    Text.literal(exception.getMessage())
-            );
-            return 0;
-        }
-
         DefinitionRegistry<?> registry =
                 WorldRpgContentRuntime.publisher()
                         .active()

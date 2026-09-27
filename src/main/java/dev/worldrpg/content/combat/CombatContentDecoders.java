@@ -13,6 +13,9 @@ import dev.worldrpg.combat.aura.AuraRefreshPolicy;
 import dev.worldrpg.combat.aura.AuraStatModifier;
 import dev.worldrpg.combat.aura.AuraUniqueness;
 import dev.worldrpg.combat.effect.EffectRecipient;
+import dev.worldrpg.combat.resolution.CombatMagnitudeKind;
+import dev.worldrpg.combat.resolution.CombatPowerScaling;
+import dev.worldrpg.combat.resolution.CombatPowerTerm;
 import dev.worldrpg.combat.resource.ResourceKey;
 import dev.worldrpg.combat.stat.StatKey;
 import dev.worldrpg.combat.stat.StatModifierOperation;
@@ -446,6 +449,62 @@ final class CombatContentDecoders {
                                         CombatContentDomains.AURAS,
                                         aura.get()
                                 )
+                        ));
+                    }
+                    case "damage", "healing" -> {
+                        Optional<RpgId> school = requiredId(
+                                object,
+                                "school",
+                                document,
+                                report
+                        );
+                        Optional<RpgId> profile = requiredId(
+                                object,
+                                "resolution_profile",
+                                document,
+                                report
+                        );
+                        Optional<Double> base = requiredDouble(
+                                object,
+                                "base_magnitude",
+                                document,
+                                report
+                        );
+                        Optional<RpgId> powerStat = requiredId(
+                                object,
+                                "power_stat",
+                                document,
+                                report
+                        );
+                        Optional<Double> coefficient = requiredDouble(
+                                object,
+                                "power_coefficient",
+                                document,
+                                report
+                        );
+
+                        if (school.isEmpty()
+                                || profile.isEmpty()
+                                || base.isEmpty()
+                                || powerStat.isEmpty()
+                                || coefficient.isEmpty()) {
+                            return Optional.empty();
+                        }
+
+                        result.add(new AbilityEffectSpec.Magnitude(
+                                recipient.get(),
+                                type.get().equals("damage")
+                                        ? CombatMagnitudeKind.DAMAGE
+                                        : CombatMagnitudeKind.HEALING,
+                                school.get(),
+                                profile.get(),
+                                CombatPowerScaling.explicit(
+                                        new CombatPowerTerm(
+                                                new StatKey(powerStat.get()),
+                                                coefficient.get()
+                                        )
+                                ),
+                                base.get()
                         ));
                     }
                     default -> {

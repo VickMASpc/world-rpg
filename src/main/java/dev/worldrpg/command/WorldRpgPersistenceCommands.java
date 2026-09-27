@@ -1,13 +1,13 @@
 package dev.worldrpg.command;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import dev.worldrpg.api.id.RpgId;
 import dev.worldrpg.content.fabric.WorldRpgContentRuntime;
 import dev.worldrpg.persistence.PersistedDefinitionPointer;
 import dev.worldrpg.persistence.WorldRpgSaveSchema;
 import dev.worldrpg.persistence.fabric.PersistedDefinitionPointerNbtCodec;
 import dev.worldrpg.persistence.fabric.WorldRpgPersistentState;
+import dev.worldrpg.integration.minecraft.WorldRpgServerRuntime;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -53,19 +53,19 @@ public final class WorldRpgPersistenceCommands {
                                 .then(
                                         CommandManager.argument(
                                                 "registry",
-                                                StringArgumentType.word()
+                                                RpgIdArgumentType.rpgId()
                                         ).then(
                                                 CommandManager.argument(
                                                         "definition",
-                                                        StringArgumentType.word()
+                                                        RpgIdArgumentType.rpgId()
                                                 ).executes(context -> setRef(
                                                         context.getSource()
                                                                 .getPlayerOrThrow(),
-                                                        StringArgumentType.getString(
+                                                        RpgIdArgumentType.getRpgId(
                                                                 context,
                                                                 "registry"
                                                         ),
-                                                        StringArgumentType.getString(
+                                                        RpgIdArgumentType.getRpgId(
                                                                 context,
                                                                 "definition"
                                                         )
@@ -84,6 +84,18 @@ public final class WorldRpgPersistenceCommands {
                                 .executes(context -> clearRef(
                                         context.getSource().getPlayerOrThrow()
                                 ))
+                )
+                .then(
+                        CommandManager.literal("resetplayer")
+                                .then(
+                                        CommandManager.literal("confirm")
+                                                .executes(context ->
+                                                        resetPlayer(
+                                                                context.getSource()
+                                                                        .getPlayerOrThrow()
+                                                        )
+                                                )
+                                )
                 );
     }
 
@@ -110,23 +122,14 @@ public final class WorldRpgPersistenceCommands {
 
     private static int setRef(
             ServerPlayerEntity player,
-            String registryText,
-            String definitionText
+            RpgId registryId,
+            RpgId definitionId
     ) {
-        final PersistedDefinitionPointer pointer;
-
-        try {
-            pointer = new PersistedDefinitionPointer(
-                    RpgId.parse(registryText),
-                    RpgId.parse(definitionText)
-            );
-        } catch (IllegalArgumentException exception) {
-            player.sendMessage(
-                    Text.literal(exception.getMessage()),
-                    false
-            );
-            return 0;
-        }
+        PersistedDefinitionPointer pointer =
+                new PersistedDefinitionPointer(
+                        registryId,
+                        definitionId
+                );
 
         WorldRpgPersistentState state =
                 WorldRpgPersistentState.get(player.getServer());
@@ -198,6 +201,32 @@ public final class WorldRpgPersistenceCommands {
                                 + pointer.definitionId()
                                 + " resolved="
                                 + resolved
+                ),
+                false
+        );
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int resetPlayer(ServerPlayerEntity player) {
+        WorldRpgPersistentState state =
+                WorldRpgPersistentState.get(player.getServer());
+
+        boolean removed = state.removePlayerData(
+                player.getUuid()
+        );
+
+        // Character persistence is part of the same player record. Refresh
+        // the live combat actor immediately so reset cannot leave stale
+        // level/equipment-derived stats in memory.
+        WorldRpgServerRuntime.productionCombat()
+                .refreshPlayer(player);
+
+        player.sendMessage(
+                Text.literal(
+                        removed
+                                ? "World RPG player state reset. Quest history, RPG inventory, character progression/equipment, and developer player data were cleared."
+                                : "World RPG player state was already empty; live character combat state was refreshed."
                 ),
                 false
         );

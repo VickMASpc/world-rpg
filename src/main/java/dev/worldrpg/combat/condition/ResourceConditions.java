@@ -16,6 +16,14 @@ public final class ResourceConditions {
             RpgId.parse("world_rpg:condition/source_resource_too_low");
     private static final RpgId TARGET_RESOURCE_TOO_LOW =
             RpgId.parse("world_rpg:condition/target_resource_too_low");
+    private static final RpgId SOURCE_RESOURCE_ABOVE_FRACTION =
+            RpgId.parse(
+                    "world_rpg:condition/source_resource_above_fraction"
+            );
+    private static final RpgId TARGET_RESOURCE_ABOVE_FRACTION =
+            RpgId.parse(
+                    "world_rpg:condition/target_resource_above_fraction"
+            );
 
     private ResourceConditions() {
     }
@@ -50,6 +58,68 @@ public final class ResourceConditions {
         );
     }
 
+    public static Condition<AbilityContext> sourceAtOrBelowFraction(
+            ResourceKey resource,
+            double fraction
+    ) {
+        validateFraction(resource, fraction);
+
+        return context -> atOrBelowFraction(
+                context.source(),
+                resource,
+                fraction,
+                SOURCE_RESOURCE_ABOVE_FRACTION,
+                "Source"
+        );
+    }
+
+    public static Condition<AbilityContext> targetAtOrBelowFraction(
+            ResourceKey resource,
+            double fraction
+    ) {
+        validateFraction(resource, fraction);
+
+        return context -> atOrBelowFraction(
+                context.target(),
+                resource,
+                fraction,
+                TARGET_RESOURCE_ABOVE_FRACTION,
+                "Target"
+        );
+    }
+
+    private static ConditionResult atOrBelowFraction(
+            CombatActor actor,
+            ResourceKey resource,
+            double fraction,
+            RpgId failureCode,
+            String label
+    ) {
+        Optional<ResourcePool> pool = actor.resources().find(resource);
+
+        if (pool.isEmpty()) {
+            return ConditionResult.fail(
+                    MISSING_RESOURCE,
+                    label + " does not have resource " + resource
+            );
+        }
+
+        double threshold =
+                pool.get().maximum() * fraction;
+
+        if (pool.get().current() > threshold) {
+            return ConditionResult.fail(
+                    failureCode,
+                    label + " resource " + resource
+                            + " is above "
+                            + fraction
+                            + " of maximum"
+            );
+        }
+
+        return ConditionResult.pass();
+    }
+
     private static ConditionResult atLeast(
             CombatActor actor,
             ResourceKey resource,
@@ -74,6 +144,21 @@ public final class ResourceConditions {
         }
 
         return ConditionResult.pass();
+    }
+
+    private static void validateFraction(
+            ResourceKey resource,
+            double fraction
+    ) {
+        Objects.requireNonNull(resource, "resource");
+
+        if (!Double.isFinite(fraction)
+                || fraction < 0.0
+                || fraction > 1.0) {
+            throw new IllegalArgumentException(
+                    "resource fraction must be finite and in [0, 1]"
+            );
+        }
     }
 
     private static void validate(

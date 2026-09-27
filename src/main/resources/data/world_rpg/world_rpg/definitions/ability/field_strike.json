@@ -1,0 +1,7 @@
+{
+  "schema":1,"registry":"world_rpg:registry/abilities","id":"world_rpg:ability/player/field_strike",
+  "cast_kind":"instant","cast_duration_ticks":0,"cooldown_ticks":24,"global_cooldown_ticks":20,"movement_policy":"allow",
+  "costs":[{"resource":"world_rpg:resource/focus","amount":10.0}],
+  "conditions":[{"type":"source_alive"},{"type":"target_alive"},{"type":"same_world"},{"type":"disallow_self"},{"type":"line_of_sight"},{"type":"max_range","blocks":4.5},{"type":"target_resource_at_least","resource":"world_rpg:resource/health","amount":0.000001}],
+  "effects":[{"type":"damage","recipient":"target","school":"world_rpg:school/physical","resolution_profile":"world_rpg:resolution/direct_weapon","base_magnitude":8.0,"power_stat":"world_rpg:stat/attack_power","power_coefficient":0.75}]
+}

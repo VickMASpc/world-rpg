@@ -4,6 +4,7 @@ import dev.worldrpg.api.id.RpgId;
 import dev.worldrpg.api.registry.RegistrySnapshot;
 import dev.worldrpg.combat.ability.AbilityDefinition;
 import dev.worldrpg.combat.aura.AuraDefinition;
+import dev.worldrpg.combat.resolution.CombatResolutionGateway;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -15,6 +16,16 @@ public final class P3CombatContentCompiler {
 
     public static P3CombatContentSnapshot compile(
             RegistrySnapshot snapshot
+    ) {
+        return compile(
+                snapshot,
+                request -> java.util.List.of()
+        );
+    }
+
+    public static P3CombatContentSnapshot compile(
+            RegistrySnapshot snapshot,
+            CombatResolutionGateway resolutionGateway
     ) {
         Objects.requireNonNull(snapshot, "snapshot");
 
@@ -33,7 +44,10 @@ public final class P3CombatContentCompiler {
         for (AbilityContentDefinition ability :
                 snapshot.require(CombatContentDomains.ABILITIES).values()) {
             AbilityDefinition compiled =
-                    ability.compile(compiledAuras);
+                    ability.compile(
+                            compiledAuras,
+                            resolutionGateway
+                    );
             compiledAbilities.put(compiled.id(), compiled);
         }
 

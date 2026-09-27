@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/npcs",
+  "id": "world_rpg:npc/first_province/refuge_scout",
+  "display_name": "Refuge Scout",
+  "home_location": "world_rpg:location/first_province/east_road_refuge",
+  "roles": [
+    "quest_giver",
+    "road_scout",
+    "refuge_watch",
+    "provisional"
+  ]
+}

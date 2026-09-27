@@ -1,0 +1,6 @@
+{
+  "schema":1,"registry":"world_rpg:registry/spawn_groups","id":"world_rpg:spawn_group/first_province/ashwood_stalker",
+  "location":"world_rpg:location/first_province/ashwood_hunting_ground",
+  "mob":"world_rpg:mob/first_province/ashwood_stalker",
+  "target_population":1,"respawn_ticks":400,"spawn_radius":15.0,"leash_radius":26.0
+}

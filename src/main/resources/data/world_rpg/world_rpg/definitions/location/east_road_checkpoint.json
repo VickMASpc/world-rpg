@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/world_locations",
+  "id": "world_rpg:location/first_province/east_road_checkpoint",
+  "display_name": "East Road Abandoned Checkpoint",
+  "kind": "road_checkpoint",
+  "tags": [
+    "east_road",
+    "investigation",
+    "first_province",
+    "playable_slice",
+    "provisional"
+  ]
+}

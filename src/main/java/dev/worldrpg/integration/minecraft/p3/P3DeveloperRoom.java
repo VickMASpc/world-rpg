@@ -2,6 +2,7 @@ package dev.worldrpg.integration.minecraft.p3;
 
 import dev.worldrpg.integration.minecraft.MinecraftEntityResolver;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.HuskEntity;
 import net.minecraft.server.MinecraftServer;
@@ -49,12 +50,7 @@ public final class P3DeveloperRoom {
     ) {
         requireStarted();
         Objects.requireNonNull(player, "player");
-
-        if (distance < 1 || distance > 30) {
-            throw new IllegalArgumentException(
-                    "developer-room distance must be between 1 and 30 blocks"
-            );
-        }
+        validateDistance(distance);
 
         removeTarget(player);
 
@@ -87,6 +83,43 @@ public final class P3DeveloperRoom {
         combat.status(player);
 
         return target;
+    }
+
+    /**
+     * Relocates the existing target without replacing its entity UUID or RPG
+     * state. This exists specifically for cast-resolution range revalidation.
+     */
+    public LivingEntity moveTarget(
+            ServerPlayerEntity player,
+            int distance
+    ) {
+        requireStarted();
+        Objects.requireNonNull(player, "player");
+        validateDistance(distance);
+
+        LivingEntity target = requireTarget(player);
+        BlockPos position = player.getBlockPos()
+                .offset(player.getHorizontalFacing(), distance);
+
+        target.refreshPositionAndAngles(
+                position,
+                target.getYaw(),
+                target.getPitch()
+        );
+        return target;
+    }
+
+    /**
+     * Direct developer-gate setup. It changes only the target's proof-health
+     * resource and does not touch the Minecraft entity's vanilla health.
+     */
+    public double setTargetProofHealth(
+            ServerPlayerEntity player,
+            double value
+    ) {
+        requireStarted();
+        Objects.requireNonNull(player, "player");
+        return combat.setProofHealth(requireTarget(player), value);
     }
 
     public Optional<UUID> targetUuid(ServerPlayerEntity player) {
@@ -129,6 +162,28 @@ public final class P3DeveloperRoom {
         Objects.requireNonNull(player, "player");
         removeTarget(player);
         combat.removeState(player.getUuid());
+    }
+
+    private LivingEntity requireTarget(ServerPlayerEntity player) {
+        UUID targetUuid = targetByPlayer.get(player.getUuid());
+        if (targetUuid == null) {
+            throw new IllegalStateException(
+                    "No P3 developer target is active."
+            );
+        }
+
+        return MinecraftEntityResolver.findLiving(server, targetUuid)
+                .orElseThrow(() -> new IllegalStateException(
+                        "P3 developer target entity is no longer available."
+                ));
+    }
+
+    private static void validateDistance(int distance) {
+        if (distance < 1 || distance > 30) {
+            throw new IllegalArgumentException(
+                    "developer-room distance must be between 1 and 30 blocks"
+            );
+        }
     }
 
     private void removeAllTargets() {

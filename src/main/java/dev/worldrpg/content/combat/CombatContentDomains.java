@@ -41,7 +41,7 @@ public final class CombatContentDomains {
     private CombatContentDomains() {
     }
 
-    public static DefinitionDomainCatalog catalog() {
+    public static void addTo(DefinitionDomainCatalog.Builder builder) {
         DefinitionDomainHandler<AuraContentDefinition> auraHandler =
                 new DefinitionDomainHandler<>(
                         AURA_DOMAIN,
@@ -58,8 +58,7 @@ public final class CombatContentDomains {
                         DefinitionValidator.none()
                 );
 
-        return DefinitionDomainCatalog.builder()
-                .add(auraHandler)
+        builder.add(auraHandler)
                 .add(abilityHandler)
                 .addCrossRegistryValidator((candidate, report) -> {
                     try {
@@ -73,7 +72,13 @@ public final class CombatContentDomains {
                                 SourceRef.of("<combat-content-compiler>")
                         );
                     }
-                })
-                .build();
+                });
+    }
+
+    public static DefinitionDomainCatalog catalog() {
+        DefinitionDomainCatalog.Builder builder =
+                DefinitionDomainCatalog.builder();
+        addTo(builder);
+        return builder.build();
     }
 }

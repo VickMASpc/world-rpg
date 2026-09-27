@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "registry": "world_rpg:registry/items",
+  "id": "world_rpg:item/first_province/ashwood_carved_charm",
+  "display_name": "Ashwood-Carved Charm",
+  "category": "equipment",
+  "required_level": 2,
+  "vendor_value_copper": 120,
+  "equipment": {
+    "slot": "neck",
+    "stats": [
+      {
+        "stat": "world_rpg:stat/attack_power",
+        "amount": 3.0
+      }
+    ]
+  },
+  "tags": [
+    "ashwood",
+    "equipment",
+    "first_province",
+    "provisional"
+  ]
+}

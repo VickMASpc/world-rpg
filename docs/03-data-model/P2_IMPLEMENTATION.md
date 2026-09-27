@@ -1,18 +1,20 @@
 # P2 implementation procedure
 
-Status: ACTIVE
+Status: IMPLEMENTED — HISTORICAL PROCEDURE / CURRENT CONTRACT REFERENCE
 
 Branch: `p2/data-foundation`
 
 Tracking issue: #1
 
-P2 establishes the data and persistence foundation before World RPG creates real content at scale.
+P2 established the data and persistence foundation before World RPG creates real content at scale.
 
-## Order of work
+This document preserves the order and architectural intent used to build that foundation. The P2 exit gate has been satisfied on its branch; current project status lives in `docs/STATUS.md`.
+
+## Implemented order of work
 
 ### P2.1 — Identity, validation, and immutable registries
 
-Implement a Minecraft-independent foundation where practical:
+Implemented a Minecraft-independent foundation where practical:
 
 - `RpgId` stable namespaced identity.
 - `RpgDefinition` base definition contract.
@@ -21,99 +23,88 @@ Implement a Minecraft-independent foundation where practical:
 - Immutable definition registries.
 - Immutable registry-set snapshots.
 - Atomic publication that refuses candidates containing validation errors.
-- Unit tests for invalid IDs, duplicate IDs, immutability, type-safe lookup, and failed-publication safety.
-
-This is the first implementation slice.
+- Unit tests for invalid IDs, duplicate IDs, immutability, type-safe lookup and failed-publication safety.
 
 ### P2.2 — Source decoding
 
-Decide and document the runtime authoring representation, then implement:
+The runtime authoring representation is UTF-8 JSON with:
 
-- source discovery,
-- source-location tracking,
-- decoding,
-- structural validation,
-- schema-version handling at the definition layer,
+- server-data source discovery;
+- source-location/provenance tracking;
+- strict structural preflight including duplicate-key rejection;
+- common header decoding;
+- schema-version handling;
 - deterministic ordering.
 
-The authoring format is not frozen merely because JSON exists. The chosen format must work with validation, comments/documentation expectations, tooling, Minecraft/Fabric integration, and future standalone tools.
+The physical file path remains provenance/override location rather than stable gameplay identity.
 
 ### P2.3 — References and resolution
 
-Implement explicit reference types:
+Implemented explicit typed required/optional definition references and candidate-snapshot resolution.
 
-- required definition reference,
-- optional definition reference,
-- unresolved source reference,
-- resolved typed reference/handle where useful.
-
-Resolution happens against candidate registries before publication.
-
-A missing required reference is an error. Optionality must be explicit in the type/model rather than inferred from null.
+A missing required reference is an error. Optionality is explicit rather than inferred from null.
 
 ### P2.4 — Staged candidate loader
 
-Implement the complete transaction:
+Implemented transaction:
 
+```text
 source discovery
--> decode
+-> strict preflight / decode
 -> structural validation
 -> candidate registry construction
 -> reference resolution
 -> semantic validation
 -> cross-registry validation
--> atomic publish.
+-> reload-safety enforcement
+-> atomic publish
+```
 
 A failed candidate load leaves the currently active snapshot untouched.
 
 ### P2.5 — Developer inspection
 
-Add developer commands/tools to:
-
-- list registry domains,
-- list definitions,
-- inspect one definition,
-- show source origin,
-- show active schema/snapshot information,
-- report the previous load failure.
-
-Debug output must use IDs and source locations so content errors are traceable.
+Implemented developer inspection for active content status, registry listing and definition inspection with traceable IDs/provenance.
 
 ### P2.6 — Persistence and migrations
 
-Only after definition identity is stable:
+Implemented the foundation for:
 
-- decide player-state and world-state storage ownership,
-- evaluate Cardinal Components versus owned storage,
-- define save schema versioning,
-- implement migration interfaces,
-- define missing-definition recovery policies,
-- test round trips and migrations.
+- server-owned world/player PersistentState;
+- save schema versions;
+- explicit monotonic migration steps;
+- stable persisted definition pointers;
+- missing-definition recovery policies;
+- defensive-copy mutation / dirty-state ownership.
 
-Persistence must never serialize display names or unstable list indices as identity.
+Persistence does not serialize display names or unstable list indices as identity.
 
 ### P2.7 — Reload safety
 
-Every registry domain declares one of:
+Implemented domain classification and runtime enforcement:
 
-- SAFE — may be replaced live.
-- GUARDED — reload allowed only when runtime constraints are satisfied.
-- RESTART — requires restart/save reload.
+- SAFE — may be replaced live;
+- GUARDED — reload only when runtime constraints pass;
+- RESTART — cannot be applied live.
 
-No global “reload everything” promise.
+No global "reload everything safely" promise exists.
 
 ## P2 exit gate
 
-A tiny authored definition must complete:
+Satisfied on `p2/data-foundation` and exercised by stacked authored P3 combat content:
 
-source
+```text
+authored source
 -> decode
 -> validation
 -> reference resolution
 -> immutable registry snapshot
 -> atomic publication
 -> developer inspection
+-> stable persisted reference
+-> save/load/migration
+```
 
-and a runtime reference to that definition must persist, reload, and migrate without ambiguity.
+P3/P4 development has already begun on top of this foundation.
 
-Only then does P3 begin.
+The remaining reason P2 issue/PR stay open is stacked-branch integration bookkeeping, not missing P2 mechanism work.

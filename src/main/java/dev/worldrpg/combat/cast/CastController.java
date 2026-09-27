@@ -98,43 +98,15 @@ public final class CastController {
         Objects.requireNonNull(target, "target");
         requireTick(gameTick);
 
-        AbilityContext abilityContext = abilityContext(target, gameTick);
-        EffectContext effectContext = new EffectContext(owner, target, gameTick);
+        ConditionResult validation =
+                validateActivation(
+                        ability,
+                        target,
+                        gameTick
+                );
 
-        ConditionResult validation = ConditionResult.pass();
-
-        if (activeCast != null) {
-            validation = validation.plus(ConditionResult.fail(
-                    ALREADY_CASTING,
-                    "Actor is already casting " + activeCast.ability().id()
-            ));
-        }
-
-        CooldownKey abilityCooldown = new CooldownKey(ability.id());
-
-        if (!cooldowns.isReady(abilityCooldown, gameTick)) {
-            validation = validation.plus(ConditionResult.fail(
-                    ABILITY_ON_COOLDOWN,
-                    "Ability is on cooldown for "
-                            + cooldowns.remainingTicks(abilityCooldown, gameTick)
-                            + " more ticks"
-            ));
-        }
-
-        if (!cooldowns.isReady(CooldownBook.GLOBAL, gameTick)) {
-            validation = validation.plus(ConditionResult.fail(
-                    GLOBAL_COOLDOWN,
-                    "Global cooldown has "
-                            + cooldowns.remainingTicks(CooldownBook.GLOBAL, gameTick)
-                            + " ticks remaining"
-            ));
-        }
-
-        validation = validation.plus(ability.activationCondition().evaluate(abilityContext));
-        validation = validation.plus(ability.effects().validate(effectContext));
-
-        Map<ResourceKey, Double> aggregatedCosts = aggregateCosts(ability.costs());
-        validation = validation.plus(validateCosts(aggregatedCosts));
+        Map<ResourceKey, Double> aggregatedCosts =
+                aggregateCosts(ability.costs());
 
         if (!validation.passed()) {
             return new AbilityActivationResult(
@@ -156,7 +128,16 @@ public final class CastController {
         startCooldowns(ability, gameTick, events);
 
         if (ability.castKind() == AbilityCastKind.INSTANT) {
-            events.addAll(ability.effects().applyValidated(effectContext));
+            EffectContext effectContext =
+                    new EffectContext(
+                            owner,
+                            target,
+                            gameTick
+                    );
+            events.addAll(
+                    ability.effects()
+                            .applyValidated(effectContext)
+            );
             return new AbilityActivationResult(
                     ConditionResult.pass(),
                     Optional.empty(),
@@ -197,6 +178,99 @@ public final class CastController {
                 ConditionResult.pass(),
                 Optional.of(castId),
                 events
+        );
+    }
+
+    /**
+     * Pure activation preflight shared by production activation and simulator
+     * decision policies.
+     *
+     * <p>No costs are spent, cooldowns started, cast IDs allocated or effects
+     * applied by this method.</p>
+     */
+    public ConditionResult validateActivation(
+            AbilityDefinition ability,
+            CombatActor target,
+            long gameTick
+    ) {
+        Objects.requireNonNull(ability, "ability");
+        Objects.requireNonNull(target, "target");
+        requireTick(gameTick);
+
+        AbilityContext abilityContext =
+                abilityContext(target, gameTick);
+        EffectContext effectContext =
+                new EffectContext(
+                        owner,
+                        target,
+                        gameTick
+                );
+
+        ConditionResult validation =
+                ConditionResult.pass();
+
+        if (activeCast != null) {
+            validation = validation.plus(
+                    ConditionResult.fail(
+                            ALREADY_CASTING,
+                            "Actor is already casting "
+                                    + activeCast.ability().id()
+                    )
+            );
+        }
+
+        CooldownKey abilityCooldown =
+                new CooldownKey(ability.id());
+
+        if (!cooldowns.isReady(
+                abilityCooldown,
+                gameTick
+        )) {
+            validation = validation.plus(
+                    ConditionResult.fail(
+                            ABILITY_ON_COOLDOWN,
+                            "Ability is on cooldown for "
+                                    + cooldowns.remainingTicks(
+                                            abilityCooldown,
+                                            gameTick
+                                    )
+                                    + " more ticks"
+                    )
+            );
+        }
+
+        if (!cooldowns.isReady(
+                CooldownBook.GLOBAL,
+                gameTick
+        )) {
+            validation = validation.plus(
+                    ConditionResult.fail(
+                            GLOBAL_COOLDOWN,
+                            "Global cooldown has "
+                                    + cooldowns.remainingTicks(
+                                            CooldownBook.GLOBAL,
+                                            gameTick
+                                    )
+                                    + " ticks remaining"
+                    )
+            );
+        }
+
+        validation = validation.plus(
+                ability.activationCondition()
+                        .evaluate(abilityContext)
+        );
+        validation = validation.plus(
+                ability.effects()
+                        .validate(effectContext)
+        );
+
+        return validation.plus(
+                validateCosts(
+                        aggregateCosts(
+                                ability.costs()
+                        )
+                )
         );
     }
 

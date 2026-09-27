@@ -1,0 +1,5 @@
+{
+  "schema":1,"registry":"world_rpg:registry/items","id":"world_rpg:item/first_province/ashwood_pelt",
+  "display_name":"Ashwood Pelt","category":"material","required_level":1,"vendor_value_copper":14,
+  "tags":["ashwood","beast_material","first_province","provisional"]
+}
