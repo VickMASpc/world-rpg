@@ -72,6 +72,40 @@ Node marker colors:
 
 The layout is a disposable spatial diagram, not final terrain or lore.
 
+## Optional readable-place layer
+
+If the colored-node version is too abstract to judge as a human world, build the authored readability layer on top of the same persisted topology:
+
+```text
+/worldrpg province graybox places build confirm
+```
+
+This does **not** replace the kilometer graph or require a new world.
+
+It adds deliberately provisional but walkable place footprints at the existing nodes:
+
+- Home A — internal cross street, ring path, several open building shells, larger inn/support hall, well, road gate;
+- Refuge F — fenced compound, through-road, shelter, workshop, watchtower, camp;
+- Regional Settlement G — walled footprint, broad north-south avenue, cross streets, plaza, civic/inn hall, multiple building shells and towers;
+- Fork D — paved decision space and tower/arch landmark;
+- Danger E — large dark ruined compound;
+- Local Ruin R1 — smaller mossy ruin;
+- Workland B2 — fenced work/farm footprint;
+- Beyond H — outward gate/tower.
+
+The builder clears above-ground blocks inside the three main authored settlement footprints before placing them. This is specifically meant to stop random Superflat village buildings from occupying the exact same test-space as A/F/G.
+
+These structures are **navigation graybox**, not proposed final architecture.
+
+The question becomes easier and more concrete:
+
+- Can you walk through the settlement without feeling cramped?
+- Can you identify the main exit without coordinates?
+- Does G actually read as a larger settlement than A?
+- Does F feel like a tiny last-safe-stop rather than another town?
+- Is D a place you remember making a route decision?
+- Does E look like somewhere distinct enough to remember and avoid?
+
 ---
 
 # 3. Inspect the topology before measuring
