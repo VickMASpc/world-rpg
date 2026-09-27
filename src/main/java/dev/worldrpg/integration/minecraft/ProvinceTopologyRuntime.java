@@ -37,6 +37,7 @@ public final class ProvinceTopologyRuntime {
     private static final String ORIGIN_Z = "origin_z";
     private static final String BUILT = "built";
     private static final String MEASUREMENTS = "measurements";
+    private static final String PLACES_BUILT = "places_built";
     private static final String ELAPSED_TICKS = "elapsed_ticks";
     private static final String PATH_BLOCKS = "path_blocks";
     private static final String ACTUAL_BLOCKS = "actual_blocks";
@@ -121,6 +122,38 @@ public final class ProvinceTopologyRuntime {
         return loadState();
     }
 
+    public ProvinceGrayboxBuilder.PlaceBuildResult buildReadablePlaces(
+            ServerPlayerEntity player
+    ) {
+        requireStarted();
+        Objects.requireNonNull(player, "player");
+
+        GrayboxState state = requireState();
+        ServerWorld world = player.getServerWorld();
+        if (!world.getRegistryKey().equals(World.OVERWORLD)) {
+            throw new IllegalStateException(
+                    "province graybox places can only be built in the Overworld"
+            );
+        }
+
+        ProvinceGrayboxBuilder.PlaceBuildResult result =
+                ProvinceGrayboxBuilder.buildReadablePlaces(
+                        world,
+                        state.originX(),
+                        state.originZ()
+                );
+
+        WorldRpgPersistentState persistence =
+                WorldRpgPersistentState.get(server);
+        NbtCompound worldData = persistence.readWorldData();
+        NbtCompound root = worldData.getCompound(ROOT);
+        root.putBoolean(PLACES_BUILT, true);
+        worldData.put(ROOT, root);
+        persistence.writeWorldData(worldData);
+        return result;
+    }
+
+
     public String status(ServerPlayerEntity player) {
         requireStarted();
         Objects.requireNonNull(player, "player");
@@ -149,6 +182,8 @@ public final class ProvinceTopologyRuntime {
                 + " distance="
                 + format(nearestDistance)
                 + " blocks"
+                + " placesBuilt="
+                + state.placesBuilt()
                 + " active="
                 + (measurement == null
                 ? "none"
@@ -614,7 +649,8 @@ public final class ProvinceTopologyRuntime {
         return Optional.of(
                 new GrayboxState(
                         root.getInt(ORIGIN_X),
-                        root.getInt(ORIGIN_Z)
+                        root.getInt(ORIGIN_Z),
+                        root.getBoolean(PLACES_BUILT)
                 )
         );
     }
@@ -713,7 +749,8 @@ public final class ProvinceTopologyRuntime {
 
     public record GrayboxState(
             int originX,
-            int originZ
+            int originZ,
+            boolean placesBuilt
     ) {
         public int absoluteX(Point point) {
             return originX + point.east();
